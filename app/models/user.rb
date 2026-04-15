@@ -37,6 +37,12 @@ class User < ApplicationRecord
     [primer_nombre, primer_apellido].compact.join(" ").presence || nombre_completo
   end
 
+  # Nombre que se muestra a otros usuarios en el chat. Permite que cada
+  # miembro personalice cómo se le ve, con fallback a nombre_corto.
+  def nombre_chat
+    nombre_visible.presence || nombre_corto
+  end
+
   def tiene_permiso?(recurso, accion)
     return true if rol_ref&.codigo == "super_admin"
     rol_ref&.tiene_permiso?(recurso, accion) || false

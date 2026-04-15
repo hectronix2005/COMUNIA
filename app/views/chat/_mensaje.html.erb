@@ -9,17 +9,21 @@
 %>
 <div class="d-flex mb-3 <%= propio ? 'justify-content-end' : 'justify-content-start' %>">
 
+  <%
+    sender_display    = mensaje.user.nombre_chat
+    sender_initials   = sender_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
+  %>
   <% unless propio %>
     <div class="rounded-circle text-white d-flex align-items-center justify-content-center me-2 flex-shrink-0"
          style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:<%= color %>;">
-      <%= mensaje.user.nombre[0].upcase %><%= mensaje.user.apellido[0].upcase %>
+      <%= sender_initials %>
     </div>
   <% end %>
 
   <div style="max-width:68%">
     <% unless propio %>
       <div class="small fw-semibold mb-1 ms-1" style="color:<%= color %>">
-        <%= mensaje.user.nombre_completo %>
+        <%= sender_display %>
         <span class="text-muted fw-normal ms-1" style="font-size:.7rem">
           &mdash; <%= mensaje.user.miembro&.logia&.nombre %>
         </span>
@@ -43,9 +47,13 @@
   </div>
 
   <% if propio && viewer %>
+    <%
+      viewer_display  = viewer.nombre_chat
+      viewer_initials = viewer_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
+    %>
     <div class="rounded-circle text-white d-flex align-items-center justify-content-center ms-2 flex-shrink-0"
          style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:#1B2A4A;">
-      <%= viewer.nombre[0].upcase %><%= viewer.apellido[0].upcase %>
+      <%= viewer_initials %>
     </div>
   <% end %>
 

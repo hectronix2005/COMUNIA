@@ -20,6 +20,10 @@ Rails.application.routes.draw do
   # ── Plataforma COMUNIA (sin subdominio, super admin) ──────────
   resources :users, only: [:edit, :update]
 
+  # Perfil personal: cada usuario puede editar su nombre visible en el chat.
+  get   "perfil", to: "perfil#edit",   as: :perfil
+  patch "perfil", to: "perfil#update"
+
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do
       post :preview
