@@ -128,4 +128,12 @@ class ApplicationController < ActionController::Base
     # si el login fue en /t/:slug/login, el redirect será /t/:slug/dashboard.
     dashboard_path
   end
+
+  # Tras cerrar sesión, si el usuario estaba dentro de un tenant
+  # (/t/:slug/...) lo devolvemos al login del MISMO tenant en lugar del
+  # /login global de COMUNIA.
+  def after_sign_out_path_for(resource_or_scope)
+    m = request.script_name.to_s.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)\z})
+    m ? "/t/#{m[1]}/login" : new_user_session_path
+  end
 end
