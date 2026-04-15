@@ -1,14 +1,17 @@
 class TenantAccessController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:enter]
+
   def enter
     logia = Logia.tenants_raiz.find_by(slug: params[:slug])
     return redirect_to root_path, alert: "Tenant no encontrado." if logia.nil?
 
-    unless puede_acceder?(logia)
+    if user_signed_in? && !puede_acceder?(logia)
       return redirect_to root_path, alert: "No tienes acceso a ese tenant."
     end
 
     session[:tenant_slug] = logia.slug
-    redirect_to root_path, notice: "Accediendo a #{logia.nombre_display}."
+    destino = user_signed_in? ? root_path : new_user_session_path
+    redirect_to destino, notice: "Contexto: #{logia.nombre_display}."
   end
 
   def exit_tenant
