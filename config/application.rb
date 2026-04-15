@@ -45,5 +45,11 @@ module GranLogiaDeColombia
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Middleware que convierte /t/:slug/<resto> en /<resto> con
+    # SCRIPT_NAME=/t/:slug, de modo que Rails genere URLs con el prefijo
+    # automáticamente sin tener que modificar todas las rutas o helpers.
+    require_relative "../app/middleware/tenant_path_prefix"
+    config.middleware.use TenantPathPrefix
   end
 end

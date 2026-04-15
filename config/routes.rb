@@ -3,19 +3,19 @@ Rails.application.routes.draw do
 
   root "dashboard#index"
 
-  # Entrada/salida de contexto de tenant (fuera del scope opcional).
+  # Entrada/salida de contexto de tenant. El middleware TenantPathPrefix
+  # reescribe /t/:slug/<resto> → /<resto> con SCRIPT_NAME=/t/:slug, por lo
+  # que todas las rutas siguen siendo no-prefijadas aquí y Rails inyecta
+  # automáticamente el prefijo al generar URLs.
   get    "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
   delete "t",       to: "tenant_access#exit_tenant", as: :exit_tenant
 
-  # Todas las rutas aceptan opcionalmente el prefijo /t/:tenant_slug/ para
-  # que tras el login la URL conserve el contexto del tenant.
-  scope "(/t/:tenant_slug)", constraints: { tenant_slug: /[a-z0-9][a-z0-9\-_]*/ } do
-    devise_for :users, path: "", path_names: {
-      sign_in: "login",
-      sign_out: "logout"
-    }
+  devise_for :users, path: "", path_names: {
+    sign_in: "login",
+    sign_out: "logout"
+  }
 
-    get "dashboard", to: "dashboard#index", as: :dashboard
+  get "dashboard", to: "dashboard#index", as: :dashboard
 
   # ── Plataforma COMUNIA (sin subdominio, super admin) ──────────
   resources :users, only: [:edit, :update]
@@ -128,6 +128,5 @@ Rails.application.routes.draw do
   end
   resources :negocio_conversaciones, path: "mis-conversaciones", only: [:index, :show] do
     resources :mensajes, only: [:create], controller: "negocio_mensajes"
-  end
   end
 end

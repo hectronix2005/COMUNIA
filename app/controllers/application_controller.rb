@@ -2,17 +2,10 @@ class ApplicationController < ActionController::Base
   include Pundit::Authorization
 
   allow_browser versions: :modern
-  before_action :capture_tenant_slug_from_params
+  before_action :capture_tenant_slug_from_script_name
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
-
-  # Hace que todas las URLs generadas conserven /t/:tenant_slug/ cuando
-  # hay un tenant activo en sesión.
-  def default_url_options
-    slug = session[:tenant_slug].presence || params[:tenant_slug].presence
-    slug ? { tenant_slug: slug } : {}
-  end
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
@@ -85,24 +78,27 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:account_update, keys: [:nombre, :apellido])
   end
 
-  # Al visitar /login (plataforma COMUNIA) limpiamos cualquier tenant_slug pegado
-  # en sesión por una visita previa a /t/:slug.
+  # Al visitar /login (plataforma COMUNIA, sin prefijo de tenant) limpiamos
+  # cualquier tenant_slug pegado en sesión por una visita previa.
   def clear_tenant_context_on_platform_login
-    return if params[:tenant_slug].present?
-    return unless request.path == "/login"
+    return if request.script_name.present?
+    return unless request.fullpath.start_with?("/login")
     session.delete(:tenant_slug)
   end
 
-  # Si la URL trae /t/:tenant_slug/, validamos y lo fijamos en sesión para que
-  # el resto de la navegación (y las URLs generadas) lo conserven.
-  def capture_tenant_slug_from_params
-    slug = params[:tenant_slug]
-    return if slug.blank?
+  # El middleware TenantPathPrefix pone /t/:slug en SCRIPT_NAME. Lo validamos
+  # y replicamos a session[:tenant_slug] para el resto del código que aún
+  # depende de la sesión (p. ej. resolve_tenant en hosts sin subdominio).
+  def capture_tenant_slug_from_script_name
+    return if request.script_name.blank?
+    m = request.script_name.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)\z})
+    return unless m
+    slug = m[1]
     if Logia.tenants_raiz.exists?(slug: slug)
       session[:tenant_slug] = slug
     else
       session.delete(:tenant_slug)
-      redirect_to root_path, alert: "Tenant no encontrado."
+      redirect_to "/", alert: "Tenant no encontrado."
     end
   end
 
@@ -128,22 +124,8 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource)
-    slug = params[:tenant_slug].presence ||
-           session[:tenant_slug].presence ||
-           slug_from_referer
-    if slug && Logia.tenants_raiz.exists?(slug: slug)
-      session[:tenant_slug] = slug
-      dashboard_path(tenant_slug: slug)
-    else
-      dashboard_path
-    end
-  end
-
-  def slug_from_referer
-    return nil if request.referer.blank?
-    path = URI.parse(request.referer).path rescue nil
-    return nil if path.blank?
-    match = path.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)/})
-    match && match[1]
+    # dashboard_path respeta request.script_name automáticamente, por lo que
+    # si el login fue en /t/:slug/login, el redirect será /t/:slug/dashboard.
+    dashboard_path
   end
 end
