@@ -22,7 +22,7 @@ class RolesController < ApplicationController
     authorize @rol
 
     if @rol.save
-      redirect_to @rol, notice: "Rol creado exitosamente."
+      redirect_to role_path(@rol), notice: "Rol creado exitosamente."
     else
       render :new, status: :unprocessable_entity
     end
@@ -35,7 +35,7 @@ class RolesController < ApplicationController
   def update
     authorize @rol
     if @rol.update(rol_params)
-      redirect_to @rol, notice: "Rol actualizado exitosamente."
+      redirect_to role_path(@rol), notice: "Rol actualizado exitosamente."
     else
       render :edit, status: :unprocessable_entity
     end

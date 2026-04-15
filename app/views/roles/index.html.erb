@@ -17,6 +17,7 @@
         <th>Codigo</th>
         <th>Descripcion</th>
         <th>Tenant</th>
+        <th>Grupo</th>
         <th>Usuarios</th>
         <th class="text-center">Permisos</th>
         <th>Tipo</th>
@@ -24,78 +25,106 @@
       </tr>
     </thead>
     <tbody>
+      <%
+        tenant_root = ->(l) { l.nil? ? nil : (l.tenant || l) }
+        grupo_de = ->(l) { l && l.tenant_id.present? ? l : nil }
+      %>
       <% @roles.each do |rol| %>
         <%
-          tenants_del_rol = rol.users.map(&:logia).compact.uniq
-          plataforma_users = rol.users.select { |u| u.logia.nil? }
+          combos = rol.users.group_by { |u| [tenant_root.call(u.logia), grupo_de.call(u.logia)] }
+          if rol.logia.present?
+            raiz_rol = tenant_root.call(rol.logia)
+            grupo_rol = grupo_de.call(rol.logia)
+            ya_hay_users_en_tenant = combos.keys.any? { |(t, _)| t == raiz_rol }
+            # Solo inyectar la combinación vacía si no hay usuarios en ese tenant,
+            # o si el rol está fijado a un grupo específico que aún no aparece.
+            if grupo_rol.nil?
+              combos[[raiz_rol, nil]] ||= [] unless ya_hay_users_en_tenant
+            else
+              combos[[raiz_rol, grupo_rol]] ||= []
+            end
+          end
+          combos = combos.sort_by { |(t, g), _|
+            [t ? t.nombre_display.to_s : "", g ? g.codigo.to_s : ""]
+          }
+          combos = [[[nil, nil], []]] if combos.empty?
+          filas = combos.size
         %>
-        <tr>
-          <td class="fw-semibold"><%= rol.nombre %></td>
-          <td><code><%= rol.codigo %></code></td>
-          <td class="text-muted small"><%= rol.descripcion %></td>
-          <td>
-            <% if rol.logia.present? %>
-              <%# Rol creado específicamente para un tenant %>
-              <span class="badge bg-info text-dark"><%= rol.logia.nombre_display %></span>
-            <% elsif tenants_del_rol.any? %>
-              <% tenants_del_rol.each do |logia| %>
-                <span class="badge bg-info text-dark me-1"><%= logia.nombre_display %></span>
-              <% end %>
-              <% if plataforma_users.any? %>
-                <span class="badge bg-dark me-1">COMUNIA</span>
-              <% end %>
-            <% elsif plataforma_users.any? %>
-              <span class="badge bg-dark">COMUNIA</span>
-            <% else %>
-              <span class="badge bg-secondary">Sin usuarios</span>
+        <% combos.each_with_index do |((tenant, grupo), usuarios), idx| %>
+          <tr>
+            <% if idx.zero? %>
+              <td class="fw-semibold" rowspan="<%= filas %>"><%= rol.nombre %></td>
+              <td rowspan="<%= filas %>"><code><%= rol.codigo %></code></td>
+              <td class="text-muted small" rowspan="<%= filas %>"><%= rol.descripcion %></td>
             <% end %>
-          </td>
-          <td>
-            <% if rol.users.any? %>
-              <button class="btn btn-sm btn-outline-secondary" type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#usuarios-rol-<%= rol.id %>"
-                      aria-expanded="false">
-                <i class="bi bi-people me-1"></i><%= rol.users.count %>
-              </button>
-              <div class="collapse mt-2 small" id="usuarios-rol-<%= rol.id %>">
-                <% plataforma_users.each do |u| %>
-                  <div><i class="bi bi-person-fill-gear text-warning me-1"></i><%= u.nombre_completo %> <span class="text-muted">&lt;<%= u.email %>&gt;</span></div>
+            <td>
+              <% if tenant %>
+                <span class="badge bg-info text-dark"><%= tenant.nombre_display %></span>
+              <% else %>
+                <span class="badge bg-dark">COMUNIA</span>
+              <% end %>
+            </td>
+            <td>
+              <% if grupo %>
+                <span class="badge bg-light text-dark border"><code><%= grupo.codigo %></code> <%= grupo.nombre_display %></span>
+              <% else %>
+                <span class="text-muted small">—</span>
+              <% end %>
+            </td>
+            <td>
+              <% if usuarios.any? %>
+                <button class="btn btn-sm btn-outline-secondary" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#usuarios-rol-<%= rol.id %>-<%= idx %>"
+                        aria-expanded="false">
+                  <i class="bi bi-people me-1"></i><%= usuarios.count %>
+                </button>
+                <div class="collapse mt-2 small" id="usuarios-rol-<%= rol.id %>-<%= idx %>">
+                  <% usuarios.each do |u| %>
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                      <i class="bi bi-person<%= u.logia.nil? ? '-fill-gear text-warning' : ' text-secondary' %>"></i>
+                      <span><%= u.nombre_completo %> <span class="text-muted">&lt;<%= u.email %>&gt;</span></span>
+                      <% if policy(u).update? %>
+                        <%= link_to edit_user_path(u), class: "btn btn-sm btn-link p-0", title: "Editar nombre/correo" do %>
+                          <i class="bi bi-pencil"></i>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <span class="text-muted small">—</span>
+              <% end %>
+            </td>
+            <% if idx.zero? %>
+              <td class="text-center" rowspan="<%= filas %>"><%= rol.permisos.count %></td>
+              <td rowspan="<%= filas %>">
+                <% if rol.es_sistema? %>
+                  <span class="badge bg-warning text-dark">Sistema</span>
+                <% else %>
+                  <span class="badge bg-secondary">Personalizado</span>
                 <% end %>
-                <% rol.users.select { |u| u.logia.present? }.each do |u| %>
-                  <div><i class="bi bi-person text-secondary me-1"></i><%= u.nombre_completo %></div>
+              </td>
+              <td rowspan="<%= filas %>">
+                <%= link_to role_path(rol), class: "btn btn-sm btn-outline-primary" do %>
+                  <i class="bi bi-eye"></i> Ver
                 <% end %>
-              </div>
-            <% else %>
-              <span class="text-muted small">—</span>
+                <% if policy(rol).update? %>
+                  <%= link_to edit_role_path(rol), class: "btn btn-sm btn-outline-secondary" do %>
+                    <i class="bi bi-pencil"></i>
+                  <% end %>
+                <% end %>
+                <% if policy(rol).destroy? %>
+                  <%= button_to role_path(rol), method: :delete,
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { data: { turbo_confirm: "¿Seguro que desea eliminar este rol?" } } do %>
+                    <i class="bi bi-trash"></i>
+                  <% end %>
+                <% end %>
+              </td>
             <% end %>
-          </td>
-          <td class="text-center"><%= rol.permisos.count %></td>
-          <td>
-            <% if rol.es_sistema? %>
-              <span class="badge bg-warning text-dark">Sistema</span>
-            <% else %>
-              <span class="badge bg-secondary">Personalizado</span>
-            <% end %>
-          </td>
-          <td>
-            <%= link_to role_path(rol), class: "btn btn-sm btn-outline-primary" do %>
-              <i class="bi bi-eye"></i> Ver
-            <% end %>
-            <% if policy(rol).update? %>
-              <%= link_to edit_role_path(rol), class: "btn btn-sm btn-outline-secondary" do %>
-                <i class="bi bi-pencil"></i>
-              <% end %>
-            <% end %>
-            <% if policy(rol).destroy? %>
-              <%= button_to role_path(rol), method: :delete,
-                    class: "btn btn-sm btn-outline-danger",
-                    form: { data: { turbo_confirm: "¿Seguro que desea eliminar este rol?" } } do %>
-                <i class="bi bi-trash"></i>
-              <% end %>
-            <% end %>
-          </td>
-        </tr>
+          </tr>
+        <% end %>
       <% end %>
     </tbody>
   </table>

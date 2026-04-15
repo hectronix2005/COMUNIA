@@ -40,8 +40,16 @@
             <div class="small">
               <% login_url = "http://#{tenant.slug}.#{request.host_with_port}/login" %>
               <%= link_to login_url, target: "_blank", rel: "noopener", class: "text-decoration-none" do %>
-                <i class="bi bi-box-arrow-in-right me-1"></i>Ir al login
+                <i class="bi bi-box-arrow-in-right me-1"></i>Ir al login (subdominio)
               <% end %>
+            </div>
+            <div class="small">
+              <%= link_to enter_tenant_path(tenant.slug), class: "text-decoration-none" do %>
+                <i class="bi bi-link-45deg me-1"></i>Acceso directo (path)
+              <% end %>
+              <div class="text-muted" style="font-size: 0.75rem">
+                <code><%= request.base_url %>/t/<%= tenant.slug %></code>
+              </div>
             </div>
           <% else %>
             <div class="text-warning small">

@@ -1,0 +1,126 @@
+<% content_for(:title, "Editar usuario") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="bi bi-person"></i> Editar usuario</h1>
+  <%= link_to "Volver", roles_path, class: "btn btn-outline-secondary" %>
+</div>
+
+<%= form_with model: @user, local: true, class: "card card-body" do |f| %>
+  <% if @user.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% @user.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <%= f.label :nombre, class: "form-label" %>
+      <%= f.text_field :nombre, class: "form-control" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :apellido, class: "form-label" %>
+      <%= f.text_field :apellido, class: "form-control" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :username, "Usuario", class: "form-label" %>
+      <%= f.text_field :username, class: "form-control" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :email, "Correo electrónico", class: "form-label" %>
+      <%= f.email_field :email, class: "form-control" %>
+    </div>
+
+    <% if current_user.rol_ref&.es_super_admin? %>
+      <%
+        tenants = Logia.tenants_raiz.ordenadas.includes(:logias)
+        actual  = @user.logia
+        tenant_seleccionado_id = if actual
+          actual.tenant_id.nil? ? actual.id : actual.tenant_id
+        end
+        grupo_seleccionado_id = (actual && actual.tenant_id.present?) ? actual.id : nil
+      %>
+      <div class="col-md-6">
+        <%= label_tag :user_tenant_id_ui, "Tenant", class: "form-label" %>
+        <%= select_tag :user_tenant_id_ui,
+              options_from_collection_for_select(tenants, :id, :nombre_display, tenant_seleccionado_id),
+              include_blank: "— Sin tenant (plataforma) —",
+              class: "form-select",
+              id: "user-tenant-select" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :logia_id, "Grupo", class: "form-label" %>
+        <select name="user[logia_id]" id="user-grupo-select" class="form-select">
+          <option value="">— Todo el tenant —</option>
+          <% tenants.each do |t| %>
+            <% t.logias.order(:codigo).each do |g| %>
+              <option value="<%= g.id %>"
+                      data-tenant-id="<%= t.id %>"
+                      <%= "selected" if g.id == grupo_seleccionado_id %>>
+                <%= g.codigo %> <%= g.nombre_display %>
+              </option>
+            <% end %>
+          <% end %>
+        </select>
+      </div>
+
+      <script>
+        (function() {
+          const tenantSel = document.getElementById('user-tenant-select');
+          const grupoSel  = document.getElementById('user-grupo-select');
+          if (!tenantSel || !grupoSel) return;
+
+          let hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'user[logia_id]';
+          grupoSel.parentNode.appendChild(hidden);
+
+          function syncGrupos() {
+            const tenantId = tenantSel.value;
+            Array.from(grupoSel.options).forEach(opt => {
+              if (!opt.value) { opt.hidden = false; return; }
+              opt.hidden = String(opt.dataset.tenantId) !== String(tenantId);
+            });
+            if (!tenantId) {
+              grupoSel.value = '';
+              grupoSel.disabled = true;
+            } else {
+              grupoSel.disabled = false;
+              const sel = grupoSel.options[grupoSel.selectedIndex];
+              if (!sel || sel.hidden) grupoSel.value = '';
+            }
+          }
+
+          function updateHidden() {
+            if (grupoSel.value) {
+              hidden.disabled = true;
+              grupoSel.name = 'user[logia_id]';
+            } else {
+              grupoSel.name = '';
+              hidden.disabled = false;
+              hidden.value = tenantSel.value || '';
+            }
+          }
+
+          tenantSel.addEventListener('change', function() {
+            grupoSel.value = '';
+            syncGrupos();
+            updateHidden();
+          });
+          grupoSel.addEventListener('change', updateHidden);
+
+          syncGrupos();
+          updateHidden();
+        })();
+      </script>
+    <% end %>
+  </div>
+
+  <div class="mt-4">
+    <%= f.submit "Guardar", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", roles_path, class: "btn btn-outline-secondary ms-2" %>
+  </div>
+<% end %>
