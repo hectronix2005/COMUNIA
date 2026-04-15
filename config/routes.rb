@@ -16,6 +16,10 @@ Rails.application.routes.draw do
   get  "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
   delete "t",     to: "tenant_access#exit_tenant", as: :exit_tenant
 
+  devise_scope :user do
+    get "t/:tenant_slug/login", to: "tenant_logins#new", as: :tenant_login
+  end
+
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do
       post :preview
