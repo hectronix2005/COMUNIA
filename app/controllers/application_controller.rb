@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   include Pundit::Authorization
 
   allow_browser versions: :modern
+  before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
 
@@ -74,6 +75,14 @@ class ApplicationController < ActionController::Base
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:account_update, keys: [:nombre, :apellido])
+  end
+
+  # Al visitar /login (plataforma COMUNIA) limpiamos cualquier tenant_slug pegado
+  # en sesión por una visita previa a /t/:slug.
+  def clear_tenant_context_on_platform_login
+    return if params[:tenant_slug].present?
+    return unless request.path == "/login" || request.path == new_user_session_path
+    session.delete(:tenant_slug)
   end
 
   def user_not_authorized
