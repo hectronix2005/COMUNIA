@@ -174,7 +174,11 @@ Devise.setup do |config|
 
   # Options to be passed to the created cookie. For instance, you can set
   # secure: true in order to force SSL only cookies.
-  # config.rememberable_options = {}
+  # Forzamos path: "/" para que el remember-cookie NO herede el SCRIPT_NAME
+  # del middleware TenantPathPrefix (ej. /t/freemasons). Sin esto, el cookie
+  # quedaba con path: "/t/freemasons" y el sign_out (path "/") no podía
+  # borrarlo, causando auto-login post-logout.
+  config.rememberable_options = { path: "/" }
 
   # ==> Configuration for :validatable
   # Range for password length.
