@@ -1,22 +1,43 @@
+<%
+  logia = display_logia
+  app_name      = logia&.nombre_display || "COMUNIA"
+  short_name    = (logia&.nombre_display || "COMUNIA").to_s.split(/\s+/).first(2).join(" ")[0, 14]
+  theme_color   = logia&.color_display || "#1B2A4A"
+  bg_color      = "#F5F6FA"
+  description   = logia&.lema_display.presence || "Plataforma COMUNIA — gestión integral para organizaciones."
+  start_url     = request.script_name.present? ? "#{request.script_name}/dashboard" : "/dashboard"
+  scope_url     = request.script_name.present? ? "#{request.script_name}/" : "/"
+%>
 {
-  "name": "GranLogiaDeColombia",
+  "name": <%= app_name.to_json %>,
+  "short_name": <%= short_name.to_json %>,
+  "description": <%= description.to_json %>,
+  "start_url": <%= start_url.to_json %>,
+  "scope": <%= scope_url.to_json %>,
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": <%= theme_color.to_json %>,
+  "background_color": <%= bg_color.to_json %>,
+  "lang": "es-CO",
+  "categories": ["productivity", "business"],
   "icons": [
     {
       "src": "/icon.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
       "src": "/icon.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "scope": "/",
-  "description": "GranLogiaDeColombia.",
-  "theme_color": "red",
-  "background_color": "red"
+  ]
 }

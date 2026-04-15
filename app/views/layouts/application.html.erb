@@ -4,9 +4,13 @@
     <%# Branding visual: nil en contexto de plataforma (sin subdominio/usuario/preview) %>
     <% _logia = display_logia %>
     <title><%= content_for(:title) || (_logia ? "#{_logia.icono_display} #{_logia.nombre_display}" : "COMUNIA") %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="<%= (_logia&.nombre_display || 'COMUNIA').to_s[0,14] %>">
+    <meta name="theme-color" content="<%= _logia&.color_display || '#1B2A4A' %>">
+    <meta name="format-detection" content="telephone=no">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -21,8 +25,8 @@
       </style>
     <% end %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# PWA manifest dinámico (con branding del tenant activo). %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -303,5 +307,16 @@
       <%= render "shared/flash" %>
       <%= yield %>
     <% end %>
+
+    <%# ── PWA: registrar service worker para instalación móvil ── %>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("<%= pwa_service_worker_path %>", { scope: "<%= request.script_name.presence || '/' %>/" }).catch(function (e) {
+            console.warn("SW registration failed", e);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

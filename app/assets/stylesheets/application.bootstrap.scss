@@ -1236,3 +1236,63 @@ button,
   .mp-card-image-wrapper { aspect-ratio: 4 / 3; }
   .marketplace-filters { position: static !important; }
 }
+
+// =============================================================================
+// Responsive hardening — mobile-first improvements
+// =============================================================================
+
+// Evita scroll horizontal accidental por tablas/imágenes desbordadas
+html, body { overflow-x: hidden; max-width: 100%; }
+img, video, table { max-width: 100%; }
+
+// safe-area en iOS (notch) — el viewport-fit=cover del meta lo activa
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+// Tablas: que sean scrolleables horizontalmente en móvil sin romper layout
+.table-responsive { -webkit-overflow-scrolling: touch; }
+@media (max-width: 767.98px) {
+  .table { font-size: .85rem; }
+  table:not(.table-responsive table) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// Chat: en móvil convertimos sidebar+main de 2 columnas a 1 (drawer simple)
+@media (max-width: 767.98px) {
+  .chat-layout {
+    flex-direction: column;
+    height: calc(100vh - 110px) !important;
+  }
+  .chat-sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: 38vh;
+    border-right: 0 !important;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .chat-main { min-height: 0; }
+  .chat-mensajes { padding: .75rem !important; }
+}
+
+// Botones más cómodos al tap en móvil
+@media (max-width: 575.98px) {
+  .btn { min-height: 42px; }
+  .form-control, .form-select { min-height: 44px; font-size: 16px; } // 16px evita zoom-in en iOS
+  h1.h3, h1 { font-size: 1.35rem; }
+  .card-body { padding: 1rem; }
+  .navbar-brand { font-size: 1rem; }
+  .container-fluid.px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+}
+
+// Cards de listados: que respiren en columnas pequeñas
+@media (max-width: 575.98px) {
+  .row.g-3 > [class*="col-"] { margin-bottom: .5rem; }
+}
+
+// Footer fijo abajo en móvil sin tapar contenido
+.footer { padding-bottom: calc(.75rem + env(safe-area-inset-bottom)); }

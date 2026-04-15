@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # ── PWA ──────────────────────────────────────────────────────
+  get "manifest"      => "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: "json" }
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
   root "dashboard#index"
 
   # Entrada/salida de contexto de tenant. El middleware TenantPathPrefix
