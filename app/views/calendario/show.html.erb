@@ -1,0 +1,117 @@
+<% content_for(:title, @evento.titulo) %>
+
+<div class="container" style="max-width:520px;margin-top:2rem;">
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div style="background:<%= @evento.color %>;height:6px;"></div>
+
+    <div class="card-body p-4">
+      <div class="d-flex align-items-start justify-content-between mb-3">
+        <h5 class="mb-0 fw-bold"><%= @evento.titulo %></h5>
+        <div class="d-flex gap-2">
+          <% if puede_gestionar_calendario? && @evento.logia_id == current_logia.id %>
+            <%= link_to edit_calendario_path(@evento), class: "btn btn-sm btn-outline-secondary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+
+            <%# Delete dropdown for series %>
+            <% if @evento.recurrente? || @evento.instancia_de_serie? %>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-danger dropdown-toggle" data-bs-toggle="dropdown">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                  <%= link_to "Solo este evento",
+                        calendario_path(@evento, eliminar: "uno"),
+                        data: { turbo_method: :delete, turbo_confirm: "¿Eliminar solo este evento?" },
+                        class: "dropdown-item small" %>
+                  <%= link_to "Este y los siguientes",
+                        calendario_path(@evento, eliminar: "siguientes"),
+                        data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este y los siguientes?" },
+                        class: "dropdown-item small" %>
+                  <%= link_to "Toda la serie",
+                        calendario_path(@evento, eliminar: "serie"),
+                        data: { turbo_method: :delete, turbo_confirm: "¿Eliminar TODA la serie?" },
+                        class: "dropdown-item small text-danger fw-semibold" %>
+                </ul>
+              </div>
+            <% else %>
+              <%= link_to calendario_path(@evento),
+                    data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este evento?" },
+                    class: "btn btn-sm btn-outline-danger" do %>
+                <i class="bi bi-trash"></i>
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <%= link_to calendario_index_path(fecha: @evento.inicio.to_date), class: "btn btn-sm btn-outline-secondary" do %>
+            <i class="bi bi-x-lg"></i>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Fecha / hora %>
+      <div class="d-flex align-items-start gap-3 mb-3">
+        <i class="bi bi-clock text-muted mt-1"></i>
+        <div>
+          <% if @evento.todo_el_dia? %>
+            <div class="fw-semibold"><%= I18n.l(@evento.inicio.to_date, format: :long) rescue @evento.inicio.strftime("%A, %d de %B de %Y") %></div>
+            <div class="text-muted small"><%= @evento.multidia? ? "– #{@evento.fin.strftime('%d/%m/%Y')} · " : "" %>Todo el día</div>
+          <% else %>
+            <div class="fw-semibold"><%= @evento.inicio.strftime("%A, %d de %B de %Y") %></div>
+            <div class="text-muted small">
+              <%= @evento.inicio.strftime("%H:%M") %> – <%= @evento.fin.strftime("%H:%M") %>
+              <% if @evento.multidia? %>(hasta <%= @evento.fin.strftime("%d/%m/%Y") %>)<% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Recurrencia %>
+      <% if @evento.recurrente? || @evento.instancia_de_serie? %>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-arrow-repeat text-muted"></i>
+          <div class="small">
+            <% resumen = (@evento.recurrente? ? @evento : @evento.serie)&.resumen_recurrencia %>
+            <span class="text-muted"><%= resumen || "Evento recurrente" %></span>
+            <% if @evento.instancia_de_serie? %>
+              <div class="text-muted" style="font-size:.72rem;">Instancia de serie</div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Ubicación %>
+      <% if @evento.ubicacion.present? %>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-geo-alt text-muted"></i>
+          <span><%= @evento.ubicacion %></span>
+        </div>
+      <% end %>
+
+      <%# Descripción %>
+      <% if @evento.descripcion.present? %>
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <i class="bi bi-text-left text-muted mt-1"></i>
+          <div style="white-space:pre-wrap;"><%= @evento.descripcion %></div>
+        </div>
+      <% end %>
+
+      <%# Logia / creador %>
+      <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-building text-muted"></i>
+        <div>
+          <div class="small fw-semibold" style="color:<%= @evento.logia.color_display %>;">
+            <%= @evento.logia.nombre_display %>
+          </div>
+          <div class="text-muted" style="font-size:.75rem;">Creado por <%= @evento.user.nombre_completo %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <%= link_to "← Volver al calendario",
+          calendario_index_path(fecha: @evento.inicio.to_date),
+          class: "text-muted small text-decoration-none" %>
+  </div>
+</div>

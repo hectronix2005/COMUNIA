@@ -1,0 +1,325 @@
+<% content_for(:title, "Desglose de Cuota - #{@logia.nombre}") %>
+<% activos_count = @miembros_activos.size %>
+<% miembros_lista = @miembros_activos.map.with_index(1) { |m, i| "#{i}. #{ERB::Util.html_escape(m.user.nombre_completo)}" }.join('<br>') %>
+
+<style>
+  .popover-miembros { max-width: 350px; }
+  .popover-miembros .popover-body { max-height: 400px; overflow-y: auto; font-size: 0.85rem; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="mb-1"><i class="bi bi-list-columns-reverse me-2"></i>Desglose de Cuota Mensual</h1>
+    <p class="text-muted mb-0">
+      <%= @logia.nombre %> (<%= @logia.codigo %>) &mdash;
+      <a href="#" class="text-decoration-underline" style="cursor: pointer;"
+         data-bs-toggle="popover"
+         data-bs-trigger="hover focus"
+         data-bs-placement="bottom"
+         data-bs-html="true"
+         data-bs-custom-class="popover-miembros"
+         data-bs-title="Miembros Activos (<%= activos_count %>)"
+         data-bs-content="<%= miembros_lista %>">
+        <strong><%= activos_count %></strong> miembros activos <i class="bi bi-eye"></i>
+      </a>
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <% if policy(@logia).gestionar_conceptos? %>
+      <%= link_to new_logia_concepto_cobro_path(@logia), class: "btn btn-primary" do %>
+        <i class="bi bi-plus-lg me-1"></i>Agregar Concepto
+      <% end %>
+    <% end %>
+    <% if policy(@logia).show? %>
+      <%= link_to logia_path(@logia), class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Volver a Logia
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Conceptos</h5>
+        <span class="badge bg-primary rounded-pill"><%= @conceptos.select(&:activo?).count %> activos</span>
+      </div>
+
+      <% if @conceptos.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th>Concepto</th>
+                <th>Tipo</th>
+                <th class="text-end">Monto Total</th>
+                <th class="text-end">Por Miembro</th>
+                <th class="text-center">Estado</th>
+                <% if policy(@logia).gestionar_conceptos? %>
+                  <th class="text-center">Acciones</th>
+                <% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% @conceptos.each do |concepto| %>
+                <tr class="<%= 'text-muted' unless concepto.activo? %>">
+                  <td><%= concepto.orden %></td>
+                  <td>
+                    <strong><%= concepto.nombre %></strong>
+                    <% if concepto.descripcion.present? %>
+                      <br><small class="text-muted"><%= concepto.descripcion %></small>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if concepto.complemento? %>
+                      <span class="badge bg-warning text-dark">Complemento</span>
+                      <br><small class="text-muted">Cuota total - otros</small>
+                    <% elsif concepto.por_logia? %>
+                      <span class="badge bg-info text-dark">Fijo logia</span>
+                      <br><small class="text-muted">&divide; <%= activos_count %> miembros</small>
+                    <% else %>
+                      <span class="badge bg-secondary">Por miembro</span>
+                    <% end %>
+                  </td>
+                  <td class="text-end">
+                    <% if concepto.complemento? %>
+                      <small class="text-muted">Cuota total:</small>
+                      <%= number_to_currency(concepto.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+                    <% elsif concepto.activo? %>
+                      <%= number_to_currency(concepto.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+                    <% else %>
+                      <s><%= number_to_currency(concepto.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></s>
+                    <% end %>
+                  </td>
+                  <td class="text-end">
+                    <% if concepto.activo? %>
+                      <strong><%= number_to_currency(concepto.monto_por_miembro, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong>
+                    <% else %>
+                      <s><%= number_to_currency(concepto.monto_por_miembro, unit: "$", delimiter: ".", separator: ",", precision: 0) %></s>
+                    <% end %>
+                  </td>
+                  <td class="text-center">
+                    <% if concepto.activo? %>
+                      <span class="badge bg-success">Activo</span>
+                    <% else %>
+                      <span class="badge bg-secondary">Inactivo</span>
+                    <% end %>
+                  </td>
+                  <% if policy(@logia).gestionar_conceptos? %>
+                    <td class="text-center">
+                      <%= link_to edit_logia_concepto_cobro_path(@logia, concepto), class: "btn btn-sm btn-outline-primary" do %>
+                        <i class="bi bi-pencil"></i>
+                      <% end %>
+                      <%= button_to logia_concepto_cobro_path(@logia, concepto), method: :delete,
+                            class: "btn btn-sm btn-outline-danger",
+                            form: { data: { turbo_confirm: "¿Eliminar '#{concepto.nombre}'?" } } do %>
+                        <i class="bi bi-trash"></i>
+                      <% end %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot>
+              <tr class="table-dark">
+                <td colspan="3" class="text-end"><strong>TOTAL CUOTA POR MIEMBRO</strong></td>
+                <td></td>
+                <td class="text-end"><strong class="fs-5"><%= number_to_currency(@total_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong></td>
+                <td></td>
+                <% if policy(@logia).gestionar_conceptos? %>
+                  <td></td>
+                <% end %>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      <% else %>
+        <div class="card-body text-center py-5">
+          <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+          <p class="text-muted mt-3 mb-0">No hay conceptos configurados para esta logia.</p>
+          <% if policy(@logia).gestionar_conceptos? %>
+            <%= link_to new_logia_concepto_cobro_path(@logia), class: "btn btn-primary mt-3" do %>
+              <i class="bi bi-plus-lg me-1"></i>Agregar primer concepto
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Resumen por Miembro</h5>
+      </div>
+      <div class="card-body">
+        <% activos = @conceptos.select(&:activo?) %>
+        <% if activos.any? %>
+          <% no_complemento = activos.reject(&:complemento?) %>
+          <% complemento = activos.find(&:complemento?) %>
+
+          <% no_complemento.each do |concepto| %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <span class="text-muted"><%= concepto.nombre %></span>
+                <% if concepto.por_logia? %>
+                  <br><small class="text-muted">$<%= number_with_delimiter(concepto.monto.to_i, delimiter: ".") %> &divide; <%= activos_count %></small>
+                <% end %>
+              </div>
+              <span><%= number_to_currency(concepto.monto_por_miembro, unit: "$", delimiter: ".", separator: ",", precision: 0) %></span>
+            </div>
+          <% end %>
+
+          <% if complemento %>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted">Subtotal conceptos</span>
+              <span><%= number_to_currency(@logia.suma_conceptos_base, unit: "$", delimiter: ".", separator: ",", precision: 0) %></span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <span class="text-warning"><i class="bi bi-arrow-return-right me-1"></i><%= complemento.nombre %></span>
+                <br><small class="text-muted">$<%= number_with_delimiter(complemento.monto.to_i, delimiter: ".") %> - $<%= number_with_delimiter(@logia.suma_conceptos_base.to_i, delimiter: ".") %></small>
+              </div>
+              <span><strong><%= number_to_currency(complemento.residuo, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong></span>
+            </div>
+          <% end %>
+
+          <hr>
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>Cuota Mensual</strong>
+            <strong class="fs-4 text-primary"><%= number_to_currency(@total_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong>
+          </div>
+          <div class="mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Monto que pagar&aacute; cada uno de los
+            <a href="#" class="text-decoration-underline" style="cursor: pointer;"
+               data-bs-toggle="popover"
+               data-bs-trigger="hover focus"
+               data-bs-placement="top"
+               data-bs-html="true"
+               data-bs-custom-class="popover-miembros"
+               data-bs-title="Miembros Activos (<%= activos_count %>)"
+               data-bs-content="<%= miembros_lista %>">
+              <strong><%= activos_count %></strong> miembros activos <i class="bi bi-eye"></i>
+            </a>.
+          </div>
+        <% else %>
+          <p class="text-muted text-center mb-0">Sin conceptos configurados</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-building me-2"></i>Datos de la Logia</h6>
+      </div>
+      <div class="card-body">
+        <dl class="mb-0">
+          <dt>C&oacute;digo</dt>
+          <dd><%= @logia.codigo %></dd>
+          <dt>Miembros Activos</dt>
+          <dd>
+            <a href="#" class="text-decoration-underline" style="cursor: pointer;"
+               data-bs-toggle="popover"
+               data-bs-trigger="hover focus"
+               data-bs-placement="left"
+               data-bs-html="true"
+               data-bs-custom-class="popover-miembros"
+               data-bs-title="Miembros Activos (<%= activos_count %>)"
+               data-bs-content="<%= miembros_lista %>">
+              <strong><%= activos_count %></strong> <i class="bi bi-eye"></i>
+            </a>
+          </dd>
+          <dt>Secuencia RC</dt>
+          <dd><%= @logia.rc_secuencia_actual || 0 %></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Evolución mensual de miembros y cuota ── %>
+<div class="card mt-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Evolución de Miembros y Cuota por Mes</h5>
+    <small class="text-muted">Últimos 6 meses + próximos 2</small>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-3">Mes</th>
+          <th class="text-center">Miembros<br><small class="fw-normal text-muted">cobrables</small></th>
+          <% @logia.conceptos_cobro.activos.ordenados.where(tipo: :por_logia).each do |c| %>
+            <th class="text-end"><%= c.nombre %><br><small class="fw-normal text-muted">÷ miembros</small></th>
+          <% end %>
+          <th class="text-end">Cuota Calculada<br><small class="fw-normal text-muted">sin tarifa</small></th>
+          <th class="text-end">Tarifa<br><small class="fw-normal text-muted">vigente</small></th>
+          <th class="text-end pe-3">Cuota a Cobrar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% prev_conteo = nil %>
+        <% @evolucion_mensual.each do |fila| %>
+          <%
+            es_hoy = fila[:fecha].year == Date.current.year && fila[:fecha].month == Date.current.month
+            es_futuro = fila[:fecha] > Date.current.beginning_of_month
+            cambio = prev_conteo && fila[:conteo] != prev_conteo
+            prev_conteo = fila[:conteo]
+          %>
+          <tr class="<%= es_hoy ? 'table-primary' : (es_futuro ? 'table-light' : '') %>">
+            <td class="ps-3 fw-semibold">
+              <%= I18n.l(fila[:fecha], format: "%B %Y").capitalize %>
+              <% if es_hoy %><span class="badge bg-primary ms-1 small">Actual</span><% end %>
+              <% if es_futuro && !es_hoy %><span class="badge bg-secondary ms-1 small">Futuro</span><% end %>
+            </td>
+            <td class="text-center">
+              <span class="fw-bold"><%= fila[:conteo] %></span>
+              <% if cambio %>
+                <% diff = fila[:conteo] - prev_conteo rescue 0 %>
+                <% anterior = @evolucion_mensual[@evolucion_mensual.index(fila) - 1][:conteo] rescue nil %>
+                <% if anterior %>
+                  <% delta = fila[:conteo] - anterior %>
+                  <small class="<%= delta > 0 ? 'text-success' : 'text-danger' %>">
+                    <%= delta > 0 ? "▲#{delta}" : "▼#{delta.abs}" %>
+                  </small>
+                <% end %>
+              <% end %>
+            </td>
+            <% @logia.conceptos_cobro.activos.ordenados.where(tipo: :por_logia).each do |c| %>
+              <td class="text-end text-muted small">
+                <% monto_pp = fila[:conteo] > 0 ? (c.monto / fila[:conteo]).round(0) : 0 %>
+                <%= number_to_currency(monto_pp, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+              </td>
+            <% end %>
+            <td class="text-end">
+              <%= number_to_currency(fila[:cuota_calculada], unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+            </td>
+            <td class="text-end">
+              <% if fila[:tarifa] %>
+                <span class="text-success fw-semibold">
+                  <%= number_to_currency(fila[:tarifa].monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+                </span>
+                <br><small class="text-muted"><%= fila[:tarifa].rango_texto %></small>
+              <% else %>
+                <span class="text-muted small">Sin tarifa</span>
+              <% end %>
+            </td>
+            <td class="text-end pe-3 fw-bold fs-6">
+              <%= number_to_currency(fila[:cuota_cobrada], unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer text-muted small">
+    <i class="bi bi-info-circle me-1"></i>
+    <strong>Cuota Calculada</strong>: suma de conceptos usando el conteo real de miembros del mes.
+    <strong>Tarifa</strong>: monto fijo registrado (congela la cuota independiente del conteo).
+    <strong>Cuota a Cobrar</strong>: lo que se cobra efectivamente (tarifa si existe, si no la calculada).
+  </div>
+</div>

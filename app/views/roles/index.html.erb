@@ -1,0 +1,102 @@
+<% content_for(:title, "Roles") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><i class="bi bi-shield-lock"></i> Roles</h1>
+  <% if policy(Rol).create? %>
+    <%= link_to new_role_path, class: "btn btn-primary" do %>
+      <i class="bi bi-plus-lg"></i> Nuevo Rol
+    <% end %>
+  <% end %>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Nombre</th>
+        <th>Codigo</th>
+        <th>Descripcion</th>
+        <th>Tenant</th>
+        <th>Usuarios</th>
+        <th class="text-center">Permisos</th>
+        <th>Tipo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @roles.each do |rol| %>
+        <%
+          tenants_del_rol = rol.users.map(&:logia).compact.uniq
+          plataforma_users = rol.users.select { |u| u.logia.nil? }
+        %>
+        <tr>
+          <td class="fw-semibold"><%= rol.nombre %></td>
+          <td><code><%= rol.codigo %></code></td>
+          <td class="text-muted small"><%= rol.descripcion %></td>
+          <td>
+            <% if rol.logia.present? %>
+              <%# Rol creado específicamente para un tenant %>
+              <span class="badge bg-info text-dark"><%= rol.logia.nombre_display %></span>
+            <% elsif tenants_del_rol.any? %>
+              <% tenants_del_rol.each do |logia| %>
+                <span class="badge bg-info text-dark me-1"><%= logia.nombre_display %></span>
+              <% end %>
+              <% if plataforma_users.any? %>
+                <span class="badge bg-dark me-1">COMUNIA</span>
+              <% end %>
+            <% elsif plataforma_users.any? %>
+              <span class="badge bg-dark">COMUNIA</span>
+            <% else %>
+              <span class="badge bg-secondary">Sin usuarios</span>
+            <% end %>
+          </td>
+          <td>
+            <% if rol.users.any? %>
+              <button class="btn btn-sm btn-outline-secondary" type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#usuarios-rol-<%= rol.id %>"
+                      aria-expanded="false">
+                <i class="bi bi-people me-1"></i><%= rol.users.count %>
+              </button>
+              <div class="collapse mt-2 small" id="usuarios-rol-<%= rol.id %>">
+                <% plataforma_users.each do |u| %>
+                  <div><i class="bi bi-person-fill-gear text-warning me-1"></i><%= u.nombre_completo %> <span class="text-muted">&lt;<%= u.email %>&gt;</span></div>
+                <% end %>
+                <% rol.users.select { |u| u.logia.present? }.each do |u| %>
+                  <div><i class="bi bi-person text-secondary me-1"></i><%= u.nombre_completo %></div>
+                <% end %>
+              </div>
+            <% else %>
+              <span class="text-muted small">—</span>
+            <% end %>
+          </td>
+          <td class="text-center"><%= rol.permisos.count %></td>
+          <td>
+            <% if rol.es_sistema? %>
+              <span class="badge bg-warning text-dark">Sistema</span>
+            <% else %>
+              <span class="badge bg-secondary">Personalizado</span>
+            <% end %>
+          </td>
+          <td>
+            <%= link_to role_path(rol), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-eye"></i> Ver
+            <% end %>
+            <% if policy(rol).update? %>
+              <%= link_to edit_role_path(rol), class: "btn btn-sm btn-outline-secondary" do %>
+                <i class="bi bi-pencil"></i>
+              <% end %>
+            <% end %>
+            <% if policy(rol).destroy? %>
+              <%= button_to role_path(rol), method: :delete,
+                    class: "btn btn-sm btn-outline-danger",
+                    form: { data: { turbo_confirm: "¿Seguro que desea eliminar este rol?" } } do %>
+                <i class="bi bi-trash"></i>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

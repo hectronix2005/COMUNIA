@@ -1,0 +1,58 @@
+<%= form_with model: plancha, class: "needs-validation" do |f| %>
+  <% if plancha.errors.any? %>
+    <div class="alert alert-danger">
+      <% plancha.errors.full_messages.each do |msg| %>
+        <div><i class="bi bi-x-circle me-1"></i><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :titulo, "Título *", class: "form-label fw-semibold" %>
+    <%= f.text_field :titulo, class: "form-control #{plancha.errors[:titulo].any? ? 'is-invalid' : ''}", required: true %>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <%= f.label :grado, "Grado *", class: "form-label fw-semibold" %>
+      <%= f.select :grado, BibliotecaPlancha::GRADOS.map { |g| [g, g] },
+            { prompt: "Seleccionar grado..." },
+            class: "form-select #{plancha.errors[:grado].any? ? 'is-invalid' : ''}", required: true %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :autor, "Autor", class: "form-label fw-semibold" %>
+      <%= f.text_field :autor, class: "form-control" %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :anio, "Año", class: "form-label fw-semibold" %>
+    <%= f.number_field :anio, class: "form-control", min: 1900, max: Date.current.year + 1 %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold" %>
+    <%= f.text_area :descripcion, rows: 4, class: "form-control", placeholder: "Resumen o contenido de la plancha..." %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :documento, "Archivo (PDF, Word, etc.)", class: "form-label fw-semibold" %>
+    <%= f.file_field :documento, class: "form-control", accept: ".pdf,.doc,.docx,.odt" %>
+    <% if plancha.persisted? && plancha.documento.attached? %>
+      <div class="form-text"><i class="bi bi-paperclip me-1"></i>Archivo actual: <%= plancha.documento.filename %></div>
+    <% end %>
+  </div>
+
+  <% if plancha.persisted? %>
+    <div class="mb-3 form-check">
+      <%= f.check_box :activo, class: "form-check-input" %>
+      <%= f.label :activo, "Plancha activa (visible)", class: "form-check-label" %>
+    </div>
+  <% end %>
+
+  <div class="d-flex gap-2">
+    <%= f.submit plancha.persisted? ? "Guardar cambios" : "Publicar Plancha",
+          class: "btn btn-primary" %>
+    <%= link_to "Cancelar", biblioteca_planchas_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

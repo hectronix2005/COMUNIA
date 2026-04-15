@@ -1,0 +1,49 @@
+<article class="mp-card card border-0 shadow-sm h-100 position-relative overflow-hidden">
+  <div class="mp-card-image-wrapper position-relative bg-light">
+    <% if anuncio.respond_to?(:imagenes) && anuncio.imagenes.attached? %>
+      <% principal = anuncio.imagenes.first %>
+      <img src="<%= rails_blob_path(principal) %>" class="mp-card-img" alt="<%= anuncio.titulo %>">
+    <% elsif anuncio.imagen.attached? %>
+      <img src="<%= rails_blob_path(anuncio.imagen) %>" class="mp-card-img" alt="<%= anuncio.titulo %>">
+    <% else %>
+      <div class="mp-card-img-placeholder d-flex align-items-center justify-content-center text-muted">
+        <i class="bi bi-image display-4 opacity-25"></i>
+      </div>
+    <% end %>
+
+    <span class="mp-card-tipo-badge badge bg-<%= anuncio.tipo_color %>"><%= anuncio.tipo_label %></span>
+
+    <% if anuncio.respond_to?(:estado) && anuncio.estado.present? && anuncio.estado != "disponible" %>
+      <span class="mp-card-estado-badge badge bg-dark"><%= anuncio.estado.humanize %></span>
+    <% end %>
+
+    <% if defined?(current_user) && current_user %>
+      <%= render "negocios/fav_btn", anuncio: anuncio %>
+    <% end %>
+  </div>
+
+  <div class="card-body p-3">
+    <% if anuncio.precio.present? && anuncio.tipo != "empleo" %>
+      <div class="mp-card-precio fw-bold">
+        <%= number_to_currency(anuncio.precio, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+        <small class="text-muted fw-normal"><%= anuncio.moneda %></small>
+      </div>
+    <% elsif anuncio.tipo == "empleo" %>
+      <div class="mp-card-precio text-success fw-bold small"><i class="bi bi-briefcase me-1"></i>Oferta laboral</div>
+    <% else %>
+      <div class="mp-card-precio text-muted small">Consultar</div>
+    <% end %>
+
+    <h6 class="mp-card-titulo mb-1 fw-semibold">
+      <%= link_to anuncio.titulo, negocio_path(anuncio), class: "text-decoration-none text-dark stretched-link" %>
+    </h6>
+
+    <div class="mp-card-meta small text-muted d-flex align-items-center gap-1">
+      <% if anuncio.ubicacion.present? %>
+        <i class="bi bi-geo-alt"></i><span class="text-truncate"><%= anuncio.ubicacion %></span>
+      <% else %>
+        <i class="bi bi-building"></i><span class="text-truncate"><%= anuncio.logia.nombre_display %></span>
+      <% end %>
+    </div>
+  </div>
+</article>

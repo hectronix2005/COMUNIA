@@ -1,0 +1,57 @@
+<% content_for(:title, "Editar Tarifa - #{@logia.nombre}") %>
+
+<div class="mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-1">
+      <li class="breadcrumb-item"><%= link_to "Periodos", periodo_cobros_path %></li>
+      <li class="breadcrumb-item"><%= link_to "Tarifas - #{@logia.nombre}", logia_tarifas_path(@logia) %></li>
+      <li class="breadcrumb-item active">Editar Tarifa</li>
+    </ol>
+  </nav>
+  <h1 class="h3 fw-bold mb-0">
+    <i class="bi bi-pencil me-2"></i>Editar Tarifa
+    <small class="text-muted fw-normal ms-2"><%= @logia.nombre %></small>
+  </h1>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Modificar Rango de Vigencia</h5>
+      </div>
+      <div class="card-body">
+        <%= render "form", tarifa: @tarifa, logia: @logia %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <% if @tarifa.desglose.present? %>
+      <div class="card border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0"><i class="bi bi-list-columns-reverse me-2"></i>Desglose Registrado</h6>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <tbody>
+              <% @tarifa.desglose.each do |item| %>
+                <tr>
+                  <td class="ps-3"><%= item["nombre"] %></td>
+                  <td class="text-muted small"><%= item["tipo"]&.humanize %></td>
+                  <td class="text-end pe-3 fw-semibold"><%= number_to_currency(item["monto_por_miembro"] || item["monto"], unit: "$", delimiter: ".", separator: ",", precision: 0) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-dark">
+              <tr>
+                <td class="ps-3" colspan="2"><strong>TOTAL</strong></td>
+                <td class="text-end pe-3"><strong><%= number_to_currency(@tarifa.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+<% content_for(:title, "Recaudos – Hospitalia") %>
+
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <%= link_to hospitalia_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i>
+    <% end %>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-arrow-down-circle text-success me-2"></i>Recaudos</h4>
+  </div>
+
+  <div class="row g-4">
+    <%# Formulario nuevo recaudo %>
+    <% if controller.send(:puede_gestionar?) %>
+      <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-transparent fw-semibold">Registrar Recaudo</div>
+          <div class="card-body">
+            <%= form_with model: @recaudo, url: hospitalia_create_recaudo_path, method: :post do |f| %>
+              <% if @recaudo.errors.any? %>
+                <div class="alert alert-danger py-2 small">
+                  <% @recaudo.errors.full_messages.each do |m| %><div><%= m %></div><% end %>
+                </div>
+              <% end %>
+              <div class="mb-3">
+                <%= f.label :concepto, "Concepto *", class: "form-label fw-semibold small" %>
+                <%= f.text_field :concepto, class: "form-control form-control-sm", required: true %>
+              </div>
+              <div class="mb-3">
+                <%= f.label :monto, "Monto ($) *", class: "form-label fw-semibold small" %>
+                <%= f.number_field :monto, class: "form-control form-control-sm", step: "0.01", min: "0.01", required: true %>
+              </div>
+              <div class="mb-3">
+                <%= f.label :fecha, "Fecha *", class: "form-label fw-semibold small" %>
+                <%= f.date_field :fecha, class: "form-control form-control-sm", required: true %>
+              </div>
+              <div class="mb-3">
+                <%= f.label :miembro_id, "Aportante (opcional)", class: "form-label fw-semibold small" %>
+                <%= f.select :miembro_id,
+                      @miembros.map { |m| [m.user.nombre_completo, m.id] },
+                      { include_blank: "Sin especificar" },
+                      class: "form-select form-select-sm" %>
+              </div>
+              <div class="mb-3">
+                <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold small" %>
+                <%= f.text_area :descripcion, rows: 2, class: "form-control form-control-sm" %>
+              </div>
+              <%= f.submit "Registrar", class: "btn btn-success btn-sm w-100" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Listado %>
+    <div class="col">
+      <% if @recaudos.empty? %>
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-arrow-down-circle display-4 opacity-25"></i>
+          <p class="mt-3">No hay recaudos registrados.</p>
+        </div>
+      <% else %>
+        <div class="card border-0 shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>Aportante</th>
+                  <th class="text-end">Monto</th>
+                  <% if controller.send(:puede_gestionar?) %><th></th><% end %>
+                </tr>
+              </thead>
+              <tbody>
+                <% @recaudos.each do |r| %>
+                  <tr>
+                    <td class="text-muted small"><%= r.fecha.strftime("%d/%m/%Y") %></td>
+                    <td>
+                      <div class="fw-semibold small"><%= r.concepto %></div>
+                      <% if r.descripcion.present? %><div class="text-muted" style="font-size:.72rem;"><%= r.descripcion %></div><% end %>
+                    </td>
+                    <td class="small"><%= r.miembro&.user&.nombre_completo || "–" %></td>
+                    <td class="text-end fw-semibold text-success small">+<%= number_to_currency(r.monto, unit: "$", delimiter: ".", separator: ",") %></td>
+                    <% if controller.send(:puede_gestionar?) %>
+                      <td>
+                        <%= link_to hospitalia_destroy_recaudo_path(id: r.id),
+                              data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este recaudo?" },
+                              class: "btn btn-sm btn-outline-danger" do %>
+                          <i class="bi bi-trash"></i>
+                        <% end %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

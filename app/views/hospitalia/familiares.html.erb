@@ -1,0 +1,79 @@
+<% content_for(:title, "Familiares – #{@miembro.user.nombre_completo}") %>
+
+<div class="container py-4" style="max-width:640px;">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <%= link_to hospitalia_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i>
+    <% end %>
+    <div>
+      <h4 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Familiares</h4>
+      <p class="text-muted small mb-0"><%= @miembro.user.nombre_completo %></p>
+    </div>
+  </div>
+
+  <%# Listado de familiares %>
+  <% if @familiares.empty? %>
+    <div class="text-muted text-center py-4 small">No hay familiares registrados.</div>
+  <% else %>
+    <div class="list-group mb-4">
+      <% @familiares.each do |f| %>
+        <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <div>
+            <div class="fw-semibold small"><%= f.nombre_completo %></div>
+            <div class="text-muted" style="font-size:.75rem;">
+              <span class="badge bg-light text-dark border me-1"><%= f.parentesco %></span>
+              <% if f.fecha_nacimiento.present? %>
+                <i class="bi bi-cake me-1"></i><%= f.fecha_nacimiento.strftime("%d/%m/%Y") %>
+                <% if f.cumpleanos_proximo? %>
+                  <span class="badge bg-warning text-dark ms-1">Próximo</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+          <% if @miembro.user_id == current_user.id || controller.send(:puede_gestionar?) %>
+            <%= link_to hospitalia_destroy_familiar_path(id: f.id),
+                  data: { turbo_method: :delete, turbo_confirm: "¿Eliminar a #{f.nombre_completo}?" },
+                  class: "btn btn-sm btn-outline-danger" do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Formulario nuevo familiar %>
+  <% if @miembro.user_id == current_user.id || controller.send(:puede_gestionar?) %>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent fw-semibold small">Agregar Familiar</div>
+      <div class="card-body">
+        <%= form_with model: @familiar,
+              url: hospitalia_create_familiar_path(miembro_id: @miembro.id), method: :post do |f| %>
+          <% if @familiar.errors.any? %>
+            <div class="alert alert-danger py-2 small">
+              <% @familiar.errors.full_messages.each do |m| %><div><%= m %></div><% end %>
+            </div>
+          <% end %>
+          <div class="row g-2 mb-2">
+            <div class="col-12 col-md-6">
+              <%= f.label :nombre_completo, "Nombre *", class: "form-label fw-semibold small" %>
+              <%= f.text_field :nombre_completo, class: "form-control form-control-sm", required: true %>
+            </div>
+            <div class="col-12 col-md-6">
+              <%= f.label :parentesco, "Parentesco *", class: "form-label fw-semibold small" %>
+              <%= f.select :parentesco,
+                    MiembroFamiliar::PARENTESCOS.map { |p| [p, p] },
+                    { prompt: "Seleccionar..." },
+                    class: "form-select form-select-sm", required: true %>
+            </div>
+          </div>
+          <div class="mb-3">
+            <%= f.label :fecha_nacimiento, "Fecha de nacimiento", class: "form-label fw-semibold small" %>
+            <%= f.date_field :fecha_nacimiento, class: "form-control form-control-sm" %>
+          </div>
+          <%= f.submit "Agregar Familiar", class: "btn btn-primary btn-sm" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

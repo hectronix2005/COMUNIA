@@ -1,0 +1,257 @@
+<% accion = @miembro.activo? ? "Desactivar" : "Cambiar Estado" %>
+<% content_for(:title, "#{accion} - #{@miembro.nombre_completo}") %>
+
+<div class="mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-1">
+      <li class="breadcrumb-item"><%= link_to "Miembros", miembros_path %></li>
+      <li class="breadcrumb-item"><%= link_to @miembro.nombre_completo, miembro_path(@miembro) %></li>
+      <li class="breadcrumb-item active"><%= accion %></li>
+    </ol>
+  </nav>
+  <h1 class="h3 fw-bold mb-0">
+    <i class="bi bi-person-dash me-2"></i><%= accion %> Miembro
+  </h1>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-person me-2"></i><%= @miembro.nombre_completo %>
+          <small class="text-muted fw-normal ms-2">(<%= @miembro.numero_miembro %>)</small>
+          &mdash; <%= render "shared/estado_badge", estado: @miembro.estado %>
+        </h5>
+      </div>
+      <div class="card-body">
+        <%= form_with url: cambiar_estado_miembro_path(@miembro), method: :patch,
+                      multipart: true, class: "row g-3" do |f| %>
+          <% if @miembro.errors.any? %>
+            <div class="col-12">
+              <div class="alert alert-danger">
+                <ul class="mb-0">
+                  <% @miembro.errors.full_messages.each do |msg| %>
+                    <li><%= msg %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="col-12">
+            <% if @miembro.activo? %>
+              <label class="form-label fw-semibold">Seleccionar motivo de desactivación</label>
+            <% else %>
+              <label class="form-label fw-semibold">Cambiar estado</label>
+            <% end %>
+            <div class="row g-2" id="estado-opciones">
+              <%
+                opciones_desactivar = [
+                  { valor: "quite",                icon: "bi-door-open",    color: "secondary", label: "Quite",               desc: "Renunció a la Logia. No se genera cobro de cuota." },
+                  { valor: "irregular_temporal",   icon: "bi-pause-circle", color: "warning",   label: "Irregular Temporal",   desc: "Irregularidad por tiempo determinado. No se genera cobro durante el período." },
+                  { valor: "irregular_permanente", icon: "bi-x-circle",     color: "danger",    label: "Irregular Permanente", desc: "Irregularidad indefinida. No se genera cobro de cuota." },
+                ]
+                opciones = @miembro.activo? ? opciones_desactivar : [
+                  { valor: "activo", icon: "bi-check-circle-fill", color: "success", label: "Activo", desc: "Reactivar al miembro. Volverá a recibir cobros de cuota mensual." },
+                  *opciones_desactivar
+                ]
+              %>
+              <% opciones.each do |op| %>
+                <div class="col-md-6">
+                  <input type="radio" class="btn-check" name="miembro[estado]"
+                         id="estado_<%= op[:valor] %>" value="<%= op[:valor] %>"
+                         <%= "checked" if @miembro.estado == op[:valor] %>
+                         onchange="mostrarFechas(this.value)">
+                  <label class="btn btn-outline-<%= op[:color] %> w-100 text-start p-3" for="estado_<%= op[:valor] %>">
+                    <i class="bi <%= op[:icon] %> me-2"></i><strong><%= op[:label] %></strong>
+                    <br><small class="fw-normal opacity-75"><%= op[:desc] %></small>
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Fechas — ocultas si se elige Activo %>
+          <div id="fechas-inactividad" class="col-12 <%= @miembro.activo? ? 'd-none' : '' %>">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Fecha de Salida <span class="text-danger">*</span></label>
+                <input type="date" name="miembro[estado_desde]" class="form-control"
+                       value="<%= @miembro.estado_desde || Date.current %>" required>
+                <div class="form-text">Fecha desde la cual aplica este estado.</div>
+              </div>
+              <div id="campo-hasta" class="col-md-6 <%= @miembro.quite? ? 'd-none' : '' %>">
+                <label class="form-label fw-semibold">Vigente Hasta <span class="text-muted small">(opcional)</span></label>
+                <input type="date" name="miembro[estado_hasta]" class="form-control"
+                       value="<%= @miembro.quite? ? nil : @miembro.estado_hasta %>">
+                <div class="form-text">Dejar en blanco si es indefinido.</div>
+              </div>
+              <% if @miembro.quite? %>
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="alert alert-secondary mb-0 py-2 px-3 w-100">
+                    <i class="bi bi-infinity me-1"></i><small>Quite es permanente &mdash; sin fecha de fin.</small>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div id="motivo-campo" class="col-12 <%= @miembro.activo? ? 'd-none' : '' %>">
+            <label class="form-label fw-semibold">Motivo / Observaciones <span class="text-muted small">(opcional)</span></label>
+            <textarea name="miembro[estado_motivo]" class="form-control" rows="2"
+                      placeholder="Ej: Viaje al exterior, dificultades económicas..."><%= @miembro.estado_motivo %></textarea>
+          </div>
+
+          <%# Soporte documental — obligatorio para estados no-activos %>
+          <div id="soporte-campo" class="col-12 <%= @miembro.activo? ? 'd-none' : '' %>">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-paperclip me-1"></i>Soporte Documental
+              <span id="soporte-requerido" class="text-danger"> *</span>
+              <span id="soporte-opcional" class="text-muted small d-none"> (no requerido para reactivación)</span>
+            </label>
+            <input type="file" name="soporte_archivo" id="soporte_archivo"
+                   class="form-control"
+                   accept=".jpg,.jpeg,.png,.webp,.pdf"
+                   onchange="previewSoporte(this)">
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              JPG, PNG, WEBP o PDF &mdash; Máx. 10MB. Ej: carta de renuncia, acta, resolución.
+            </div>
+
+            <%# Preview del archivo %>
+            <div id="soporte-preview" class="mt-2 d-none">
+              <div class="card border-success">
+                <div class="card-body p-2 d-flex align-items-center gap-3">
+                  <div id="soporte-preview-img" class="flex-shrink-0"></div>
+                  <div class="flex-grow-1">
+                    <div class="fw-semibold small" id="soporte-preview-nombre"></div>
+                    <div class="text-muted small" id="soporte-preview-tamano"></div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0"
+                          onclick="limpiarSoporte()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 d-flex gap-2">
+            <%= submit_tag "Guardar Cambio de Estado", class: "btn btn-primary" %>
+            <%= link_to "Cancelar", miembro_path(@miembro), class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-info mb-3">
+      <div class="card-header bg-info text-white">
+        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>¿Cuándo se cobra cuota?</h6>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th class="ps-3">Estado</th><th class="text-center">Genera cobro</th></tr></thead>
+          <tbody>
+            <tr><td class="ps-3"><i class="bi bi-check-circle-fill text-success me-1"></i>Activo</td><td class="text-center"><span class="badge bg-success">Sí</span></td></tr>
+            <tr><td class="ps-3"><i class="bi bi-door-open text-secondary me-1"></i>Quite</td><td class="text-center"><span class="badge bg-secondary">No</span></td></tr>
+            <tr><td class="ps-3"><i class="bi bi-pause-circle text-warning me-1"></i>Irregular Temporal</td><td class="text-center"><span class="badge bg-secondary">No</span></td></tr>
+            <tr><td class="ps-3"><i class="bi bi-x-circle text-danger me-1"></i>Irregular Permanente</td><td class="text-center"><span class="badge bg-secondary">No</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <% if @miembro.estado_desde.present? && !@miembro.activo? %>
+      <div class="card border-warning">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="bi bi-calendar-range me-2"></i>Estado Actual</h6>
+        </div>
+        <div class="card-body">
+          <dl class="mb-0">
+            <dt>Estado</dt>
+            <dd><%= render "shared/estado_badge", estado: @miembro.estado %></dd>
+            <dt>Desde</dt>
+            <dd><%= l(@miembro.estado_desde, format: :long) rescue @miembro.estado_desde %></dd>
+            <dt>Hasta</dt>
+            <dd><%= @miembro.estado_hasta ? (l(@miembro.estado_hasta, format: :long) rescue @miembro.estado_hasta) : "<span class='text-muted'>Indefinido</span>".html_safe %></dd>
+            <% if @miembro.estado_motivo.present? %>
+              <dt>Motivo</dt>
+              <dd><%= @miembro.estado_motivo %></dd>
+            <% end %>
+          </dl>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+function mostrarFechas(estado) {
+  const campos       = document.getElementById('fechas-inactividad')
+  const motivo       = document.getElementById('motivo-campo')
+  const campoHasta   = document.getElementById('campo-hasta')
+  const soporteCampo = document.getElementById('soporte-campo')
+  const soporteInput = document.getElementById('soporte_archivo')
+
+  if (estado === 'activo') {
+    campos.classList.add('d-none')
+    motivo.classList.add('d-none')
+    soporteCampo.classList.add('d-none')
+    campos.querySelectorAll('input[type=date]').forEach(i => { i.removeAttribute('required'); i.value = '' })
+    if (soporteInput) { soporteInput.removeAttribute('required'); soporteInput.value = '' }
+    limpiarSoporte()
+  } else {
+    campos.classList.remove('d-none')
+    motivo.classList.remove('d-none')
+    soporteCampo.classList.remove('d-none')
+    campos.querySelector('input[type=date]').setAttribute('required', 'required')
+
+    if (estado === 'quite') {
+      campoHasta.classList.add('d-none')
+      campoHasta.querySelector('input').value = ''
+    } else {
+      campoHasta.classList.remove('d-none')
+    }
+  }
+}
+
+function previewSoporte(input) {
+  const file = input.files[0]
+  if (!file) return
+  const preview   = document.getElementById('soporte-preview')
+  const previewImg = document.getElementById('soporte-preview-img')
+  const nombre    = document.getElementById('soporte-preview-nombre')
+  const tamano    = document.getElementById('soporte-preview-tamano')
+
+  nombre.textContent = file.name
+  tamano.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB'
+  previewImg.innerHTML = ''
+
+  if (file.type.startsWith('image/')) {
+    const img = document.createElement('img')
+    img.src = URL.createObjectURL(file)
+    img.style.cssText = 'max-width:80px; max-height:60px; border-radius:4px; object-fit:cover;'
+    img.onload = () => URL.revokeObjectURL(img.src)
+    previewImg.appendChild(img)
+  } else {
+    previewImg.innerHTML = '<i class="bi bi-file-earmark-pdf text-danger fs-2"></i>'
+  }
+
+  preview.classList.remove('d-none')
+}
+
+function limpiarSoporte() {
+  const input = document.getElementById('soporte_archivo')
+  const preview = document.getElementById('soporte-preview')
+  if (input) input.value = ''
+  if (preview) preview.classList.add('d-none')
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const checked = document.querySelector('input[name="miembro[estado]"]:checked')
+  if (checked) mostrarFechas(checked.value)
+})
+</script>

@@ -1,0 +1,249 @@
+es:
+  activerecord:
+    models:
+      user: Usuario
+      logia: Logia
+      miembro: Miembro
+      periodo_cobro: Periodo de Cobro
+      cobro: Cobro
+      pago: Pago
+      concepto_cobro: Concepto de Cobro
+    attributes:
+      user:
+        nombre: Nombre
+        apellido: Apellido
+        email: Correo electrónico
+        username: Usuario
+        password: Contraseña
+        password_confirmation: Confirmación de contraseña
+        rol: Rol
+        logia: Logia
+      logia:
+        nombre: Nombre
+        codigo: Código
+        rc_secuencia_actual: Secuencia RC
+      miembro:
+        numero_miembro: Número de miembro
+        cedula: Cédula
+        grado: Grado
+        estado: Estado
+      periodo_cobro:
+        nombre: Nombre
+        anio: Año
+        mes: Mes
+        monto: Monto
+        fecha_vencimiento: Fecha de vencimiento
+        estado: Estado
+      cobro:
+        monto: Monto
+        estado: Estado
+      pago:
+        numero_rc: Recibo de Caja
+        monto_pagado: Monto pagado
+        fecha_pago: Fecha de pago
+        metodo_pago: Método de pago
+        soporte: Soporte de pago
+        observaciones: Observaciones
+      concepto_cobro:
+        nombre: Nombre
+        monto: Monto
+        tipo: Tipo de cobro
+        descripcion: Descripción
+        activo: Activo
+        orden: Orden
+    errors:
+      messages:
+        record_invalid: "La validación falló: %{errors}"
+        restrict_dependent_destroy:
+          has_one: No se puede eliminar porque existe un %{record} dependiente
+          has_many: No se puede eliminar porque existen %{record} dependientes
+        taken: ya está en uso
+        blank: no puede estar en blanco
+        present: debe estar en blanco
+        too_short: es demasiado corto (mínimo %{count} caracteres)
+        too_long: es demasiado largo (máximo %{count} caracteres)
+        invalid: no es válido
+        confirmation: no coincide con la confirmación
+        accepted: debe ser aceptado
+        empty: no puede estar vacío
+        not_a_number: no es un número
+        not_an_integer: debe ser un número entero
+        greater_than: debe ser mayor que %{count}
+        greater_than_or_equal_to: debe ser mayor o igual que %{count}
+        equal_to: debe ser igual a %{count}
+        less_than: debe ser menor que %{count}
+        less_than_or_equal_to: debe ser menor o igual que %{count}
+        other_than: debe ser diferente de %{count}
+        odd: debe ser impar
+        even: debe ser par
+        inclusion: no está incluido en la lista
+        exclusion: está reservado
+      template:
+        header:
+          one: "%{model} no se pudo guardar debido a 1 error"
+          other: "%{model} no se pudo guardar debido a %{count} errores"
+        body: "Se encontraron errores en los siguientes campos:"
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%d %b"
+      long: "%d de %B de %Y"
+    day_names:
+      - Domingo
+      - Lunes
+      - Martes
+      - Miércoles
+      - Jueves
+      - Viernes
+      - Sábado
+    abbr_day_names:
+      - Dom
+      - Lun
+      - Mar
+      - Mié
+      - Jue
+      - Vie
+      - Sáb
+    month_names:
+      - ~
+      - Enero
+      - Febrero
+      - Marzo
+      - Abril
+      - Mayo
+      - Junio
+      - Julio
+      - Agosto
+      - Septiembre
+      - Octubre
+      - Noviembre
+      - Diciembre
+    abbr_month_names:
+      - ~
+      - Ene
+      - Feb
+      - Mar
+      - Abr
+      - May
+      - Jun
+      - Jul
+      - Ago
+      - Sep
+      - Oct
+      - Nov
+      - Dic
+  time:
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      short: "%d %b %H:%M"
+      long: "%d de %B de %Y %H:%M"
+  number:
+    currency:
+      format:
+        unit: "$"
+        delimiter: "."
+        separator: ","
+        precision: 0
+        format: "%u %n"
+    format:
+      delimiter: "."
+      separator: ","
+  helpers:
+    submit:
+      create: Crear
+      update: Actualizar
+      submit: Guardar
+    select:
+      prompt: Seleccione...
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      not_found: no encontrado
+      already_confirmed: ya fue confirmado
+      not_locked: no estaba bloqueado
+      taken: ya está en uso
+      blank: no puede estar en blanco
+      invalid: no es válido
+      too_short: es demasiado corto (mínimo %{count} caracteres)
+      too_long: es demasiado largo (máximo %{count} caracteres)
+      not_a_number: no es un número
+      not_an_integer: debe ser un número entero
+      greater_than: debe ser mayor que %{count}
+      less_than: debe ser menor que %{count}
+      inclusion: no está incluido en la lista
+  views:
+    pagination:
+      first: "« Primera"
+      last: "Última »"
+      previous: "‹ Anterior"
+      next: "Siguiente ›"
+      truncate: "..."
+
+  datetime:
+    distance_in_words:
+      half_a_minute: "medio minuto"
+      less_than_x_seconds:
+        one:   "menos de 1 segundo"
+        other: "menos de %{count} segundos"
+      x_seconds:
+        one:   "1 segundo"
+        other: "%{count} segundos"
+      less_than_x_minutes:
+        one:   "menos de 1 minuto"
+        other: "menos de %{count} minutos"
+      x_minutes:
+        one:   "1 minuto"
+        other: "%{count} minutos"
+      about_x_hours:
+        one:   "alrededor de 1 hora"
+        other: "alrededor de %{count} horas"
+      x_days:
+        one:   "1 día"
+        other: "%{count} días"
+      about_x_months:
+        one:   "alrededor de 1 mes"
+        other: "alrededor de %{count} meses"
+      x_months:
+        one:   "1 mes"
+        other: "%{count} meses"
+      about_x_years:
+        one:   "alrededor de 1 año"
+        other: "alrededor de %{count} años"
+      over_x_years:
+        one:   "más de 1 año"
+        other: "más de %{count} años"
+      almost_x_years:
+        one:   "casi 1 año"
+        other: "casi %{count} años"
+    prompts:
+      year:   "Año"
+      month:  "Mes"
+      day:    "Día"
+      hour:   "Hora"
+      minute: "Minuto"
+      second: "Segundos"
+
+  date:
+    abbr_day_names:   [dom, lun, mar, mié, jue, vie, sáb]
+    day_names:        [domingo, lunes, martes, miércoles, jueves, viernes, sábado]
+    abbr_month_names: [~, ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic]
+    month_names:      [~, enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+    formats:
+      default:  "%d/%m/%Y"
+      short:    "%d de %b"
+      long:     "%d de %B de %Y"
+    order:     [day, month, year]
+
+  time:
+    am: "am"
+    pm: "pm"
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      short:   "%d %b %H:%M"
+      long:    "%d de %B de %Y %H:%M"
+
+  support:
+    array:
+      last_word_connector: " y "
+      two_words_connector: " y "
+      words_connector:     ", "

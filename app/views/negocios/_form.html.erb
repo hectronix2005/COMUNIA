@@ -1,0 +1,133 @@
+<%= form_with model: anuncio, url: anuncio.persisted? ? negocio_path(anuncio) : negocios_path, as: :negocio_anuncio, multipart: true do |f| %>
+  <% if anuncio.errors.any? %>
+    <div class="alert alert-danger">
+      <% anuncio.errors.full_messages.each do |msg| %>
+        <div><i class="bi bi-x-circle me-1"></i><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :tipo, "Tipo de anuncio *", class: "form-label fw-semibold" %>
+    <div class="d-flex gap-2 flex-wrap">
+      <% NegocioAnuncio::TIPOS.each do |tipo| %>
+        <div class="form-check">
+          <%= f.radio_button :tipo, tipo, class: "form-check-input", id: "tipo_#{tipo}",
+                onchange: "negocioTipoChange(this.value)" %>
+          <%= label_tag "tipo_#{tipo}", NegocioAnuncio::TIPO_LABEL[tipo], class: "form-check-label" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :titulo, "Título *", class: "form-label fw-semibold" %>
+    <%= f.text_field :titulo, class: "form-control #{anuncio.errors[:titulo].any? ? 'is-invalid' : ''}", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold" %>
+    <%= f.text_area :descripcion, rows: 4, class: "form-control", placeholder: "Describe el servicio, producto o empleo..." %>
+  </div>
+
+  <div class="row g-3 mb-3" id="precio_row">
+    <div class="col-md-5">
+      <%= f.label :precio, "Precio", class: "form-label fw-semibold" %>
+      <%= f.number_field :precio, class: "form-control", step: "0.01", min: "0", placeholder: "Dejar vacío si es gratis" %>
+    </div>
+    <div class="col-md-3">
+      <%= f.label :moneda, "Moneda", class: "form-label fw-semibold" %>
+      <%= f.select :moneda, [["COP", "COP"], ["USD", "USD"], ["EUR", "EUR"]],
+            {}, class: "form-select" %>
+    </div>
+    <div class="col-md-4" id="categoria_row">
+      <%= f.label :categoria, "Categoría", class: "form-label fw-semibold" %>
+      <% opciones = anuncio.categorias_sugeridas %>
+      <% if opciones.any? %>
+        <%= f.select :categoria,
+              options_for_select(opciones.map { |c| [c, c] }, anuncio.categoria),
+              { include_blank: "Elige una..." }, class: "form-select" %>
+      <% else %>
+        <%= f.text_field :categoria, class: "form-control" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <%= f.label :contacto, "Contacto (tel, email, etc.)", class: "form-label fw-semibold" %>
+      <%= f.text_field :contacto, class: "form-control" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :ubicacion, "Ubicación", class: "form-label fw-semibold" %>
+      <%= f.text_field :ubicacion, class: "form-control", placeholder: "Ciudad, país..." %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :latitud, "Latitud (opcional)", class: "form-label fw-semibold" %>
+      <%= f.number_field :latitud, step: "any", class: "form-control", placeholder: "ej: 4.6097" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :longitud, "Longitud (opcional)", class: "form-label fw-semibold" %>
+      <%= f.number_field :longitud, step: "any", class: "form-control", placeholder: "ej: -74.0817" %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :imagenes, "Imágenes (hasta 10)", class: "form-label fw-semibold" %>
+    <%= f.file_field :imagenes, multiple: true, class: "form-control", accept: "image/*" %>
+    <div class="form-text">Puedes subir varias imágenes. La primera se usa como portada.</div>
+
+    <% existentes = anuncio.imagenes_o_legacy %>
+    <% if existentes.any? %>
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        <% existentes.each do |att| %>
+          <div class="position-relative" style="width:80px;height:80px;">
+            <img src="<%= rails_blob_path(att) %>" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
+            <% if anuncio.persisted? && att.name == "imagenes" %>
+              <%= button_to remove_imagen_negocio_path(anuncio, blob_id: att.blob.signed_id),
+                    method: :delete,
+                    data: { turbo_confirm: "¿Eliminar esta imagen?" },
+                    class: "btn btn-sm btn-danger rounded-circle position-absolute",
+                    style: "top:-8px;right:-8px;width:24px;height:24px;padding:0;line-height:1;" do %>
+                ×
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if anuncio.persisted? %>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <%= f.label :estado, "Estado", class: "form-label fw-semibold" %>
+        <%= f.select :estado,
+              options_for_select(NegocioAnuncio::ESTADOS.map { |e| [NegocioAnuncio::ESTADO_LABEL[e], e] }, anuncio.estado),
+              {}, class: "form-select" %>
+      </div>
+      <div class="col-md-6 d-flex align-items-end">
+        <div class="form-check">
+          <%= f.check_box :activo, class: "form-check-input" %>
+          <%= f.label :activo, "Anuncio visible (publicado)", class: "form-check-label" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="d-flex gap-2">
+    <%= f.submit anuncio.persisted? ? "Guardar cambios" : "Publicar Anuncio", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", negocios_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>
+
+<script>
+function negocioTipoChange(tipo) {
+  var precioRow = document.getElementById("precio_row");
+  if (precioRow) precioRow.style.display = tipo === "empleo" ? "none" : "";
+}
+document.addEventListener("DOMContentLoaded", function() {
+  var checked = document.querySelector("input[name='negocio_anuncio[tipo]']:checked");
+  if (checked) negocioTipoChange(checked.value);
+});
+</script>

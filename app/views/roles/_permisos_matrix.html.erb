@@ -1,0 +1,34 @@
+<div id="permisos-matrix">
+  <% permisos_por_recurso.each do |recurso, permisos| %>
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="mb-0"><%= Permiso::RECURSOS_LABELS[recurso] || recurso.humanize %></h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <% permisos.each do |permiso| %>
+            <div class="col-md-4 col-lg-3 mb-2">
+              <% asignado = permisos_asignados.include?(permiso.id) %>
+              <% if asignado %>
+                <%= button_to role_permiso_path(rol, permiso),
+                      method: :delete,
+                      class: "btn btn-sm w-100 btn-success",
+                      data: { turbo_frame: "_top" } do %>
+                  <i class="bi bi-check-square"></i> <%= permiso.accion_label %>
+                <% end %>
+              <% else %>
+                <%= button_to role_permisos_path(rol),
+                      params: { permiso_id: permiso.id },
+                      method: :post,
+                      class: "btn btn-sm w-100 btn-outline-secondary",
+                      data: { turbo_frame: "_top" } do %>
+                  <i class="bi bi-square"></i> <%= permiso.accion_label %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

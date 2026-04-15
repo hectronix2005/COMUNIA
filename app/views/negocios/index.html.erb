@@ -1,0 +1,131 @@
+<% content_for(:title, "Marketplace") %>
+
+<div class="container-fluid py-3 px-md-4 marketplace-wrapper">
+  <%# ── Header ───────────────────────────────────────────── %>
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+      <h4 class="mb-0 fw-bold"><i class="bi bi-shop me-2"></i>Marketplace</h4>
+      <p class="text-muted small mb-0">
+        <%= pluralize(@total_resultados, "anuncio") %>
+        <% if @tipo_filtro.present? %> · <%= NegocioAnuncio::TIPO_LABEL[@tipo_filtro] %><% end %>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <% no_leidos_total = NegocioMensaje.joins(:negocio_conversacion)
+            .where(leido: false)
+            .where.not(user_id: current_user.id)
+            .where("negocio_conversacions.comprador_id = :id OR negocio_conversacions.vendedor_id = :id", id: current_user.id)
+            .count %>
+      <%= link_to negocio_conversaciones_path, class: "btn btn-outline-primary position-relative" do %>
+        <i class="bi bi-chat-left-text me-1"></i>Mensajes
+        <% if no_leidos_total.positive? %>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><%= no_leidos_total %></span>
+        <% end %>
+      <% end %>
+      <%= link_to new_negocio_path, class: "btn btn-primary" do %>
+        <i class="bi bi-plus-lg me-1"></i>Publicar Anuncio
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <%# ── Sidebar de filtros ───────────────────────────── %>
+    <aside class="col-lg-3 col-xl-2">
+      <%= form_with url: negocios_path, method: :get, local: true, class: "marketplace-filters card border-0 shadow-sm p-3 sticky-lg-top", style: "top: 1rem;" do |f| %>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Buscar</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <%= f.search_field :q, value: params[:q], class: "form-control", placeholder: "¿Qué buscas?" %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Categoría</label>
+          <div class="d-grid gap-1">
+            <%= link_to negocios_path(request.query_parameters.except(:tipo, :page)),
+                  class: "btn btn-sm text-start #{@tipo_filtro.nil? ? 'btn-dark' : 'btn-outline-secondary'}" do %>
+              <i class="bi bi-grid me-1"></i>Todos
+            <% end %>
+            <% NegocioAnuncio::TIPOS.each do |tipo| %>
+              <%= link_to negocios_path(request.query_parameters.merge(tipo: tipo).except(:page)),
+                    class: "btn btn-sm text-start btn-outline-#{NegocioAnuncio::TIPO_COLOR[tipo]} #{@tipo_filtro == tipo ? 'active' : ''}" do %>
+                <i class="bi bi-<%= tipo == 'servicio' ? 'tools' : tipo == 'producto' ? 'box-seam' : 'briefcase' %> me-1"></i>
+                <%= NegocioAnuncio::TIPO_LABEL[tipo] %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+
+        <% if @tipo_filtro.present? %>
+          <%= f.hidden_field :tipo, value: @tipo_filtro %>
+        <% end %>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Rango de precio</label>
+          <div class="d-flex gap-1">
+            <%= f.number_field :precio_min, value: params[:precio_min], class: "form-control form-control-sm", placeholder: "Mín" %>
+            <%= f.number_field :precio_max, value: params[:precio_max], class: "form-control form-control-sm", placeholder: "Máx" %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Ubicación</label>
+          <%= f.text_field :ubicacion, value: params[:ubicacion], class: "form-control form-control-sm", placeholder: "Ciudad, país..." %>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Ordenar por</label>
+          <%= f.select :orden,
+                options_for_select([
+                  ["Más recientes", "recientes"],
+                  ["Más antiguos", "antiguos"],
+                  ["Precio: menor a mayor", "precio_asc"],
+                  ["Precio: mayor a menor", "precio_desc"],
+                  ["Más populares", "populares"]
+                ], @orden), {}, class: "form-select form-select-sm" %>
+        </div>
+
+        <div class="mb-3 form-check">
+          <%= check_box_tag :solo_favoritos, "1", params[:solo_favoritos] == "1", class: "form-check-input" %>
+          <label class="form-check-label small" for="solo_favoritos"><i class="bi bi-heart-fill text-danger me-1"></i>Solo mis favoritos</label>
+        </div>
+
+        <div class="d-grid gap-1">
+          <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel me-1"></i>Aplicar filtros</button>
+          <%= link_to "Limpiar", negocios_path, class: "btn btn-sm btn-link text-muted" %>
+        </div>
+      <% end %>
+    </aside>
+
+    <%# ── Grid de anuncios ─────────────────────────────── %>
+    <section class="col-lg-9 col-xl-10">
+      <% if @anuncios.empty? %>
+        <div class="text-center text-muted py-5 bg-white rounded shadow-sm">
+          <i class="bi bi-bag-x display-3 opacity-25"></i>
+          <h5 class="mt-3 text-muted">No hay resultados</h5>
+          <p class="mb-3 small">
+            <% if params[:q].present? || params[:precio_min].present? || params[:precio_max].present? || params[:ubicacion].present? %>
+              Prueba ajustar los filtros o limpiar la búsqueda.
+            <% else %>
+              Aún no se han publicado anuncios<% if @tipo_filtro.present? %> de tipo <%= NegocioAnuncio::TIPO_LABEL[@tipo_filtro] %><% end %>.
+            <% end %>
+          </p>
+          <%= link_to "Publicar el primero", new_negocio_path, class: "btn btn-primary btn-sm" %>
+        </div>
+      <% else %>
+        <div class="row g-3">
+          <% @anuncios.each do |anuncio| %>
+            <div class="col-6 col-md-4 col-xl-3">
+              <%= render "negocios/card", anuncio: anuncio %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center">
+          <%= paginate @anuncios, theme: "twitter-bootstrap-4" rescue paginate(@anuncios) %>
+        </div>
+      <% end %>
+    </section>
+  </div>
+</div>

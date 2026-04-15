@@ -1,0 +1,59 @@
+<% content_for(:title, "Nueva Tarifa - #{@logia.nombre}") %>
+
+<div class="mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-1">
+      <li class="breadcrumb-item"><%= link_to "Periodos", periodo_cobros_path %></li>
+      <li class="breadcrumb-item"><%= link_to "Tarifas - #{@logia.nombre}", logia_tarifas_path(@logia) %></li>
+      <li class="breadcrumb-item active">Nueva Tarifa</li>
+    </ol>
+  </nav>
+  <h1 class="h3 fw-bold mb-0">
+    <i class="bi bi-tag me-2"></i>Nueva Tarifa
+    <small class="text-muted fw-normal ms-2"><%= @logia.nombre %></small>
+  </h1>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Registrar Nueva Tarifa</h5>
+      </div>
+      <div class="card-body">
+        <%= render "form", tarifa: @tarifa, logia: @logia %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white">
+        <h6 class="mb-0"><i class="bi bi-list-columns-reverse me-2"></i>Desglose Actual (se guardar&aacute;)</h6>
+      </div>
+      <div class="card-body p-0">
+        <% if @conceptos.any? %>
+          <table class="table table-sm mb-0">
+            <tbody>
+              <% @conceptos.each do |c| %>
+                <tr>
+                  <td class="ps-3"><%= c.nombre %></td>
+                  <td class="text-muted small"><%= c.tipo.humanize %></td>
+                  <td class="text-end pe-3 fw-semibold"><%= number_to_currency(c.monto_por_miembro, unit: "$", delimiter: ".", separator: ",", precision: 0) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-dark">
+              <tr>
+                <td class="ps-3" colspan="2"><strong>TOTAL</strong></td>
+                <td class="text-end pe-3"><strong><%= number_to_currency(@logia.monto_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        <% else %>
+          <div class="p-3 text-center text-muted">Sin conceptos configurados</div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

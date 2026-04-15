@@ -1,0 +1,423 @@
+<% content_for(:title, "Cobros") %>
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 fw-bold mb-0"><i class="bi bi-receipt me-2"></i>Cobros</h1>
+  <span class="badge bg-primary rounded-pill fs-6"><%= @cobros.total_count %> registros</span>
+</div>
+
+<%# ── Filter bar ── %>
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-body py-3">
+    <%= form_tag cobros_path, method: :get, class: "row g-2 align-items-end" do %>
+      <div class="col-md-3">
+        <label class="form-label text-muted small mb-1">
+          <i class="bi bi-calendar3 me-1"></i>Periodo
+        </label>
+        <%= select_tag :periodo_id,
+              options_from_collection_for_select(@periodos, :id, :nombre, params[:periodo_id]),
+              include_blank: "-- Todos los Periodos --",
+              class: "form-select form-select-sm" %>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-muted small mb-1">
+          <i class="bi bi-people me-1"></i>Miembro(s)
+        </label>
+        <div id="miembro-selector">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="miembro-search" class="form-control"
+                   placeholder="Escriba nombre o apellido..." autocomplete="off">
+          </div>
+          <div id="miembro-tags" class="d-flex flex-wrap gap-1 mt-1"></div>
+          <div id="miembro-resultados" class="d-flex flex-wrap gap-1 mt-1"></div>
+          <% Array(params[:miembro_ids] || params[:miembro_id]).compact_blank.each do |mid| %>
+            <input type="hidden" name="miembro_ids[]" value="<%= mid %>" class="miembro-hidden">
+          <% end %>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted small mb-1">
+          <i class="bi bi-flag me-1"></i>Estado
+        </label>
+        <%= select_tag :estado,
+              options_for_select(Cobro.estados.keys.map { |e| [e.humanize, e] }, params[:estado]),
+              include_blank: "-- Todos --",
+              class: "form-select form-select-sm" %>
+      </div>
+      <% if current_user.tiene_permiso?("logias", "index") %>
+        <div class="col-md-2">
+          <label class="form-label text-muted small mb-1">
+            <i class="bi bi-building me-1"></i>Logia
+          </label>
+          <%= select_tag :logia_id,
+                options_from_collection_for_select(@logias, :id, :nombre, params[:logia_id]),
+                include_blank: "-- Todas --",
+                class: "form-select form-select-sm" %>
+        </div>
+      <% end %>
+      <div class="col-md-2">
+        <div class="d-flex gap-2">
+          <%= submit_tag "Filtrar", class: "btn btn-sm btn-primary", data: { disable_with: "Filtrando..." } %>
+          <%= link_to cobros_path, class: "btn btn-sm btn-outline-secondary" do %>
+            <i class="bi bi-x-circle"></i>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# ── Batch action bar (admin) ── %>
+<% puede_adjuntar_multiple = policy(Cobro).adjuntar_soporte_multiple? %>
+<% if puede_adjuntar_multiple %>
+  <div id="batch-bar" class="card border-0 shadow-sm mb-3" style="display: none;">
+    <div class="card-body py-2 d-flex align-items-center justify-content-between">
+      <div>
+        <i class="bi bi-check2-square text-primary me-1"></i>
+        <strong id="batch-count">0</strong> cobro(s) seleccionado(s)
+        &mdash; Total: <strong id="batch-total">$0</strong>
+        <span id="batch-descuento" class="ms-2" style="display:none;">
+          <i class="bi bi-tag-fill text-success me-1"></i>
+          <span class="badge bg-success">-10% = <strong id="batch-total-descuento">$0</strong></span>
+        </span>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" id="btn-deseleccionar" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Deseleccionar
+        </button>
+        <button type="button" id="btn-adjuntar-multiple" class="btn btn-sm btn-success">
+          <i class="bi bi-upload me-1"></i>Adjuntar soporte grupal
+        </button>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# ── Table ── %>
+<% if @cobros.any? %>
+  <div class="card border-0 shadow-sm">
+    <div class="table-rounded">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th><%= sort_link "Periodo", "periodo" %></th>
+              <th><%= sort_link "Miembro", "miembro" %></th>
+              <th><%= sort_link "Logia", "logia" %></th>
+              <th class="text-end"><%= sort_link "Monto", "monto" %></th>
+              <th class="text-center"><%= sort_link "Estado", "estado" %></th>
+              <th class="text-center"><%= sort_link "RC", "rc" %></th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @cobros.each do |cobro| %>
+              <% es_seleccionable = cobro.pendiente? || cobro.vencido? %>
+              <tr>
+                <td><%= cobro.periodo_cobro.nombre %></td>
+                <td><%= cobro.miembro.nombre_completo %></td>
+                <td><%= cobro.miembro.logia.nombre %></td>
+                <td class="text-end fw-semibold"><%= pesos(cobro.monto) %></td>
+                <td class="text-center"><%= render "shared/estado_badge", estado: cobro.estado %></td>
+                <td class="text-center">
+                  <% if cobro.pago&.numero_rc.present? %>
+                    <span class="text-success fw-semibold"><%= cobro.pago.numero_rc %></span>
+                  <% elsif cobro.pagado? && cobro.pago.present? %>
+                    <span class="badge bg-warning text-dark">RC Pendiente</span>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex gap-1 justify-content-end flex-wrap align-items-center">
+                    <% if puede_adjuntar_multiple && es_seleccionable %>
+                      <label class="btn btn-sm btn-outline-success position-relative mb-0" title="Seleccionar para pago grupal">
+                        <input type="checkbox" class="cobro-check visually-hidden"
+                               value="<%= cobro.id %>"
+                               data-monto="<%= cobro.monto.to_i %>"
+                               data-miembro="<%= cobro.miembro_id %>">
+                        <i class="bi bi-cash-stack"></i>
+                      </label>
+                    <% end %>
+                    <%= link_to cobro_path(cobro), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <% if policy(cobro).adjuntar_soporte? %>
+                      <%= link_to adjuntar_soporte_cobro_path(cobro), class: "btn btn-sm btn-outline-success" do %>
+                        <i class="bi bi-upload me-1"></i>Adjuntar
+                      <% end %>
+                    <% end %>
+                    <% if policy(cobro).validar? %>
+                      <%= link_to validar_cobro_path(cobro), class: "btn btn-sm btn-outline-warning" do %>
+                        <i class="bi bi-check-square me-1"></i>Validar
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <%= paginate @cobros %>
+  </div>
+<% else %>
+  <div class="empty-state text-center py-5">
+    <i class="bi bi-receipt-cutoff display-1 text-muted"></i>
+    <h5 class="mt-3 text-muted">No se encontraron cobros</h5>
+    <p class="text-muted">Ajuste los filtros o verifique que existan cobros registrados.</p>
+    <%= link_to cobros_path, class: "btn btn-outline-primary mt-2" do %>
+      <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar filtros
+    <% end %>
+  </div>
+<% end %>
+
+<% if puede_adjuntar_multiple %>
+<script>
+(function() {
+  var checks = document.querySelectorAll('.cobro-check');
+  var batchBar = document.getElementById('batch-bar');
+  var batchCount = document.getElementById('batch-count');
+  var batchTotal = document.getElementById('batch-total');
+  var batchDescuento = document.getElementById('batch-descuento');
+  var batchTotalDescuento = document.getElementById('batch-total-descuento');
+  var btnAdjuntar = document.getElementById('btn-adjuntar-multiple');
+  var btnDeseleccionar = document.getElementById('btn-deseleccionar');
+
+  if (!checks.length) return;
+
+  function actualizarBarra() {
+    var seleccionados = document.querySelectorAll('.cobro-check:checked');
+    var count = seleccionados.length;
+    var total = 0;
+    var miembros = new Set();
+
+    seleccionados.forEach(function(cb) {
+      total += parseInt(cb.dataset.monto || 0);
+      miembros.add(cb.dataset.miembro);
+    });
+
+    // Estilo del botón billete: activo cuando está seleccionado
+    checks.forEach(function(cb) {
+      var label = cb.closest('label');
+      if (cb.checked) {
+        label.classList.remove('btn-outline-success');
+        label.classList.add('btn-success');
+      } else {
+        label.classList.remove('btn-success');
+        label.classList.add('btn-outline-success');
+      }
+    });
+
+    batchCount.textContent = count;
+    batchTotal.textContent = '$' + total.toLocaleString('es-CO');
+    batchBar.style.display = count > 0 ? 'block' : 'none';
+
+    // Descuento 10% si 6+ periodos
+    if (count >= <%= Pago::DESCUENTO_MINIMO_PERIODOS %>) {
+      var descMonto = Math.round(total * <%= Pago::DESCUENTO_PORCENTAJE %> / 100);
+      var totalConDesc = total - descMonto;
+      batchTotalDescuento.textContent = '$' + totalConDesc.toLocaleString('es-CO');
+      batchDescuento.style.display = 'inline';
+      batchTotal.style.textDecoration = 'line-through';
+      batchTotal.classList.add('text-muted');
+    } else {
+      batchDescuento.style.display = 'none';
+      batchTotal.style.textDecoration = 'none';
+      batchTotal.classList.remove('text-muted');
+    }
+
+    btnAdjuntar.disabled = false;
+    btnAdjuntar.title = '';
+    if (miembros.size > 1) {
+      batchCount.innerHTML = count + ' <span class="text-info">(' + miembros.size + ' miembros)</span>';
+    }
+  }
+
+  checks.forEach(function(cb) {
+    cb.addEventListener('change', actualizarBarra);
+  });
+
+  btnDeseleccionar.addEventListener('click', function() {
+    checks.forEach(function(cb) { cb.checked = false; });
+    actualizarBarra();
+  });
+
+  btnAdjuntar.addEventListener('click', function() {
+    var seleccionados = document.querySelectorAll('.cobro-check:checked');
+    if (seleccionados.length === 0) return;
+
+    var form = document.createElement('form');
+    form.method = 'GET';
+    form.action = '<%= adjuntar_soporte_multiple_cobros_path %>';
+
+    seleccionados.forEach(function(cb) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'cobro_ids[]';
+      input.value = cb.value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  });
+})();
+</script>
+<% end %>
+
+<script>
+(function() {
+  var miembros = <%= raw @miembros.map { |m| { id: m.id, nombre: "#{m.user.apellido} #{m.user.nombre}" } }.to_json %>;
+  var search = document.getElementById('miembro-search');
+  var resultados = document.getElementById('miembro-resultados');
+  var tagsContainer = document.getElementById('miembro-tags');
+  var selector = document.getElementById('miembro-selector');
+  var seleccionados = {};
+
+  // Cargar seleccionados previos
+  document.querySelectorAll('.miembro-hidden').forEach(function(input) {
+    var id = input.value;
+    var m = miembros.find(function(x) { return x.id == id; });
+    if (m) seleccionados[id] = m.nombre;
+  });
+  renderTags();
+
+  function renderResultados(filtro) {
+    var texto = (filtro || '').toLowerCase().trim();
+    if (texto.length === 0) {
+      resultados.innerHTML = '';
+      return;
+    }
+
+    var items = miembros.filter(function(m) {
+      return !seleccionados[m.id] && m.nombre.toLowerCase().indexOf(texto) >= 0;
+    });
+
+    if (items.length === 0) {
+      resultados.innerHTML = '<span class="badge bg-light text-muted border" style="font-size:0.78rem;">Sin resultados</span>';
+    } else {
+      resultados.innerHTML = items.slice(0, 12).map(function(m) {
+        return '<span class="badge bg-light text-dark border" style="cursor:pointer; font-size:0.78rem; transition:all 0.15s;" ' +
+          'data-id="' + m.id + '" data-nombre="' + m.nombre.replace(/"/g, '&quot;') + '" ' +
+          'onmouseenter="this.classList.replace(\'bg-light\',\'bg-primary\');this.classList.replace(\'text-dark\',\'text-white\');" ' +
+          'onmouseleave="this.classList.replace(\'bg-primary\',\'bg-light\');this.classList.replace(\'text-white\',\'text-dark\');">' +
+          '<i class="bi bi-person-plus-fill me-1"></i>' + m.nombre + '</span>';
+      }).join('');
+    }
+
+    resultados.querySelectorAll('[data-id]').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var id = chip.dataset.id;
+        var nombre = chip.dataset.nombre;
+        seleccionados[id] = nombre;
+        agregarHidden(id);
+        renderTags();
+        search.value = '';
+        renderResultados('');
+        search.focus();
+      });
+    });
+  }
+
+  function renderTags() {
+    var html = '';
+    Object.keys(seleccionados).forEach(function(id) {
+      html += '<span class="badge bg-primary d-flex align-items-center gap-1" style="font-size:0.8rem;">' +
+        seleccionados[id] +
+        '<i class="bi bi-x-lg" style="cursor:pointer;" data-remove="' + id + '"></i>' +
+        '</span>';
+    });
+    tagsContainer.innerHTML = html;
+
+    tagsContainer.querySelectorAll('[data-remove]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = btn.dataset.remove;
+        delete seleccionados[id];
+        var hidden = selector.querySelector('input.miembro-hidden[value="' + id + '"]');
+        if (hidden) hidden.remove();
+        renderTags();
+        renderResultados(search.value);
+      });
+    });
+  }
+
+  function agregarHidden(id) {
+    var existing = selector.querySelector('input.miembro-hidden[value="' + id + '"]');
+    if (existing) return;
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'miembro_ids[]';
+    input.value = id;
+    input.className = 'miembro-hidden';
+    selector.appendChild(input);
+  }
+
+  search.addEventListener('input', function() { renderResultados(search.value); });
+  search.addEventListener('focus', function() { renderResultados(search.value); });
+})();
+</script>
+
+<script>
+(function() {
+  var STORAGE_KEY = 'cobros_filtros';
+  var form = document.querySelector('form[action="<%= cobros_path %>"]');
+  var clearBtn = document.querySelector('a[href="<%= cobros_path %>"].btn-outline-secondary');
+
+  // Guardar filtros al enviar el formulario
+  form.addEventListener('submit', function() {
+    var data = {};
+    var periodo = form.querySelector('[name="periodo_id"]');
+    var estado = form.querySelector('[name="estado"]');
+    var logia = form.querySelector('[name="logia_id"]');
+    var miembros = form.querySelectorAll('input[name="miembro_ids[]"]');
+
+    if (periodo && periodo.value) data.periodo_id = periodo.value;
+    if (estado && estado.value) data.estado = estado.value;
+    if (logia && logia.value) data.logia_id = logia.value;
+    if (miembros.length > 0) {
+      data.miembro_ids = [];
+      miembros.forEach(function(m) { if (m.value) data.miembro_ids.push(m.value); });
+    }
+
+    if (Object.keys(data).length > 0) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } else {
+      sessionStorage.removeItem(STORAGE_KEY);
+    }
+  });
+
+  // Limpiar filtros guardados al hacer click en "Limpiar"
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      sessionStorage.removeItem(STORAGE_KEY);
+    });
+  }
+
+  // Restaurar filtros si llegamos sin params
+  if (window.location.search === '' || window.location.search === '?') {
+    var saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        var data = JSON.parse(saved);
+        var params = new URLSearchParams();
+        if (data.periodo_id) params.set('periodo_id', data.periodo_id);
+        if (data.estado) params.set('estado', data.estado);
+        if (data.logia_id) params.set('logia_id', data.logia_id);
+        if (data.miembro_ids) {
+          data.miembro_ids.forEach(function(id) { params.append('miembro_ids[]', id); });
+        }
+        if (params.toString()) {
+          window.location.replace('<%= cobros_path %>' + '?' + params.toString());
+        }
+      } catch(e) {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }
+})();
+</script>

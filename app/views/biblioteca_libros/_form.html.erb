@@ -1,0 +1,60 @@
+<%= form_with model: libro, class: "needs-validation" do |f| %>
+  <% if libro.errors.any? %>
+    <div class="alert alert-danger">
+      <% libro.errors.full_messages.each do |msg| %>
+        <div><i class="bi bi-x-circle me-1"></i><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :titulo, "Título *", class: "form-label fw-semibold" %>
+    <%= f.text_field :titulo, class: "form-control #{libro.errors[:titulo].any? ? 'is-invalid' : ''}", required: true %>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <%= f.label :autor, "Autor", class: "form-label fw-semibold" %>
+      <%= f.text_field :autor, class: "form-control" %>
+    </div>
+    <div class="col-md-3">
+      <%= f.label :anio, "Año", class: "form-label fw-semibold" %>
+      <%= f.number_field :anio, class: "form-control", min: 1, max: Date.current.year + 1 %>
+    </div>
+    <div class="col-md-3">
+      <%= f.label :categoria, "Categoría", class: "form-label fw-semibold" %>
+      <%= f.select :categoria, BibliotecaLibro::CATEGORIAS.map { |c| [c, c] },
+            { include_blank: "Sin categoría" }, class: "form-select" %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold" %>
+    <%= f.text_area :descripcion, rows: 3, class: "form-control", placeholder: "Breve sinopsis o descripción..." %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :archivo, "Archivo adjunto (PDF, epub, etc.)", class: "form-label fw-semibold" %>
+    <%= f.file_field :archivo, class: "form-control", accept: ".pdf,.epub,.mobi,.doc,.docx" %>
+    <% if libro.persisted? && libro.archivo.attached? %>
+      <div class="form-text"><i class="bi bi-paperclip me-1"></i>Archivo actual: <%= libro.archivo.filename %></div>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :url_externa, "O enlace externo (URL)", class: "form-label fw-semibold" %>
+    <%= f.url_field :url_externa, class: "form-control", placeholder: "https://..." %>
+  </div>
+
+  <% if libro.persisted? %>
+    <div class="mb-3 form-check">
+      <%= f.check_box :activo, class: "form-check-input" %>
+      <%= f.label :activo, "Libro activo (visible)", class: "form-check-label" %>
+    </div>
+  <% end %>
+
+  <div class="d-flex gap-2">
+    <%= f.submit libro.persisted? ? "Guardar cambios" : "Agregar Libro", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", biblioteca_libros_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

@@ -1,0 +1,272 @@
+<% content_for(:title, "Corte #{l(@corte.fecha_corte, format: :long)}") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0">
+      <i class="bi bi-clipboard2-check me-2"></i>Corte al <%= l(@corte.fecha_corte, format: :long) %>
+    </h1>
+    <% if @corte.descripcion.present? %>
+      <p class="text-muted mb-0 mt-1"><%= @corte.descripcion %></p>
+    <% end %>
+  </div>
+  <div class="d-flex gap-2">
+    <span class="badge bg-<%= @corte.estado_badge_color %> fs-6"><%= @corte.estado_label %></span>
+    <%= link_to corte_conciliaciones_path(logia_id: @logia.id), class: "btn btn-outline-secondary btn-sm" do %>
+      <i class="bi bi-arrow-left me-1"></i>Historial
+    <% end %>
+  </div>
+</div>
+
+<%# ── Summary cards ───────────────────────────────────────── %>
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center h-100 border-secondary">
+      <div class="card-body py-3">
+        <div class="text-muted small">En el archivo</div>
+        <div class="fs-2 fw-bold"><%= @corte.total_archivo %></div>
+        <div class="text-muted small"><%= @corte.formato_archivo&.upcase %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center h-100 border-primary">
+      <div class="card-body py-3">
+        <div class="text-muted small">Activos en sistema</div>
+        <div class="fs-2 fw-bold text-primary"><%= @corte.total_sistema %></div>
+        <div class="text-muted small">al <%= l(@corte.fecha_corte, format: :long) %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center h-100 border-success">
+      <div class="card-body py-3">
+        <div class="text-muted small">Coinciden</div>
+        <div class="fs-2 fw-bold text-success"><%= @corte.coincidentes.size %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center h-100 border-danger">
+      <div class="card-body py-3">
+        <div class="text-muted small">Solo en archivo</div>
+        <div class="fs-2 fw-bold text-danger"><%= @corte.solo_en_archivo.size %></div>
+        <div class="text-muted small" style="font-size:0.7rem">no activos en sistema</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center h-100 border-warning">
+      <div class="card-body py-3">
+        <div class="text-muted small">Solo en sistema</div>
+        <div class="fs-2 fw-bold text-warning"><%= @corte.solo_en_sistema.size %></div>
+        <div class="text-muted small" style="font-size:0.7rem">no aparecen en archivo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Tabs ────────────────────────────────────────────────── %>
+<ul class="nav nav-tabs mb-0" id="corteTabs">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-diferencias">
+      <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+      Diferencias
+      <% diff = @corte.sin_match.size + @corte.solo_en_sistema.size %>
+      <% if diff > 0 %>
+        <span class="badge bg-warning text-dark ms-1"><%= diff %></span>
+      <% end %>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-coincidentes">
+      <i class="bi bi-check-circle text-success me-1"></i>
+      Coincidentes
+      <span class="badge bg-success ms-1"><%= @corte.coincidentes.size %></span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-no-aplica">
+      <i class="bi bi-slash-circle text-secondary me-1"></i>
+      No aplica
+      <span class="badge bg-secondary ms-1"><%= @corte.no_aplica.size %></span>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content border border-top-0 rounded-bottom p-3 bg-white">
+
+  <% estado_color = Miembro::ESTADO_COLOR; estado_label = Miembro::ESTADO_LABEL %>
+
+  <%# Tab: Diferencias %>
+  <div class="tab-pane fade show active" id="tab-diferencias">
+
+    <% if @corte.sin_match.empty? && @corte.solo_en_sistema.empty? %>
+      <div class="alert alert-success mb-0">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong>Sin diferencias.</strong> Todos los activos del archivo coinciden con el sistema y viceversa.
+      </div>
+    <% end %>
+
+    <% if @corte.sin_match.any? %>
+      <h6 class="text-danger mt-2 mb-2">
+        <i class="bi bi-file-earmark-x me-1"></i>
+        En el archivo pero no encontrados en el sistema (<%= @corte.sin_match.size %>)
+      </h6>
+      <div class="table-responsive mb-4">
+        <table class="table table-sm table-hover">
+          <thead class="table-danger">
+            <tr><th>#</th><th>Nombre</th><th>Cédula</th><th>Diagnóstico</th></tr>
+          </thead>
+          <tbody>
+            <% @corte.sin_match.each_with_index do |e, i| %>
+              <tr>
+                <td class="text-muted"><%= i + 1 %></td>
+                <td><%= e["nombre"].presence || "—" %></td>
+                <td><code><%= e["cedula"].presence || "—" %></code></td>
+                <td><small class="text-muted"><%= e["diagnostico"] %></small></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <% if @corte.solo_en_sistema.any? %>
+      <h6 class="text-warning mt-2 mb-2">
+        <i class="bi bi-person-x me-1"></i>
+        Activos en el sistema pero NO en el archivo (<%= @corte.solo_en_sistema.size %>)
+      </h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead class="table-warning">
+            <tr><th>#</th><th>Nombre</th><th>Cédula</th><th>N° Miembro</th><th>Estado a la fecha</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% @corte.solo_en_sistema.each_with_index do |e, i| %>
+              <tr>
+                <td class="text-muted"><%= i + 1 %></td>
+                <td><%= e["nombre"] %></td>
+                <td><code><%= e["cedula"] %></code></td>
+                <td><%= e["numero"] %></td>
+                <td>
+                  <span class="badge bg-<%= estado_color[e["estado"]] || 'secondary' %>">
+                    <%= estado_label[e["estado"]] || e["estado"] %>
+                  </span>
+                </td>
+                <td>
+                  <% if e["miembro_id"] %>
+                    <%= link_to miembro_path(e["miembro_id"]),
+                          class: "btn btn-xs btn-outline-secondary",
+                          style: "font-size:0.75rem;padding:1px 6px" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Tab: Coincidentes %>
+  <div class="tab-pane fade" id="tab-coincidentes">
+    <% if @corte.coincidentes.empty? %>
+      <div class="alert alert-warning mb-0">Sin coincidencias registradas.</div>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead class="table-success">
+            <tr><th>#</th><th>Nombre (sistema)</th><th>Nombre en archivo</th><th>Cédula</th><th>N° Miembro</th><th>Estado</th><th class="text-center">Score</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% @corte.coincidentes.each_with_index do |e, i| %>
+              <tr>
+                <td class="text-muted"><%= i + 1 %></td>
+                <td><%= e["nombre"] %></td>
+                <td><small class="text-muted"><%= e["nombre_archivo"].presence || "—" %></small></td>
+                <td><code><%= e["cedula"] %></code></td>
+                <td><%= e["numero"] %></td>
+                <td>
+                  <span class="badge bg-<%= estado_color[e["estado"]] || 'secondary' %>">
+                    <%= estado_label[e["estado"]] || e["estado"] %>
+                  </span>
+                </td>
+                <td class="text-center">
+                  <% score = e["score"].to_i %>
+                  <span class="badge bg-<%= score == 100 ? 'success' : score >= 60 ? 'warning text-dark' : 'secondary' %>">
+                    <%= score %>%
+                  </span>
+                </td>
+                <td>
+                  <% if e["miembro_id"] %>
+                    <%= link_to miembro_path(e["miembro_id"]),
+                          class: "btn btn-xs btn-outline-secondary",
+                          style: "font-size:0.75rem;padding:1px 6px" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Tab: No aplica %>
+  <div class="tab-pane fade" id="tab-no-aplica">
+    <p class="text-muted small mb-3">
+      Miembros del sistema que <strong>no estaban activos</strong> a la fecha del corte.
+      No entran al proceso de conciliación.
+    </p>
+    <% if @corte.no_aplica.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead class="table-secondary">
+            <tr><th>#</th><th>Nombre</th><th>Cédula</th><th>N° Miembro</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% @corte.no_aplica.each_with_index do |e, i| %>
+              <tr>
+                <td class="text-muted"><%= i + 1 %></td>
+                <td><%= e["nombre"] %></td>
+                <td><code><%= e["cedula"] %></code></td>
+                <td><%= e["numero"] %></td>
+                <td>
+                  <span class="badge bg-<%= estado_color[e["estado"]] || 'secondary' %>">
+                    <%= estado_label[e["estado"]] || e["estado"] %>
+                  </span>
+                </td>
+                <td>
+                  <% if e["miembro_id"] %>
+                    <%= link_to miembro_path(e["miembro_id"]),
+                          class: "btn btn-xs btn-outline-secondary",
+                          style: "font-size:0.75rem;padding:1px 6px" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="alert alert-info mb-0">Todos los miembros del sistema estaban activos a esta fecha.</div>
+    <% end %>
+  </div>
+</div>
+
+<% if @corte.archivo.attached? %>
+  <div class="mt-3">
+    <small class="text-muted">
+      <i class="bi bi-paperclip me-1"></i>
+      Archivo: <%= @corte.archivo.filename %> —
+      <%= number_to_human_size(@corte.archivo.byte_size) %> —
+      <%= link_to "Descargar", rails_blob_path(@corte.archivo, disposition: "attachment") %>
+    </small>
+  </div>
+<% end %>

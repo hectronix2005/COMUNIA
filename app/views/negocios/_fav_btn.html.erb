@@ -1,0 +1,8 @@
+<%= turbo_frame_tag "fav_#{anuncio.id}", class: "d-inline" do %>
+  <% is_fav = anuncio.favorito_de?(current_user) %>
+  <%= button_to toggle_favorito_negocio_path(anuncio),
+        method: :post,
+        class: "mp-card-fav-btn btn btn-sm rounded-circle #{is_fav ? 'text-danger' : 'text-muted'}" do %>
+    <i class="bi bi-heart<%= is_fav ? '-fill' : '' %>"></i>
+  <% end %>
+<% end %>

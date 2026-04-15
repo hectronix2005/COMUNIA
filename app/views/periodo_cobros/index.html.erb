@@ -1,0 +1,169 @@
+<% content_for(:title, "Periodos de Cobro") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Periodos de Cobro</h1>
+  <% if policy(PeriodoCobro).create? %>
+    <%= link_to "Nuevo Periodo", new_periodo_cobro_path, class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<%# === SUPER ADMIN: Cuota mensual por logia === %>
+<% if current_user.tiene_permiso?("logias", "index") && @logias_con_conceptos %>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-building me-2"></i>Cuota Mensual por Logia</h5>
+    </div>
+    <div class="card-body p-0">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th class="ps-3">Logia</th>
+            <th>Desglose</th>
+            <th class="text-end">Cuota Mensual</th>
+            <th class="text-center">Vigencia</th>
+            <th class="text-center pe-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @logias_con_conceptos.each do |logia| %>
+            <% tarifa_actual = logia.tarifa_vigente %>
+            <tr>
+              <td class="ps-3">
+                <strong><%= logia.nombre %></strong>
+                <span class="text-muted small ms-1">(<%= logia.codigo %>)</span>
+              </td>
+              <td>
+                <% if logia.tiene_conceptos? %>
+                  <small class="text-muted">
+                    <% logia.conceptos_cobro.activos.ordenados.each_with_index do |c, i| %>
+                      <%= c.nombre %>: <strong><%= number_to_currency(c.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong><%= i < logia.conceptos_cobro.activos.count - 1 ? " &middot; " : "" %>
+                    <% end %>
+                  </small>
+                <% else %>
+                  <span class="text-muted small">Sin conceptos configurados</span>
+                <% end %>
+              </td>
+              <td class="text-end">
+                <% if tarifa_actual %>
+                  <strong><%= number_to_currency(tarifa_actual.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong>
+                <% elsif logia.tiene_conceptos? %>
+                  <strong><%= number_to_currency(logia.monto_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong>
+                <% else %>
+                  <span class="text-danger">$0</span>
+                <% end %>
+              </td>
+              <td class="text-center">
+                <% if tarifa_actual %>
+                  <small class="text-success"><i class="bi bi-check-circle me-1"></i><%= tarifa_actual.rango_texto %></small>
+                <% else %>
+                  <small class="text-muted">Sin tarifa vigente</small>
+                <% end %>
+              </td>
+              <td class="text-center pe-3">
+                <div class="d-flex gap-1 justify-content-center">
+                  <%= link_to logia_conceptos_cobro_path(logia), class: "btn btn-sm btn-outline-primary" do %>
+                    <i class="bi bi-list-columns-reverse me-1"></i>Desglose
+                  <% end %>
+                  <%= link_to logia_tarifas_path(logia), class: "btn btn-sm btn-outline-secondary" do %>
+                    <i class="bi bi-tag me-1"></i>Tarifas
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<%# === ADMIN LOGIA: Desglose de su logia === %>
+<% elsif @logia_actual&.tiene_conceptos? %>
+  <% tarifa_logia = @logia_actual.tarifa_vigente %>
+  <div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-list-columns-reverse me-2"></i>Desglose Cuota Mensual &mdash; <%= @logia_actual.nombre %>
+        <% if tarifa_logia %>
+          <small class="fw-normal ms-2">(<%= tarifa_logia.rango_texto %>)</small>
+        <% end %>
+      </h5>
+      <div class="d-flex gap-2">
+        <%= link_to logia_tarifas_path(@logia_actual), class: "btn btn-sm btn-outline-light" do %>
+          <i class="bi bi-tag me-1"></i>Historial Tarifas
+        <% end %>
+        <%= link_to logia_conceptos_cobro_path(@logia_actual), class: "btn btn-sm btn-outline-light" do %>
+          <i class="bi bi-pencil me-1"></i>Editar Desglose
+        <% end %>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <tbody>
+          <% @logia_actual.conceptos_cobro.activos.ordenados.each do |concepto| %>
+            <tr>
+              <td class="ps-3"><%= concepto.nombre %></td>
+              <td class="text-muted small"><%= concepto.descripcion %></td>
+              <td class="text-end pe-3"><%= number_to_currency(concepto.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+        <tfoot>
+          <tr class="table-dark">
+            <td class="ps-3" colspan="2"><strong>TOTAL CUOTA MENSUAL</strong></td>
+            <td class="text-end pe-3"><strong><%= number_to_currency(tarifa_logia&.monto || @logia_actual.monto_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+<% elsif @logia_actual %>
+  <div class="alert alert-warning mb-4">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    No hay conceptos de cobro configurados para tu logia.
+    <%= link_to "Configurar desglose de cuota", logia_conceptos_cobro_path(@logia_actual), class: "alert-link" %>.
+  </div>
+<% end %>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Periodo</th>
+        <th>Vencimiento</th>
+        <th>Estado</th>
+        <th class="text-center">Cobros</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @periodos.each do |periodo| %>
+        <tr>
+          <td><strong><%= periodo.nombre %></strong></td>
+          <td><%= l(periodo.fecha_vencimiento, format: :short) rescue periodo.fecha_vencimiento %></td>
+          <td><%= render "shared/estado_badge", estado: periodo.estado %></td>
+          <td class="text-center"><%= periodo.cobros.count %></td>
+          <td>
+            <%= link_to periodo_cobro_path(periodo), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-eye me-1"></i>Ver
+            <% end %>
+            <% if policy(periodo).update? %>
+              <%= link_to edit_periodo_cobro_path(periodo), class: "btn btn-sm btn-outline-secondary" do %>
+                <i class="bi bi-pencil me-1"></i>Editar
+              <% end %>
+            <% end %>
+            <% if policy(periodo).generar_cobros? %>
+              <%= button_to generar_cobros_periodo_cobro_path(periodo),
+                    method: :post,
+                    class: "btn btn-sm btn-outline-success",
+                    form: { data: { turbo_confirm: "¿Generar cobros para este periodo?" } } do %>
+                <i class="bi bi-lightning me-1"></i>Generar
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @periodos %>

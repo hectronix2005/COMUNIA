@@ -1,0 +1,215 @@
+<% content_for(:title, "Editar Miembro") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="mb-1">Editar Miembro</h1>
+    <p class="text-muted mb-0"><%= @miembro.nombre_completo %> &mdash; <%= @miembro.numero_miembro %></p>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to miembro_path(@miembro), class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left me-1"></i>Ver perfil
+    <% end %>
+    <%= link_to "#{miembro_path(@miembro)}#cargos", class: "btn btn-outline-primary" do %>
+      <i class="bi bi-award me-1"></i>Gestionar cargos
+    <% end %>
+  </div>
+</div>
+
+<div class="row g-4">
+  <%# Columna izquierda: formulario principal %>
+  <div class="col-lg-7">
+    <%= render "form" %>
+  </div>
+
+  <%# Columna derecha: historial de estados %>
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-clock-history me-2"></i>Historial de Estados
+        </h5>
+        <span class="badge bg-secondary rounded-pill">
+          <%= @miembro.estado_cambios.count %>
+        </span>
+      </div>
+
+      <% cambios = @miembro.estado_cambios.cronologicos.includes(:registrado_por) %>
+      <% if cambios.any? %>
+        <div class="list-group list-group-flush">
+          <% cambios.each_with_index do |cambio, idx| %>
+            <%
+              es_backfill = cambio.registrado_por_id.nil?
+              es_primero  = idx == 0
+            %>
+            <div class="list-group-item p-0">
+              <%# Cabecera del registro %>
+              <div class="d-flex align-items-center gap-2 px-3 py-2
+                          <%= es_backfill ? 'bg-light' : '' %>">
+                <span class="badge bg-<%= cambio.estado_color %> flex-shrink-0">
+                  <%= cambio.estado_label %>
+                </span>
+                <div class="flex-grow-1 small">
+                  <% if cambio.desde.present? %>
+                    <span class="fw-semibold">
+                      <%= l(cambio.desde, format: :short) rescue cambio.desde %>
+                    </span>
+                    <% if cambio.hasta.present? %>
+                      <span class="text-muted"> → <%= l(cambio.hasta, format: :short) rescue cambio.hasta %></span>
+                    <% elsif cambio.estado != "activo" %>
+                      <span class="text-muted"> → indefinido</span>
+                    <% end %>
+                  <% end %>
+                  <% if cambio.motivo.present? %>
+                    <br><span class="text-muted fst-italic"><%= cambio.motivo %></span>
+                  <% end %>
+                </div>
+                <div class="text-end flex-shrink-0">
+                  <% if es_backfill %>
+                    <span class="badge bg-light text-secondary border"
+                          title="Registro generado por migración del sistema">
+                      <i class="bi bi-database me-1"></i>Sistema
+                    </span>
+                  <% else %>
+                    <small class="text-muted d-block">
+                      <%= cambio.registrado_por.nombre_completo.split.first %>
+                    </small>
+                    <small class="text-muted">
+                      <%= l(cambio.created_at.to_date, format: :short) rescue "" %>
+                    </small>
+                  <% end %>
+                </div>
+              </div>
+
+              <%# Soporte adjunto %>
+              <% if cambio.soporte.attached? %>
+                <div class="px-3 py-2 border-top bg-light d-flex align-items-center gap-2">
+                  <i class="bi bi-paperclip text-success"></i>
+                  <% if cambio.soporte.content_type&.start_with?("image/") %>
+                    <%= link_to rails_blob_path(cambio.soporte, disposition: "inline"),
+                                target: "_blank", class: "small text-success fw-semibold" do %>
+                      <i class="bi bi-image me-1"></i><%= cambio.soporte.filename %>
+                    <% end %>
+                  <% else %>
+                    <%= link_to rails_blob_path(cambio.soporte, disposition: "inline"),
+                                target: "_blank", class: "small text-danger fw-semibold" do %>
+                      <i class="bi bi-file-earmark-pdf me-1"></i><%= cambio.soporte.filename %>
+                    <% end %>
+                  <% end %>
+                  <span class="text-muted small ms-auto">
+                    <%= number_to_human_size(cambio.soporte.byte_size) %>
+                  </span>
+                </div>
+              <% elsif cambio.estado != "activo" %>
+                <div class="px-3 py-1 border-top bg-warning bg-opacity-10">
+                  <small class="text-warning">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Sin soporte adjunto
+                  </small>
+                </div>
+              <% end %>
+
+              <%# Formulario de edición inline %>
+              <% if policy(@miembro).update? %>
+                <div id="historial-form-<%= cambio.id %>"
+                     class="border-top px-3 py-2 bg-white"
+                     style="<%= es_backfill ? '' : 'display:none;' %>">
+                  <p class="text-muted small mb-2">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    <% if es_backfill %>
+                      <strong>Corregir fechas</strong> — registro generado automáticamente por el sistema.
+                    <% else %>
+                      Editar registro
+                    <% end %>
+                  </p>
+                  <%= form_with url: miembro_estado_cambio_path(@miembro, cambio),
+                                method: :patch, multipart: true,
+                                class: "row g-2 align-items-end" do |h| %>
+                    <div class="col-6">
+                      <label class="form-label small mb-1 fw-semibold">
+                        Desde <span class="text-danger">*</span>
+                      </label>
+                      <%= h.date_field :desde, value: cambio.desde,
+                            class: "form-control form-control-sm" %>
+                    </div>
+                    <% unless cambio.estado == "quite" %>
+                      <div class="col-6">
+                        <label class="form-label small mb-1 fw-semibold">
+                          Hasta <span class="text-muted">(opc.)</span>
+                        </label>
+                        <%= h.date_field :hasta, value: cambio.hasta,
+                              class: "form-control form-control-sm" %>
+                      </div>
+                    <% end %>
+                    <div class="col-12">
+                      <label class="form-label small mb-1 fw-semibold">Motivo</label>
+                      <%= h.text_field :motivo, value: cambio.motivo,
+                            class: "form-control form-control-sm",
+                            placeholder: "Observación..." %>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label small mb-1 fw-semibold">
+                        <i class="bi bi-paperclip me-1"></i>
+                        <%= cambio.soporte.attached? ? "Reemplazar soporte" : "Adjuntar soporte" %>
+                        <% unless cambio.estado == "activo" %>
+                          <span class="text-muted">(opcional si ya existe)</span>
+                        <% end %>
+                      </label>
+                      <%= h.file_field :soporte,
+                            class: "form-control form-control-sm",
+                            accept: ".jpg,.jpeg,.png,.webp,.pdf" %>
+                      <div class="form-text">JPG, PNG, WEBP o PDF — Máx. 10MB</div>
+                    </div>
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                      <%= h.submit "Guardar", class: "btn btn-sm btn-primary" %>
+                      <% unless es_backfill %>
+                        <button type="button"
+                                class="btn btn-sm btn-link text-secondary p-0"
+                                onclick="ocultarEditorHistorial(<%= cambio.id %>)">
+                          Cerrar
+                        </button>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+
+                <% unless es_backfill %>
+                  <div class="border-top px-3 py-1 bg-light text-end">
+                    <button type="button"
+                            class="btn btn-link btn-sm text-secondary p-0 small"
+                            id="btn-editar-<%= cambio.id %>"
+                            onclick="mostrarEditorHistorial(<%= cambio.id %>)">
+                      <i class="bi bi-pencil me-1"></i>Editar
+                    </button>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="card-body text-center py-4 text-muted">
+          <i class="bi bi-clock-history" style="font-size:2rem;"></i>
+          <p class="mt-2 mb-0">Sin registros de cambio de estado.</p>
+        </div>
+      <% end %>
+
+      <div class="card-footer text-muted small">
+        <i class="bi bi-info-circle me-1"></i>
+        Los registros marcados como <strong>Sistema</strong> fueron generados al migrar datos
+        y pueden tener fechas incorrectas. Corrígelos arriba.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function mostrarEditorHistorial(id) {
+  document.getElementById('historial-form-' + id).style.display = ''
+  const btn = document.getElementById('btn-editar-' + id)
+  if (btn) btn.style.display = 'none'
+}
+function ocultarEditorHistorial(id) {
+  document.getElementById('historial-form-' + id).style.display = 'none'
+  const btn = document.getElementById('btn-editar-' + id)
+  if (btn) btn.style.display = ''
+}
+</script>

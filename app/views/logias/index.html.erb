@@ -1,0 +1,85 @@
+<% content_for(:title, "Tenants / Logias") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0"><i class="bi bi-building me-2"></i>Tenants</h1>
+    <small class="text-muted">Cada logia es un tenant independiente con su propio white-label</small>
+  </div>
+  <% if policy(Logia).create? %>
+    <%= link_to new_logia_path, class: "btn btn-primary" do %>
+      <i class="bi bi-plus-circle me-1"></i>Nuevo Tenant
+    <% end %>
+  <% end %>
+</div>
+
+<div class="row g-3">
+  <% @logias.each do |logia| %>
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-2" style="border-color: <%= logia.color_display %> !important;">
+        <div class="card-header d-flex align-items-center gap-2" style="background: <%= logia.color_display %>; color: #fff;">
+          <% if logia.logo.attached? %>
+            <%= image_tag logia.logo, height: 24, class: "rounded" %>
+          <% else %>
+            <span><%= logia.icono_display %></span>
+          <% end %>
+          <strong><%= logia.nombre_display %></strong>
+          <span class="badge bg-light text-dark ms-auto"><%= logia.codigo %></span>
+        </div>
+        <div class="card-body pb-2">
+          <% if logia.lema_display.present? %>
+            <p class="text-muted small fst-italic mb-2">"<%= logia.lema_display %>"</p>
+          <% end %>
+          <div class="row text-center g-0 mb-2">
+            <div class="col border-end">
+              <div class="fw-bold"><%= logia.miembros.activos.count %></div>
+              <div class="text-muted" style="font-size:0.7rem"><%= logia.t_miembro.pluralize %> activos</div>
+            </div>
+            <div class="col">
+              <div class="fw-bold"><%= logia.miembros.count %></div>
+              <div class="text-muted" style="font-size:0.7rem">Total</div>
+            </div>
+          </div>
+          <% if logia.slug.present? %>
+            <div class="text-muted small">
+              <%
+                _base = request.host.split(".").drop(1).join(".")
+                _port = (request.port != 80 && request.port != 443) ? ":#{request.port}" : ""
+                _base_with_port = _base.present? ? "#{_base}#{_port}" : "#{request.host}#{_port}"
+              %>
+              <i class="bi bi-globe me-1"></i><code><%= logia.slug %>.<%= _base_with_port %></code>
+            </div>
+          <% else %>
+            <div class="text-warning small">
+              <i class="bi bi-exclamation-triangle me-1"></i>Sin subdominio configurado
+            </div>
+          <% end %>
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-1 flex-wrap">
+          <%# Vista previa: simula estar en ese tenant %>
+          <% if current_user.rol_ref&.es_super_admin? %>
+            <%= button_to preview_logia_path(logia), method: :post,
+                  class: "btn btn-sm fw-semibold flex-fill text-center text-white",
+                  style: "background: #{logia.color_display}; border-color: #{logia.color_display}",
+                  title: "Previsualizar como #{logia.nombre_display}" do %>
+              <i class="bi bi-play-fill me-1"></i>Vista previa
+            <% end %>
+          <% end %>
+          <% if policy(logia).update? %>
+            <%= link_to edit_logia_path(logia), class: "btn btn-sm btn-outline-primary flex-fill text-center" do %>
+              <i class="bi bi-pencil"></i> Configurar
+            <% end %>
+          <% end %>
+          <% if policy(logia).destroy? %>
+            <%= button_to logia_path(logia), method: :delete,
+                  class: "btn btn-sm btn-outline-danger",
+                  form: { data: { turbo_confirm: "¿Eliminar este tenant?" } } do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<%= paginate @logias %>

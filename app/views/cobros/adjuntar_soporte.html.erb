@@ -1,0 +1,306 @@
+<% content_for(:title, "Adjuntar Soporte de Pago") %>
+
+<%# ── Page header ── %>
+<div class="page-header mb-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-1">
+      <li class="breadcrumb-item"><%= link_to "Cobros", cobros_path %></li>
+      <li class="breadcrumb-item"><%= link_to @cobro.periodo_cobro.nombre, cobro_path(@cobro) %></li>
+      <li class="breadcrumb-item active">Adjuntar Soporte</li>
+    </ol>
+  </nav>
+  <h1 class="h3 fw-bold mb-0">
+    <i class="bi bi-cloud-upload me-2"></i>Adjuntar Soporte de Pago
+  </h1>
+</div>
+
+<%# ── Cobro Info Summary ── %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-calendar3 text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Periodo</small>
+            <span class="fw-semibold"><%= @cobro.periodo_cobro.nombre %></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-person text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Miembro</small>
+            <span class="fw-semibold"><%= @cobro.miembro.nombre_completo %></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-currency-dollar text-success"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Monto a Pagar</small>
+            <span class="fw-semibold fs-5 text-success"><%= pesos(@cobro.monto) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Form Card ── %>
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-bottom">
+    <h5 class="mb-0 fw-semibold"><i class="bi bi-pencil-square me-2 text-primary"></i>Datos del Pago</h5>
+  </div>
+  <div class="card-body">
+    <%= form_tag subir_soporte_cobro_path(@cobro), method: :patch, multipart: true, data: { turbo: false }, class: "row g-4" do %>
+
+      <% if @pago.errors.any? %>
+        <div class="col-12">
+          <div class="alert alert-danger border-0 shadow-sm">
+            <h6 class="alert-heading fw-semibold">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              <%= pluralize(@pago.errors.count, "error") %> impidieron enviar el soporte:
+            </h6>
+            <ul class="mb-0 mt-2">
+              <% @pago.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="col-md-6">
+        <label for="pago_monto_pagado" class="form-label fw-semibold">Monto Pagado</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+          <input type="number" name="pago[monto_pagado]" id="pago_monto_pagado"
+                 value="<%= @pago.monto_pagado %>"
+                 class="form-control" min="0" step="1" required placeholder="Ingrese el monto">
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="pago_fecha_pago" class="form-label fw-semibold">Fecha de Pago</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+          <input type="date" name="pago[fecha_pago]" id="pago_fecha_pago"
+                 value="<%= @pago.fecha_pago %>"
+                 class="form-control" required>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="pago_metodo_pago" class="form-label fw-semibold">M&eacute;todo de Pago</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
+          <select name="pago[metodo_pago]" id="pago_metodo_pago" class="form-select" required>
+            <option value="">-- Seleccione --</option>
+            <% Pago::METODOS_PAGO.each do |m| %>
+              <option value="<%= m %>" <%= "selected" if @pago.metodo_pago == m %>><%= m.humanize %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <%# ── File Upload (multiple) ── %>
+      <div class="col-md-6">
+        <label for="pago_soportes" class="form-label fw-semibold">Soporte(s) (Comprobante)</label>
+        <input type="file" name="pago[soportes][]" id="pago_soportes"
+               class="form-control" accept=".jpg,.jpeg,.png,.pdf" multiple <%= "required" unless @pago.persisted? %>>
+        <div class="form-text">JPG, PNG o PDF &mdash; M&aacute;x. 5MB por archivo. Puede adjuntar varios comprobantes.</div>
+      </div>
+
+      <%# ── Preview + Borrar ── %>
+      <div class="col-12" id="preview-container" style="display: none;">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="max-width: 450px;">
+          <label class="form-label fw-semibold mb-0"><i class="bi bi-eye me-1"></i>Vista previa</label>
+          <button type="button" id="btn-borrar-archivo" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash3 me-1"></i>Borrar archivo
+          </button>
+        </div>
+        <div id="file-preview" class="bg-light rounded-3 p-3 text-center" style="max-width: 450px;"></div>
+      </div>
+
+      <%# ── OCR Results ── %>
+      <div class="col-12" id="ocr-loading" style="display: none;">
+        <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+          <span>Analizando comprobante...</span>
+        </div>
+      </div>
+      <div class="col-12" id="ocr-results" style="display: none;"></div>
+
+      <div class="col-12">
+        <label for="pago_observaciones" class="form-label fw-semibold">Observaciones</label>
+        <div class="input-group">
+          <span class="input-group-text align-items-start pt-2"><i class="bi bi-chat-text"></i></span>
+          <textarea name="pago[observaciones]" id="pago_observaciones"
+                    class="form-control" rows="3" placeholder="Notas adicionales sobre el pago (opcional)"><%= @pago.observaciones %></textarea>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <hr class="my-2">
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-cloud-upload me-1"></i>Enviar Soporte
+          </button>
+          <%= link_to cobro_path(@cobro), class: "btn btn-outline-secondary", data: { turbo: false } do %>
+            <i class="bi bi-x-lg me-1"></i>Cancelar
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  var soporteInput = document.getElementById("pago_soportes");
+  var previewContainer = document.getElementById("preview-container");
+  var filePreview = document.getElementById("file-preview");
+  var btnBorrar = document.getElementById("btn-borrar-archivo");
+  var ocrLoading = document.getElementById("ocr-loading");
+  var ocrResults = document.getElementById("ocr-results");
+
+  soporteInput.addEventListener("change", function() {
+    var files = this.files;
+    ocrResults.style.display = "none";
+    ocrLoading.style.display = "none";
+    if (!files.length) { previewContainer.style.display = "none"; return; }
+    previewContainer.style.display = "block";
+    filePreview.innerHTML = "";
+    for (var fi = 0; fi < files.length; fi++) {
+      var file = files[fi];
+      var sizeMB = (file.size / 1024 / 1024).toFixed(2);
+      var wrapper = document.createElement("div");
+      wrapper.className = "mb-2";
+      if (file.type.startsWith("image/")) {
+        var img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.className = "img-fluid rounded shadow-sm";
+        img.style.maxWidth = "100%";
+        img.onload = function() { URL.revokeObjectURL(this.src); };
+        wrapper.appendChild(img);
+      } else {
+        wrapper.innerHTML = '<p class="mb-0 text-muted py-3"><i class="bi bi-file-earmark-pdf display-4 d-block mb-2 text-danger"></i>' + file.name + ' (' + sizeMB + ' MB)</p>';
+      }
+      filePreview.appendChild(wrapper);
+    }
+    // OCR solo del primer archivo
+    parsearSoporte(files[0]);
+  });
+
+  btnBorrar.addEventListener("click", function() {
+    soporteInput.value = "";
+    previewContainer.style.display = "none";
+    filePreview.innerHTML = "";
+    ocrResults.style.display = "none";
+    ocrLoading.style.display = "none";
+  });
+
+  function parsearSoporte(file) {
+    ocrLoading.style.display = "block";
+    ocrResults.style.display = "none";
+    var formData = new FormData();
+    formData.append("archivo", file);
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    fetch("<%= parsear_soporte_cobros_path %>", {
+      method: "POST",
+      headers: { "X-CSRF-Token": csrfToken ? csrfToken.content : "" },
+      body: formData
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      ocrLoading.style.display = "none";
+      if (data.error) {
+        mostrarOcrAviso("No se pudo analizar el comprobante. Ingresa los datos manualmente.");
+        return;
+      }
+      aplicarDatosOcr(data);
+    })
+    .catch(function() {
+      ocrLoading.style.display = "none";
+      mostrarOcrAviso("No se pudo analizar el comprobante. Ingresa los datos manualmente.");
+    });
+  }
+
+  function aplicarDatosOcr(data) {
+    var items = [];
+    if (data.monto) {
+      document.getElementById("pago_monto_pagado").value = data.monto;
+      items.push('<i class="bi bi-check-circle text-success me-1"></i>Monto: <strong>$' + Number(data.monto).toLocaleString("es-CO") + '</strong>');
+    }
+    if (data.fecha) {
+      document.getElementById("pago_fecha_pago").value = data.fecha;
+      items.push('<i class="bi bi-check-circle text-success me-1"></i>Fecha: <strong>' + data.fecha + '</strong>');
+    }
+    if (data.metodo_pago) {
+      var select = document.getElementById("pago_metodo_pago");
+      for (var i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === data.metodo_pago) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+      items.push('<i class="bi bi-check-circle text-success me-1"></i>M&eacute;todo: <strong>' + data.metodo_pago.charAt(0).toUpperCase() + data.metodo_pago.slice(1) + '</strong>');
+    }
+    if (data.banco) {
+      items.push('<i class="bi bi-bank text-primary me-1"></i>Banco: <strong>' + data.banco + '</strong>');
+    }
+    if (data.pagador) {
+      items.push('<i class="bi bi-person text-primary me-1"></i>Pagador: <strong>' + data.pagador + '</strong>');
+    }
+    if (data.telefono) {
+      items.push('<i class="bi bi-telephone text-info me-1"></i>Tel: <strong>' + data.telefono + '</strong>');
+    }
+    if (data.email) {
+      items.push('<i class="bi bi-envelope text-info me-1"></i>Email: <strong>' + data.email + '</strong>');
+    }
+    if (data.transaccion) {
+      items.push('<i class="bi bi-receipt text-info me-1"></i>Transacci&oacute;n: <strong>' + data.transaccion + '</strong>');
+    }
+    if (data.referencia) {
+      items.push('<i class="bi bi-hash text-info me-1"></i>Referencia: <strong>' + data.referencia + '</strong>');
+    }
+    if (data.estado) {
+      var ec = data.estado === 'aprobada' ? 'text-success' : 'text-warning';
+      items.push('<i class="bi bi-patch-check ' + ec + ' me-1"></i>Estado: <strong>' + data.estado + '</strong>');
+    }
+    if (data.detalle_pago) {
+      items.push('<i class="bi bi-file-text text-muted me-1"></i>Detalle: <strong>' + data.detalle_pago + '</strong>');
+    }
+    if (items.length > 0) {
+      ocrResults.innerHTML =
+        '<div class="alert alert-success border-0 shadow-sm">' +
+          '<h6 class="alert-heading fw-semibold mb-2"><i class="bi bi-magic me-1"></i>Datos detectados del comprobante</h6>' +
+          '<div class="d-flex flex-wrap gap-3">' + items.map(function(item) { return '<span>' + item + '</span>'; }).join('') + '</div>' +
+          '<hr class="my-2">' +
+          '<div class="d-flex justify-content-between align-items-center">' +
+            '<small class="text-muted"><i class="bi bi-exclamation-circle me-1"></i>Verifica los datos antes de enviar</small>' +
+            '<span class="badge bg-' + (data.confianza === 'alta' ? 'success' : data.confianza === 'media' ? 'warning text-dark' : 'danger') + '">Confianza: ' + (data.confianza || 'baja') + '</span>' +
+          '</div>' +
+        '</div>';
+      ocrResults.style.display = "block";
+    } else {
+      mostrarOcrAviso("No se detectaron datos en el comprobante. Ingresa los datos manualmente.");
+    }
+  }
+
+  function mostrarOcrAviso(mensaje) {
+    ocrResults.innerHTML =
+      '<div class="alert alert-warning border-0 shadow-sm">' +
+        '<i class="bi bi-info-circle me-1"></i>' + mensaje +
+      '</div>';
+    ocrResults.style.display = "block";
+  }
+</script>

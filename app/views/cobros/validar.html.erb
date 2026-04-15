@@ -1,0 +1,477 @@
+<% content_for(:title, "Validar Pago") %>
+
+<style>
+  .payment-steps { display: flex; align-items: center; justify-content: center; }
+  .payment-steps .step { display: flex; flex-direction: column; align-items: center; position: relative; }
+  .payment-steps .step-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #dee2e6; background: #fff; color: #adb5bd; font-size: 1.2rem; }
+  .payment-steps .step.completed .step-circle { background: #1B7A4A; border-color: #1B7A4A; color: #fff; }
+  .payment-steps .step.active .step-circle { background: #C9A84C; border-color: #C9A84C; color: #fff; box-shadow: 0 0 0 4px rgba(201,168,76,0.2); }
+  .payment-steps .step span { font-size: 0.8rem; margin-top: 6px; color: #6c757d; }
+  .payment-steps .step.completed span, .payment-steps .step.active span { color: #1B2A4A; font-weight: 600; }
+  .payment-steps .step-line { flex: 1; height: 2px; background: #dee2e6; margin: 0 8px; margin-bottom: 22px; }
+  .payment-steps .step-line.completed { background: #1B7A4A; }
+  .comparison-mismatch { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; }
+  .comparison-match { background: #d1e7dd; border: 1px solid #198754; border-radius: 0.5rem; }
+</style>
+
+<% es_multiple = @cobros_grupo.count > 1 %>
+
+<%# ── Page header ── %>
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><%= link_to "Cobros", cobros_path %></li>
+        <li class="breadcrumb-item"><%= link_to @cobro.periodo_cobro.nombre, cobro_path(@cobro) %></li>
+        <li class="breadcrumb-item active">Validar Pago</li>
+      </ol>
+    </nav>
+    <h1 class="h3 fw-bold mb-0">
+      <i class="bi bi-check-square me-2"></i>Validar Pago
+      <% if es_multiple %>
+        <span class="badge bg-primary ms-2"><%= @cobros_grupo.count %> meses</span>
+      <% end %>
+    </h1>
+  </div>
+  <%= link_to cobro_path(@cobro), class: "btn btn-outline-dark" do %>
+    <i class="bi bi-arrow-left me-1"></i>Volver
+  <% end %>
+</div>
+
+<%# ── Payment Steps Timeline ── %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-4">
+    <div class="payment-steps">
+      <div class="step completed">
+        <div class="step-circle"><i class="bi bi-clock"></i></div>
+        <span>Generado</span>
+      </div>
+      <div class="step-line completed"></div>
+      <div class="step active">
+        <div class="step-circle"><i class="bi bi-paperclip"></i></div>
+        <span>Soporte</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+        <span>Validado</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Grouped Payment Banner ── %>
+<% if es_multiple %>
+  <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+    <i class="bi bi-collection-fill me-3 fs-4"></i>
+    <div>
+      <strong>Pago Multiple</strong> &mdash; Este soporte cubre <strong><%= @cobros_grupo.count %> periodos</strong>
+      de <strong><%= @cobro.miembro.nombre_completo %></strong>.
+      Al confirmar o rechazar, se aplicara a todos los periodos listados.
+    </div>
+  </div>
+<% end %>
+
+<%# ── Cobros del grupo (tabla) ── %>
+<% if es_multiple %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom">
+      <h6 class="mb-0 fw-semibold">
+        <i class="bi bi-list-check me-2 text-primary"></i>Periodos Cubiertos
+        <span class="badge bg-primary ms-2"><%= @cobros_grupo.count %></span>
+      </h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Periodo</th>
+              <th class="text-end">Monto Cobro</th>
+              <th class="text-end">Monto Pagado</th>
+              <th class="text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @cobros_grupo.each do |cobro_g| %>
+              <tr class="<%= 'table-active' if cobro_g.id == @cobro.id %>">
+                <td class="fw-semibold">
+                  <%= link_to cobro_g.periodo_cobro.nombre, cobro_path(cobro_g) %>
+                  <% if cobro_g.id == @cobro.id %>
+                    <i class="bi bi-arrow-left-short text-primary"></i>
+                  <% end %>
+                </td>
+                <td class="text-end"><%= pesos(cobro_g.monto) %></td>
+                <td class="text-end"><%= pesos(cobro_g.pago&.monto_pagado) %></td>
+                <td class="text-center"><%= render "shared/estado_badge", estado: cobro_g.estado %></td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <td class="fw-bold">Total</td>
+              <td class="text-end fw-bold text-success"><%= pesos(@total_grupo) %></td>
+              <td class="text-end fw-bold"><%= pesos(@cobros_grupo.sum { |c| c.pago&.monto_pagado || 0 }) %></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# ── Amount Comparison ── %>
+<% if es_multiple %>
+  <% total_pagado = @cobros_grupo.sum { |c| c.pago&.monto_pagado || 0 } %>
+  <% montos_coinciden = @total_grupo == total_pagado %>
+<% else %>
+  <% montos_coinciden = @cobro.monto == @pago.monto_pagado %>
+<% end %>
+<div class="<%= montos_coinciden ? 'comparison-match' : 'comparison-mismatch' %> p-3 mb-4 d-flex align-items-center justify-content-center gap-4 flex-wrap">
+  <div class="text-center">
+    <small class="text-muted d-block"><%= es_multiple ? "Total Cobros" : "Monto del Cobro" %></small>
+    <span class="fs-4 fw-bold"><%= pesos(es_multiple ? @total_grupo : @cobro.monto) %></span>
+  </div>
+  <div class="text-center">
+    <% if montos_coinciden %>
+      <i class="bi bi-check-circle-fill text-success fs-3"></i>
+    <% else %>
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-3"></i>
+    <% end %>
+  </div>
+  <div class="text-center">
+    <small class="text-muted d-block"><%= es_multiple ? "Total Pagado" : "Monto Pagado" %></small>
+    <span class="fs-4 fw-bold"><%= pesos(es_multiple ? total_pagado : @pago.monto_pagado) %></span>
+  </div>
+  <% unless montos_coinciden %>
+    <div class="w-100 text-center">
+      <small class="text-warning fw-semibold">
+        <i class="bi bi-exclamation-triangle me-1"></i>Los montos no coinciden. Verifique antes de confirmar.
+      </small>
+    </div>
+  <% end %>
+</div>
+
+<%# ── Side-by-side: Info + Soporte ── %>
+<div class="row g-4 mb-4">
+  <%# Left: Cobro & Pago Info %>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i>Miembro</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-person text-muted me-2"></i>
+            <div>
+              <small class="text-muted d-block">Miembro</small>
+              <span class="fw-semibold"><%= @cobro.miembro.nombre_completo %></span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-building text-muted me-2"></i>
+            <div>
+              <small class="text-muted d-block">Logia</small>
+              <span class="fw-semibold"><%= @cobro.miembro.logia.nombre %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-credit-card me-2 text-primary"></i>Datos del Pago</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-calendar-check text-muted me-2"></i>
+            <div>
+              <small class="text-muted d-block">Fecha de Pago</small>
+              <span class="fw-semibold"><%= l(@pago.fecha_pago, format: :short) rescue @pago.fecha_pago %></span>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-wallet2 text-muted me-2"></i>
+            <div>
+              <small class="text-muted d-block">M&eacute;todo de Pago</small>
+              <span class="fw-semibold"><%= @pago.metodo_pago.humanize %></span>
+            </div>
+          </div>
+        </div>
+        <% if @pago.observaciones.present? %>
+          <div>
+            <div class="d-flex align-items-start">
+              <i class="bi bi-chat-text text-muted me-2 mt-1"></i>
+              <div>
+                <small class="text-muted d-block">Observaciones</small>
+                <span><%= @pago.observaciones %></span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# Right: Soporte Preview %>
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0 fw-semibold">
+          <i class="bi bi-file-earmark-image me-2 text-primary"></i>Soporte(s) de Pago
+          <% if @pago.soportes.attached? && @pago.soportes.count > 1 %>
+            <span class="badge bg-primary ms-1"><%= @pago.soportes.count %></span>
+          <% end %>
+        </h6>
+      </div>
+      <div class="card-body">
+        <% if @pago.soportes.attached? %>
+          <% @pago.soportes.each_with_index do |soporte, idx| %>
+            <div class="<%= 'mb-4 pb-3 border-bottom' if idx < @pago.soportes.count - 1 %>">
+              <% if @pago.soportes.count > 1 %>
+                <small class="text-muted fw-semibold d-block mb-2">Comprobante <%= idx + 1 %></small>
+              <% end %>
+              <% if soporte.content_type.start_with?("image") %>
+                <div class="text-center w-100">
+                  <%= image_tag url_for(soporte),
+                        class: "img-fluid rounded shadow",
+                        style: "max-height: 500px;",
+                        alt: "Soporte de pago #{idx + 1}" %>
+                  <div class="mt-3">
+                    <%= link_to rails_blob_path(soporte, disposition: "inline"), target: "_blank", class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-arrows-fullscreen me-1"></i>Ver en pantalla completa
+                    <% end %>
+                  </div>
+                </div>
+              <% else %>
+                <div class="text-center py-4">
+                  <i class="bi bi-file-earmark-pdf display-1 text-danger"></i>
+                  <p class="mt-3 text-muted"><%= soporte.filename %></p>
+                  <%= link_to rails_blob_path(soporte, disposition: "inline"), target: "_blank", class: "btn btn-outline-primary" do %>
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Abrir documento PDF
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-image display-4"></i>
+            <p class="mt-2">No hay soporte adjunto</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── OCR Analysis ── %>
+<% if @pago.soportes.attached? %>
+<% datos_previos = @pago.datos_ocr %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-cpu me-2 text-primary"></i>An&aacute;lisis del Comprobante</h6>
+    <button type="button" id="btn-analizar" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-arrow-clockwise me-1"></i><%= datos_previos.present? ? "Re-analizar" : "Analizar soporte" %>
+    </button>
+  </div>
+  <div class="card-body">
+    <div id="ocr-loading-validar" style="display: none;">
+      <div class="d-flex align-items-center text-info">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        <span>Analizando comprobante...</span>
+      </div>
+    </div>
+    <div id="ocr-results-validar">
+      <% if datos_previos.blank? %>
+        <div class="d-flex align-items-center text-info">
+          <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+          <span>Cargando an&aacute;lisis...</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  var montoMatch = <%= @pago.monto_pagado.to_i %>;
+  var fechaPago = "<%= @pago.fecha_pago&.iso8601 %>";
+  var metodoPago = "<%= @pago.metodo_pago %>";
+
+  function renderOcrResults(data) {
+    var results = document.getElementById("ocr-results-validar");
+    if (data.error) {
+      results.innerHTML = '<div class="alert alert-warning mb-0"><i class="bi bi-exclamation-triangle me-1"></i>' + data.error + '</div>';
+      return;
+    }
+
+    function campo(icono, label, valor, cssClass) {
+      return '<div class="col-md-4"><div class="p-2 rounded ' + (cssClass || 'bg-light') + '">' +
+        '<small class="text-muted d-block">' + label + '</small>' +
+        '<span class="fw-bold"><i class="bi bi-' + icono + ' me-1"></i>' + valor + '</span>' +
+        '</div></div>';
+    }
+
+    function campoValidado(icono, label, valor, ok) {
+      var cls = ok ? 'comparison-match' : 'comparison-mismatch';
+      var warn = ok ? '' : ' <i class="bi bi-exclamation-triangle text-warning"></i>';
+      return '<div class="col-md-4"><div class="p-2 rounded ' + cls + '">' +
+        '<small class="text-muted d-block">' + label + '</small>' +
+        '<span class="fw-bold"><i class="bi bi-' + icono + ' me-1"></i>' + valor + '</span>' + warn +
+        '</div></div>';
+    }
+
+    var html = '';
+
+    // Estado de la transacción
+    if (data.estado) {
+      var estadoClass = data.estado === 'aprobada' ? 'alert-success' : data.estado === 'rechazada' ? 'alert-danger' : 'alert-warning';
+      var estadoIcon = data.estado === 'aprobada' ? 'check-circle-fill' : data.estado === 'rechazada' ? 'x-circle-fill' : 'clock';
+      html += '<div class="alert ' + estadoClass + ' border-0 py-2 mb-3 d-flex align-items-center">';
+      html += '<i class="bi bi-' + estadoIcon + ' me-2"></i>';
+      html += '<strong>Transacci&oacute;n ' + data.estado + '</strong>';
+      html += '</div>';
+    }
+
+    html += '<div class="row g-3">';
+
+    // Campos con validación cruzada (usan flags del validador)
+    if (data.monto) {
+      var montoOk = data.monto_match === true || data.monto_match == null;
+      html += campoValidado('currency-dollar', 'Monto detectado', '$' + Number(data.monto).toLocaleString("es-CO"), montoOk);
+    }
+    if (data.fecha) {
+      var fechaOk = data.fecha == fechaPago || !fechaPago;
+      html += campoValidado('calendar-check', 'Fecha detectada', data.fecha, fechaOk);
+    }
+    if (data.metodo_pago) {
+      var metodoOk = data.metodo_match === true || data.metodo_match === 'parcial' || data.metodo_match == null;
+      html += campoValidado('wallet2', 'M&eacute;todo detectado', data.metodo_pago.charAt(0).toUpperCase() + data.metodo_pago.slice(1), metodoOk);
+    }
+
+    // Campos informativos
+    if (data.banco) html += campo('bank', 'Banco / Pasarela', data.banco);
+    if (data.destinatario) html += campo('building', 'Destinatario', data.destinatario);
+    if (data.pagador) {
+      var pagadorOk = data.pagador_match === true || data.pagador_match == null;
+      html += campoValidado('person-fill', 'Pagador', data.pagador, pagadorOk);
+    }
+    if (data.telefono) html += campo('telephone-fill', 'Tel&eacute;fono', data.telefono);
+    if (data.email) html += campo('envelope-fill', 'Email', data.email);
+    if (data.transaccion) html += campo('receipt', 'No. Transacci&oacute;n', data.transaccion);
+    if (data.referencia) html += campo('hash', 'Referencia', data.referencia);
+    if (data.cuenta_destino) html += campo('credit-card', 'Cuenta destino', data.cuenta_destino);
+
+    html += '</div>';
+
+    // Detalle del pago
+    if (data.detalle_pago) {
+      html += '<div class="mt-3 p-2 rounded bg-light">';
+      html += '<small class="text-muted d-block">Detalle del pago</small>';
+      html += '<span class="fw-bold"><i class="bi bi-file-text me-1"></i>' + data.detalle_pago + '</span>';
+      html += '</div>';
+    }
+
+    // Alertas de validación
+    if (data.alertas && data.alertas.length > 0) {
+      html += '<div class="mt-3">';
+      data.alertas.forEach(function(alerta) {
+        var icon = alerta.tipo === 'danger' ? 'exclamation-triangle-fill' : alerta.tipo === 'warning' ? 'exclamation-triangle' : 'info-circle';
+        html += '<div class="alert alert-' + alerta.tipo + ' border-0 py-2 mb-2 d-flex align-items-start">';
+        html += '<i class="bi bi-' + icon + ' me-2 mt-1"></i>';
+        html += '<span>' + alerta.mensaje + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Confianza con score
+    if (data.confianza) {
+      var badgeClass = data.confianza === 'alta' ? 'success' : data.confianza === 'media' ? 'warning text-dark' : 'danger';
+      var scoreText = data.confianza_score != null ? ' (' + data.confianza_score + '%)' : '';
+      html += '<div class="mt-3 d-flex justify-content-between align-items-center">';
+      html += '<small class="text-muted"><i class="bi bi-info-circle me-1"></i>Los valores en amarillo no coinciden con los datos del miembro.</small>';
+      html += '<span class="badge bg-' + badgeClass + '">Confianza: ' + data.confianza + scoreText + '</span>';
+      html += '</div>';
+    }
+
+    results.innerHTML = html;
+  }
+
+  function fetchAnalisis(force) {
+    var loading = document.getElementById("ocr-loading-validar");
+    var results = document.getElementById("ocr-results-validar");
+    var btn = document.getElementById("btn-analizar");
+    btn.disabled = true;
+    loading.style.display = "block";
+    results.innerHTML = "";
+
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    fetch("<%= parsear_soporte_cobros_path %>", {
+      method: "POST",
+      headers: {
+        "X-CSRF-Token": csrfToken ? csrfToken.content : "",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ cobro_id: <%= @cobro.id %>, force: !!force })
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      loading.style.display = "none";
+      btn.disabled = false;
+      renderOcrResults(data);
+    })
+    .catch(function() {
+      loading.style.display = "none";
+      btn.disabled = false;
+      results.innerHTML = '<div class="alert alert-danger mb-0"><i class="bi bi-x-circle me-1"></i>Error al analizar el comprobante.</div>';
+    });
+  }
+
+  // Boton re-analizar (fuerza nuevo análisis)
+  document.getElementById("btn-analizar").addEventListener("click", function() {
+    fetchAnalisis(true);
+  });
+
+  // Siempre ejecutar análisis con validación al cargar la página
+  fetchAnalisis(false);
+</script>
+<% end %>
+
+<%# ── Action Buttons ── %>
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <%= link_to cobro_path(@cobro), class: "btn btn-outline-dark btn-lg" do %>
+        <i class="bi bi-arrow-left me-1"></i>Volver
+      <% end %>
+
+      <div class="d-flex gap-3">
+        <% cobros_pendientes = @cobros_grupo.select(&:soporte_adjunto?) %>
+        <% count_label = es_multiple ? " (#{cobros_pendientes.count} cobros)" : "" %>
+
+        <%= button_to rechazar_pago_cobro_path(@cobro),
+              method: :patch,
+              class: "btn btn-outline-danger btn-lg",
+              form: { data: { turbo_confirm: "#{es_multiple ? "Se rechazaran #{cobros_pendientes.count} pagos" : "Se rechazara este pago"}. Los cobros volveran a estado pendiente y se eliminara el soporte. \u00bfEsta seguro?" } } do %>
+          <i class="bi bi-x-circle me-1"></i>Rechazar<%= count_label %>
+        <% end %>
+
+        <%= button_to confirmar_pago_cobro_path(@cobro),
+              method: :patch,
+              class: "btn btn-success btn-lg",
+              form: { data: { turbo_confirm: "#{es_multiple ? "Se confirmaran #{cobros_pendientes.count} pagos y se generaran #{cobros_pendientes.count} Recibos de Caja" : "Se confirmara este pago y se generara el Recibo de Caja"}. \u00bfEsta seguro?" } } do %>
+          <i class="bi bi-check-circle me-1"></i>Confirmar<%= count_label %> y Generar RC
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

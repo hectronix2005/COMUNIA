@@ -1,0 +1,162 @@
+<% content_for(:title, "Recibo de Caja - #{@pago.numero_rc}") %>
+
+<style>
+  @media print {
+    .navbar, .btn, .no-print { display: none !important; }
+    .recibo-container { border: 2px solid #000 !important; }
+    body { background: #fff !important; }
+  }
+  .recibo-container {
+    max-width: 700px;
+    margin: 0 auto;
+    border: 2px solid #333;
+    padding: 0;
+    background: #fff;
+    font-family: 'Georgia', serif;
+  }
+  .recibo-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 20px 30px;
+    text-align: center;
+    border-bottom: 3px solid #c9a84c;
+  }
+  .recibo-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .recibo-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #c9a84c;
+  }
+  .recibo-rc {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .recibo-rc h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: #1a1a2e;
+    font-weight: bold;
+  }
+  .recibo-body {
+    padding: 25px 30px;
+  }
+  .recibo-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dotted #ccc;
+  }
+  .recibo-row:last-child {
+    border-bottom: none;
+  }
+  .recibo-label {
+    font-weight: bold;
+    color: #555;
+    min-width: 180px;
+  }
+  .recibo-value {
+    text-align: right;
+    color: #222;
+  }
+  .recibo-monto {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #1a1a2e;
+  }
+  .recibo-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 2px solid #dee2e6;
+    font-size: 0.85rem;
+    color: #666;
+  }
+  .recibo-firma {
+    margin-top: 40px;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+    display: inline-block;
+    min-width: 250px;
+    text-align: center;
+  }
+</style>
+
+<div class="mb-3 no-print">
+  <button onclick="window.print()" class="btn btn-primary">
+    Imprimir Recibo
+  </button>
+  <%= link_to "Volver", cobro_path(@pago.cobro), class: "btn btn-outline-dark" %>
+</div>
+
+<div class="recibo-container">
+  <div class="recibo-header">
+    <h2>Los Magios</h2>
+    <p>Recibo de Caja</p>
+  </div>
+
+  <div class="recibo-rc">
+    <h3><%= @pago.numero_rc %></h3>
+  </div>
+
+  <div class="recibo-body">
+    <div class="recibo-row">
+      <span class="recibo-label">Miembro:</span>
+      <span class="recibo-value"><%= @pago.cobro.miembro.nombre_completo %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">C&eacute;dula:</span>
+      <span class="recibo-value"><%= @pago.cobro.miembro.cedula %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">Logia:</span>
+      <span class="recibo-value"><%= @pago.cobro.miembro.logia.nombre %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">Periodo:</span>
+      <span class="recibo-value"><%= @pago.cobro.periodo_cobro.nombre %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">Monto Pagado:</span>
+      <span class="recibo-value recibo-monto"><%= number_to_currency(@pago.monto_pagado, unit: "$", delimiter: ".", separator: ",", precision: 0) %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">Fecha de Pago:</span>
+      <span class="recibo-value"><%= l(@pago.fecha_pago, format: :long) rescue @pago.fecha_pago %></span>
+    </div>
+
+    <div class="recibo-row">
+      <span class="recibo-label">M&eacute;todo de Pago:</span>
+      <span class="recibo-value"><%= @pago.metodo_pago.humanize %></span>
+    </div>
+  </div>
+
+  <div class="recibo-footer">
+    <div class="row">
+      <div class="col-6">
+        <p class="mb-1"><strong>Validado por:</strong></p>
+        <p class="mb-0"><%= @pago.validado_por&.nombre_completo %></p>
+      </div>
+      <div class="col-6 text-end">
+        <p class="mb-1"><strong>Fecha de validaci&oacute;n:</strong></p>
+        <p class="mb-0"><%= l(@pago.validado_at, format: :long) rescue @pago.validado_at %></p>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <div class="recibo-firma">
+        Firma Autorizada
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,174 @@
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+<div class="login-wrapper" data-turbo-cache="false">
+  <div class="login-card">
+
+    <%# ── Franja de logo: rompe el padding de la card ──────────── %>
+    <% if display_logia&.logo&.attached? %>
+      <div style="background: <%= display_logia.color_display %>; margin: -2.5rem -2.5rem 1.5rem -2.5rem; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; display:flex; align-items:center; justify-content:center;">
+        <%= image_tag display_logia.logo, style: "max-height:90px; max-width:100%; object-fit:contain;", alt: display_logia.nombre_display %>
+      </div>
+    <% end %>
+
+    <div class="text-center mb-4">
+      <% unless display_logia&.logo&.attached? %>
+        <div class="login-icon mb-3">
+          <% if display_logia %>
+            <span style="font-size: 3rem;"><%= display_logia.icono_display %></span>
+          <% else %>
+            <span style="font-size: 2.5rem; font-weight: 900; color: #6c757d; letter-spacing: -1px;">C·</span>
+          <% end %>
+        </div>
+      <% end %>
+      <h2 class="fw-bold" style="color: <%= display_logia&.color_display || '#6c757d' %>; letter-spacing: 1px;">
+        <%= display_logia&.nombre_display || "COMUNIA" %>
+      </h2>
+      <% if display_logia&.lema_display.present? %>
+        <p class="text-muted"><%= display_logia.lema_display %></p>
+      <% end %>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "needs-validation" }) do |f| %>
+      <div class="form-floating mb-3">
+        <%= f.text_field :email,
+            autofocus: true,
+            autocomplete: "username",
+            class: "form-control",
+            placeholder: "usuario",
+            id: "login-username" %>
+        <label for="login-username"><i class="bi bi-person me-1"></i> Usuario</label>
+      </div>
+
+      <div class="form-floating mb-3 position-relative">
+        <%= f.password_field :password,
+            autocomplete: "current-password",
+            class: "form-control",
+            placeholder: "Contrase\u00F1a",
+            id: "login-password" %>
+        <label for="login-password"><i class="bi bi-lock me-1"></i> Contrase&ntilde;a</label>
+        <button type="button"
+                class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3"
+                style="z-index: 5; text-decoration: none;"
+                onclick="togglePasswordVisibility(this)"
+                tabindex="-1"
+                aria-label="Mostrar contrase&ntilde;a">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+
+      <% if devise_mapping.rememberable? %>
+        <div class="mb-3 form-check form-switch">
+          <%= f.check_box :remember_me, class: "form-check-input", role: "switch", id: "remember-me" %>
+          <label class="form-check-label" for="remember-me">Recordarme</label>
+        </div>
+      <% end %>
+
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+        </button>
+      </div>
+    <% end %>
+
+    <div class="text-center mb-4">
+      <%= link_to new_password_path(resource_name), class: "text-muted small text-decoration-none" do %>
+        <i class="bi bi-question-circle me-1"></i>&iquest;Olvidaste tu contrase&ntilde;a?
+      <% end %>
+    </div>
+
+    <%# ── Credenciales de demostración ───────────────────────── %>
+    <div class="border-top pt-3">
+      <p class="text-center text-muted small mb-2">
+        <i class="bi bi-info-circle me-1"></i>Credenciales de demostración (clic para usar)
+      </p>
+      <div class="row g-2">
+        <% if display_logia.nil? %>
+          <%
+            super_admin = User.joins(:rol_ref).find_by(roles: { codigo: "super_admin" })
+          %>
+          <% if super_admin %>
+            <div class="col-12">
+              <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential"
+                      data-username="<%= super_admin.username %>" data-password="comunia2025!">
+                <span class="badge rounded-pill me-2" style="background: #C9A84C; color: #1B2A4A; min-width: 110px;">COMUNIA Admin</span>
+                <span class="text-muted small"><%= super_admin.username %></span>
+                <i class="bi bi-arrow-right-circle ms-auto"></i>
+              </button>
+            </div>
+          <% end %>
+        <% else %>
+          <%
+            logia_ids = [display_logia.id] + display_logia.logias.pluck(:id)
+            admins_tenant = User.where(logia_id: logia_ids)
+                                .joins(:rol_ref)
+                                .where(roles: { codigo: "admin_logia" })
+                                .order(:apellido, :nombre)
+            miembros_tenant = User.where(logia_id: logia_ids)
+                                  .joins(:rol_ref)
+                                  .where(roles: { codigo: "miembro" })
+                                  .order(:apellido, :nombre)
+          %>
+          <% if admins_tenant.any? %>
+            <div class="col-12">
+              <p class="text-muted small mb-1 fw-semibold">Administradores</p>
+              <% admins_tenant.each do |admin| %>
+                <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential mb-1"
+                        data-username="<%= admin.username %>" data-password="password123">
+                  <span class="badge rounded-pill me-2" style="background: <%= display_logia.color_display %>; color: #fff; min-width: 60px;">Admin</span>
+                  <span class="text-muted small text-truncate"><%= admin.username %></span>
+                  <i class="bi bi-arrow-right-circle ms-auto flex-shrink-0"></i>
+                </button>
+              <% end %>
+            </div>
+          <% end %>
+          <% if miembros_tenant.any? %>
+            <div class="col-12 mt-1">
+              <p class="text-muted small mb-1 fw-semibold"><%= display_logia.t_miembro.pluralize %></p>
+              <div style="max-height: 180px; overflow-y: auto;">
+                <% miembros_tenant.each do |m| %>
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential mb-1"
+                          data-username="<%= m.username %>" data-password="password123">
+                    <span class="badge rounded-pill me-2" style="background: #1B7A4A; color: #fff; min-width: 60px;"><%= display_logia.t_miembro %></span>
+                    <span class="text-muted small text-truncate"><%= m.username %></span>
+                    <i class="bi bi-arrow-right-circle ms-auto flex-shrink-0"></i>
+                  </button>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          <% if admins_tenant.empty? && miembros_tenant.empty? %>
+            <div class="col-12 text-center text-muted small">
+              <i class="bi bi-info-circle me-1"></i>No hay usuarios de demo configurados para este tenant.
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function togglePasswordVisibility(button) {
+    var input = document.getElementById("login-password");
+    var icon = button.querySelector("i");
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.remove("bi-eye");
+      icon.classList.add("bi-eye-slash");
+    } else {
+      input.type = "password";
+      icon.classList.remove("bi-eye-slash");
+      icon.classList.add("bi-eye");
+    }
+  }
+
+  document.querySelectorAll(".demo-credential").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.getElementById("login-username").value = this.dataset.username;
+      document.getElementById("login-password").value = this.dataset.password;
+      document.getElementById("login-username").focus();
+    });
+  });
+</script>

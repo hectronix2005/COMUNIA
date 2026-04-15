@@ -1,0 +1,149 @@
+<% content_for(:title, @logia.nombre) %>
+
+<div class="mb-4">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title h3 mb-0"><%= @logia.nombre %></h1>
+    </div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Nombre</dt>
+        <dd class="col-sm-9"><%= @logia.nombre %></dd>
+
+        <dt class="col-sm-3">Codigo</dt>
+        <dd class="col-sm-9"><%= @logia.codigo %></dd>
+
+        <% if @logia.slug.present? %>
+          <dt class="col-sm-3">Subdominio</dt>
+          <dd class="col-sm-9">
+              <code><%= request.host_with_port %></code>
+            <span class="badge bg-info text-dark ms-2">White-label URL</span>
+          </dd>
+        <% end %>
+
+        <dt class="col-sm-3">Secuencia RC</dt>
+        <dd class="col-sm-9"><%= @logia.rc_secuencia_actual || 0 %></dd>
+
+        <dt class="col-sm-3">Miembros activos</dt>
+        <dd class="col-sm-9"><%= @logia.miembros.activos.count %></dd>
+
+        <% if @logia.nombre_app.present? || @logia.icono.present? || @logia.lema.present? || @logia.color_primario.present? %>
+          <dt class="col-sm-3 mt-3 text-muted">Branding</dt>
+          <dd class="col-sm-9 mt-3">
+            <span class="me-3"><%= @logia.icono_display %> <strong><%= @logia.nombre_display %></strong></span>
+            <% if @logia.color_primario.present? %>
+              <span class="badge border" style="background:<%= @logia.color_display %>;color:#fff;"><%= @logia.color_display %></span>
+            <% end %>
+            <% if @logia.lema_display.present? %>
+              <span class="text-muted ms-2 fst-italic"><%= @logia.lema_display %></span>
+            <% end %>
+          </dd>
+          <% if @logia.termino_miembro.present? || @logia.termino_logia.present? || @logia.termino_cobro.present? %>
+            <dt class="col-sm-3 text-muted">Terminología</dt>
+            <dd class="col-sm-9">
+              Miembro → <strong><%= @logia.t_miembro %></strong> &nbsp;
+              Logia → <strong><%= @logia.t_logia %></strong> &nbsp;
+              Cobro → <strong><%= @logia.t_cobro %></strong>
+            </dd>
+          <% end %>
+        <% end %>
+      </dl>
+    </div>
+    <div class="card-footer">
+      <% if policy(Logia).index? %>
+        <%= link_to "Volver", logias_path, class: "btn btn-outline-secondary" %>
+      <% else %>
+        <%= link_to "Volver", root_path, class: "btn btn-outline-secondary" %>
+      <% end %>
+      <% if policy(@logia).update? %>
+        <%= link_to "Editar", edit_logia_path(@logia), class: "btn btn-outline-primary" %>
+      <% end %>
+      <%= link_to logia_conceptos_cobro_path(@logia), class: "btn btn-primary" do %>
+        <i class="bi bi-list-columns-reverse me-1"></i>Desglose de Cuota (<%= number_to_currency(@logia.monto_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %>)
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if @logia.conceptos_cobro.activos.any? %>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-list-columns-reverse me-2"></i>Cuota Mensual</h5>
+      <div class="d-flex align-items-center gap-3">
+        <strong class="text-primary"><%= number_to_currency(@logia.monto_mensual, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong>
+        <button class="btn btn-sm btn-outline-secondary collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#cuotaDetalle"
+                aria-expanded="false" aria-controls="cuotaDetalle"
+                id="cuotaToggle">
+          <i class="bi bi-chevron-down" style="transition: transform 0.2s"></i>
+        </button>
+      </div>
+    </div>
+    <div class="collapse" id="cuotaDetalle">
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <tbody>
+          <% @logia.conceptos_cobro.activos.ordenados.each do |concepto| %>
+            <tr>
+              <td><%= concepto.nombre %></td>
+              <td class="text-end"><%= number_to_currency(concepto.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Miembros</h2>
+  <div class="btn-group btn-group-sm">
+    <%= link_to "Activos", logia_path(@logia, estado: "activo"),
+          class: "btn #{@estado_filtro == 'activo' ? 'btn-success' : 'btn-outline-success'}" %>
+    <%= link_to "Irregulares", logia_path(@logia, estado: "irregular"),
+          class: "btn #{@estado_filtro == 'irregular' ? 'btn-warning' : 'btn-outline-warning'}" %>
+    <%= link_to "Quite", logia_path(@logia, estado: "quite"),
+          class: "btn #{@estado_filtro == 'quite' ? 'btn-secondary' : 'btn-outline-secondary'}" %>
+    <%= link_to "Todos", logia_path(@logia, estado: ""),
+          class: "btn #{@estado_filtro.blank? ? 'btn-dark' : 'btn-outline-dark'}" %>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <% sort_dir_for = ->(col) { @sort_col == col && @sort_dir == "asc" ? "desc" : "asc" } %>
+      <% sort_icon_for = ->(col) { @sort_col == col ? (@sort_dir == "asc" ? " ↑" : " ↓") : "" } %>
+      <tr>
+        <th><%= link_to "Numero#{sort_icon_for.call('numero_miembro')}".html_safe, logia_path(@logia, sort: "numero_miembro", dir: sort_dir_for.call("numero_miembro"), estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
+        <th><%= link_to "Nombre#{sort_icon_for.call('nombre')}".html_safe,         logia_path(@logia, sort: "nombre",         dir: sort_dir_for.call("nombre"),         estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
+        <th><%= link_to "Cedula#{sort_icon_for.call('cedula')}".html_safe,         logia_path(@logia, sort: "cedula",         dir: sort_dir_for.call("cedula"),         estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
+        <th><%= link_to "Grado#{sort_icon_for.call('grado')}".html_safe,           logia_path(@logia, sort: "grado",          dir: sort_dir_for.call("grado"),          estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @miembros.each do |miembro| %>
+        <tr>
+          <td><%= miembro.numero_miembro %></td>
+          <td><%= link_to miembro.nombre_completo, miembro_path(miembro) %></td>
+          <td><%= miembro.cedula %></td>
+          <td><%= miembro.grado %></td>
+          <td><%= render "shared/estado_badge", estado: miembro.estado %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @miembros %>
+
+<script>
+  document.getElementById('cuotaDetalle')?.addEventListener('show.bs.collapse', function() {
+    document.querySelector('#cuotaToggle i').style.transform = 'rotate(180deg)';
+  });
+  document.getElementById('cuotaDetalle')?.addEventListener('hide.bs.collapse', function() {
+    document.querySelector('#cuotaToggle i').style.transform = 'rotate(0deg)';
+  });
+</script>

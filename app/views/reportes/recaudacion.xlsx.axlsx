@@ -1,0 +1,18 @@
+wb = xlsx_package.workbook
+wb.add_worksheet(name: "Recaudacion") do |sheet|
+  sheet.add_row ["RC", "Miembro", "Logia", "Monto Pagado", "Fecha Pago", "Metodo"], style: wb.styles.add_style(b: true, bg_color: "1a1a2e", fg_color: "FFFFFF")
+
+  @pagos.each do |pago|
+    sheet.add_row [
+      pago.numero_rc,
+      pago.cobro.miembro.nombre_completo,
+      pago.cobro.miembro.logia.nombre,
+      pago.monto_pagado.to_f,
+      pago.fecha_pago.to_s,
+      pago.metodo_pago.humanize
+    ]
+  end
+
+  sheet.add_row []
+  sheet.add_row ["Total", "", "", @total.to_f], style: wb.styles.add_style(b: true)
+end

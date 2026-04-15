@@ -1,0 +1,251 @@
+<% content_for(:title, "Hospitalia") %>
+
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="mb-0 fw-bold"><i class="bi bi-heart-pulse me-2"></i>Hospitalia</h4>
+      <p class="text-muted small mb-0">Fondo de apoyo mutuo y bienestar</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalRecaudo">
+        <i class="bi bi-plus-circle me-1"></i>Agregar recaudo
+      </button>
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalGasto">
+        <i class="bi bi-plus-circle me-1"></i>Agregar gasto
+      </button>
+    </div>
+  </div>
+
+  <%# Saldo resumen %>
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm bg-success bg-opacity-10 text-success">
+        <div class="card-body text-center py-3">
+          <div class="fs-4 fw-bold"><%= number_to_currency(@total_recaudado, unit: "$", delimiter: ".", separator: ",") %></div>
+          <div class="small fw-semibold">Total Recaudado</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm bg-danger bg-opacity-10 text-danger">
+        <div class="card-body text-center py-3">
+          <div class="fs-4 fw-bold"><%= number_to_currency(@total_gastado, unit: "$", delimiter: ".", separator: ",") %></div>
+          <div class="small fw-semibold">Total Gastado</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm <%= @saldo >= 0 ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning' %>">
+        <div class="card-body text-center py-3">
+          <div class="fs-4 fw-bold"><%= number_to_currency(@saldo, unit: "$", delimiter: ".", separator: ",") %></div>
+          <div class="small fw-semibold">Saldo Disponible</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Acciones rápidas %>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <%= link_to hospitalia_recaudos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
+        <i class="bi bi-arrow-down-circle text-success fs-4 d-block mb-2"></i>
+        <div class="fw-semibold small">Recaudos</div>
+        <div class="text-muted" style="font-size:.75rem;">Ingresos al fondo</div>
+      <% end %>
+    </div>
+    <div class="col-6 col-md-3">
+      <%= link_to hospitalia_gastos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
+        <i class="bi bi-arrow-up-circle text-danger fs-4 d-block mb-2"></i>
+        <div class="fw-semibold small">Gastos</div>
+        <div class="text-muted" style="font-size:.75rem;">Egresos del fondo</div>
+      <% end %>
+    </div>
+    <div class="col-6 col-md-3">
+      <%= link_to hospitalia_cumpleanos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
+        <i class="bi bi-balloon-heart text-warning fs-4 d-block mb-2"></i>
+        <div class="fw-semibold small">Cumpleaños</div>
+        <div class="text-muted" style="font-size:.75rem;">Próximas fechas</div>
+      <% end %>
+    </div>
+    <div class="col-6 col-md-3">
+      <% miembro_actual = current_user.miembro %>
+      <% if miembro_actual %>
+        <%= link_to hospitalia_familiares_path(miembro_id: miembro_actual.id),
+              class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
+          <i class="bi bi-people text-info fs-4 d-block mb-2"></i>
+          <div class="fw-semibold small">Mi Familia</div>
+          <div class="text-muted" style="font-size:.75rem;">Familiares registrados</div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Últimas transacciones %>
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent fw-semibold d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-arrow-down-circle text-success me-2"></i>Últimos Recaudos</span>
+          <%= link_to "Ver todos", hospitalia_recaudos_path, class: "btn btn-sm btn-outline-secondary" %>
+        </div>
+        <div class="list-group list-group-flush">
+          <% if @recaudos.empty? %>
+            <div class="list-group-item text-muted small text-center py-3">Sin recaudos registrados</div>
+          <% else %>
+            <% @recaudos.each do |r| %>
+              <div class="list-group-item d-flex justify-content-between align-items-start py-2">
+                <div>
+                  <div class="fw-semibold small"><%= r.concepto %></div>
+                  <div class="text-muted" style="font-size:.75rem;"><%= r.fecha.strftime("%d/%m/%Y") %><% if r.miembro %> · <%= r.miembro.user.nombre_completo %><% end %></div>
+                </div>
+                <div class="text-end">
+                  <div class="text-success fw-semibold small">+<%= number_to_currency(r.monto, unit: "$", delimiter: ".", separator: ",") %></div>
+                  <% if r.soporte.attached? %>
+                    <a href="<%= rails_blob_path(r.soporte) %>" target="_blank" class="text-muted" style="font-size:.7rem;"><i class="bi bi-paperclip"></i> soporte</a>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent fw-semibold d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-arrow-up-circle text-danger me-2"></i>Últimos Gastos</span>
+          <%= link_to "Ver todos", hospitalia_gastos_path, class: "btn btn-sm btn-outline-secondary" %>
+        </div>
+        <div class="list-group list-group-flush">
+          <% if @gastos.empty? %>
+            <div class="list-group-item text-muted small text-center py-3">Sin gastos registrados</div>
+          <% else %>
+            <% @gastos.each do |g| %>
+              <div class="list-group-item d-flex justify-content-between align-items-start py-2">
+                <div>
+                  <div class="fw-semibold small"><%= g.concepto %></div>
+                  <div class="text-muted" style="font-size:.75rem;"><%= g.fecha.strftime("%d/%m/%Y") %><% if g.beneficiario %> · <%= g.beneficiario.user.nombre_completo %><% end %></div>
+                </div>
+                <div class="text-end">
+                  <div class="text-danger fw-semibold small">-<%= number_to_currency(g.monto, unit: "$", delimiter: ".", separator: ",") %></div>
+                  <% if g.soporte.attached? %>
+                    <a href="<%= rails_blob_path(g.soporte) %>" target="_blank" class="text-muted" style="font-size:.7rem;"><i class="bi bi-paperclip"></i> soporte</a>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Modal: Agregar recaudo ─────────────────────────────── %>
+<div class="modal fade" id="modalRecaudo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <%= form_with model: @recaudo, url: hospitalia_create_recaudo_path, method: :post, multipart: true, local: true do |f| %>
+        <div class="modal-header bg-success bg-opacity-10">
+          <h5 class="modal-title text-success"><i class="bi bi-arrow-down-circle me-2"></i>Agregar recaudo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= f.label :concepto, "Concepto *", class: "form-label fw-semibold" %>
+            <%= f.text_field :concepto, class: "form-control", required: true, placeholder: "Ej: Aporte voluntario" %>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <%= f.label :monto, "Monto *", class: "form-label fw-semibold" %>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <%= f.number_field :monto, class: "form-control", step: "0.01", min: "0", required: true %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <%= f.label :fecha, "Fecha *", class: "form-label fw-semibold" %>
+              <%= f.date_field :fecha, class: "form-control", required: true %>
+            </div>
+          </div>
+          <div class="mb-3 mt-3">
+            <%= f.label :miembro_id, "Aportante (opcional)", class: "form-label fw-semibold" %>
+            <%= f.collection_select :miembro_id, @miembros, :id, ->(m) { m.user.nombre_completo }, { include_blank: "— Sin asignar —" }, class: "form-select" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold" %>
+            <%= f.text_area :descripcion, rows: 2, class: "form-control", placeholder: "Notas adicionales..." %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :soporte, "Soporte (PDF o imagen)", class: "form-label fw-semibold" %>
+            <%= f.file_field :soporte, class: "form-control", accept: "image/*,application/pdf" %>
+            <div class="form-text">Adjunta comprobante del recaudo (opcional, máx ~10 MB).</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Registrar recaudo</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%# ── Modal: Agregar gasto ─────────────────────────────── %>
+<div class="modal fade" id="modalGasto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <%= form_with model: @gasto, url: hospitalia_create_gasto_path, method: :post, multipart: true, local: true do |f| %>
+        <div class="modal-header bg-danger bg-opacity-10">
+          <h5 class="modal-title text-danger"><i class="bi bi-arrow-up-circle me-2"></i>Agregar gasto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= f.label :concepto, "Concepto *", class: "form-label fw-semibold" %>
+            <%= f.text_field :concepto, class: "form-control", required: true, placeholder: "Ej: Apoyo salud H∴..." %>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <%= f.label :monto, "Monto *", class: "form-label fw-semibold" %>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <%= f.number_field :monto, class: "form-control", step: "0.01", min: "0", required: true %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <%= f.label :fecha, "Fecha *", class: "form-label fw-semibold" %>
+              <%= f.date_field :fecha, class: "form-control", required: true %>
+            </div>
+          </div>
+          <div class="mb-3 mt-3">
+            <%= f.label :beneficiario_id, "Beneficiario (opcional)", class: "form-label fw-semibold" %>
+            <%= f.collection_select :beneficiario_id, @miembros, :id, ->(m) { m.user.nombre_completo }, { include_blank: "— Sin asignar —" }, class: "form-select" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :descripcion, "Descripción", class: "form-label fw-semibold" %>
+            <%= f.text_area :descripcion, rows: 2, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :soporte, "Soporte (PDF o imagen)", class: "form-label fw-semibold" %>
+            <%= f.file_field :soporte, class: "form-control", accept: "image/*,application/pdf" %>
+            <div class="form-text">Adjunta la factura o comprobante (opcional).</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-check-lg me-1"></i>Registrar gasto</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if flash[:alert] && (@recaudo.errors.any? || @gasto.errors.any?) %>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var modal = new bootstrap.Modal(document.getElementById("<%= @recaudo.errors.any? ? 'modalRecaudo' : 'modalGasto' %>"));
+      modal.show();
+    });
+  </script>
+<% end %>

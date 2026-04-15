@@ -1,0 +1,209 @@
+<% content_for(:title, "Miembros") %>
+<% tab_activo = params[:tab] == "admins" ? "admins" : "miembros" %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Miembros</h1>
+  <% if policy(Miembro).create? %>
+    <%= link_to "Nuevo Miembro", new_miembro_path, class: "btn btn-primary" %>
+  <% end %>
+  <%= link_to corte_conciliaciones_path(logia_id: params[:logia_id].presence || current_user.logia_id.presence),
+        class: "btn btn-outline-info btn-sm" do %>
+    <i class="bi bi-clipboard2-check me-1"></i>Conciliar corte
+  <% end %>
+</div>
+
+<%# ── Tabs ────────────────────────────────────────────────── %>
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <%= link_to miembros_path(params.permit(:logia_id, :buscar, :estado, :corte_fecha)),
+          class: "nav-link #{'active' if tab_activo == 'miembros'}" do %>
+      <i class="bi bi-people me-1"></i>Miembros
+      <span class="badge bg-secondary ms-1"><%= @resumen_estados.values.sum %></span>
+    <% end %>
+  </li>
+  <li class="nav-item">
+    <%= link_to miembros_path(params.permit(:logia_id).merge(tab: "admins")),
+          class: "nav-link #{'active' if tab_activo == 'admins'}" do %>
+      <i class="bi bi-shield-lock me-1"></i>Administradores
+      <span class="badge bg-primary ms-1"><%= @admins.count %></span>
+    <% end %>
+  </li>
+</ul>
+
+<% if tab_activo == "admins" %>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th><%= current_logia.t_logia %></th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @admins.each do |admin| %>
+          <tr>
+            <td><%= admin.nombre_completo %></td>
+            <td><%= admin.email %></td>
+            <td><%= admin.logia&.nombre %></td>
+            <td>
+              <% miembro = admin.miembro %>
+              <% if miembro %>
+                <%= link_to "Ver perfil", miembro_path(miembro), class: "btn btn-sm btn-outline-primary" %>
+                <% if policy(miembro).update? %>
+                  <%= link_to "Editar", edit_miembro_path(miembro), class: "btn btn-sm btn-outline-secondary" %>
+                <% end %>
+              <% else %>
+                <span class="text-muted small">Sin perfil de miembro</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @admins.empty? %>
+          <tr><td colspan="4" class="text-center text-muted py-3">No hay administradores registrados.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+
+<%
+  tarjetas = [
+    { estado: "activo",               label: "Activos",               icon: "bi-check-circle-fill", color: "success"  },
+    { estado: "quite",                label: "Quite",                 icon: "bi-door-open",          color: "secondary"},
+    { estado: "irregular_temporal",   label: "Irregular Temporal",    icon: "bi-pause-circle",       color: "warning"  },
+    { estado: "irregular_permanente", label: "Irregular Permanente",  icon: "bi-x-circle",           color: "danger"   },
+  ]
+  total = @resumen_estados.values.sum
+%>
+<div class="row g-3 mb-4">
+  <% tarjetas.each do |t| %>
+    <div class="col-6 col-md-3">
+      <%= link_to miembros_path(params.permit(:logia_id, :buscar).merge(estado: t[:estado])), class: "text-decoration-none" do %>
+        <div class="card h-100 border-<%= t[:color] %>"
+             style="cursor:pointer; transition: transform 0.15s, box-shadow 0.15s;"
+             onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+             onmouseleave="this.style.transform='';this.style.boxShadow=''">
+          <div class="card-body text-center py-3">
+            <i class="bi <%= t[:icon] %> text-<%= t[:color] %>" style="font-size:1.8rem;"></i>
+            <div class="fw-bold fs-3 mt-1"><%= @resumen_estados[t[:estado]] || 0 %></div>
+            <div class="text-muted small"><%= t[:label] %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_tag miembros_path, method: :get, class: "row g-3 align-items-end" do %>
+      <div class="col-md-4">
+        <%= label_tag :buscar, "Buscar", class: "form-label" %>
+        <%= text_field_tag :buscar, params[:buscar], class: "form-control", placeholder: "Nombre, cedula o numero..." %>
+      </div>
+
+      <% if @logias.size > 1 %>
+        <div class="col-md-3">
+          <%= label_tag :logia_id, "Logia", class: "form-label" %>
+          <%= select_tag :logia_id,
+                options_from_collection_for_select(@logias, :id, :nombre, params[:logia_id]),
+                include_blank: "Todas las logias",
+                class: "form-select" %>
+        </div>
+      <% elsif @logias.size == 1 %>
+        <div class="col-md-3">
+          <%= label_tag nil, "Logia", class: "form-label" %>
+          <div class="form-control bg-light"><%= @logias.first.nombre %></div>
+        </div>
+      <% end %>
+
+      <div class="col-md-2">
+        <%= label_tag :estado, "Estado", class: "form-label" %>
+        <%= select_tag :estado,
+              options_for_select([
+                ["Activo",               "activo"],
+                ["Quite",                "quite"],
+                ["Irregular Temporal",   "irregular_temporal"],
+                ["Irregular Permanente", "irregular_permanente"]
+              ], params.key?(:estado) ? params[:estado] : "activo"),
+              include_blank: "Todos los estados",
+              class: "form-select" %>
+      </div>
+
+      <div class="col-md-2">
+        <%= label_tag :corte_fecha, "Corte a fecha", class: "form-label" %>
+        <%= date_field_tag :corte_fecha, params[:corte_fecha], class: "form-control",
+              title: "Filtra por estado histórico en esa fecha" %>
+      </div>
+
+      <div class="col-md-2">
+        <%= submit_tag "Filtrar", class: "btn btn-outline-primary w-100" %>
+        <% if params[:corte_fecha].present? %>
+          <%= link_to "✕ Limpiar fecha", miembros_path(params.permit(:estado, :logia_id, :buscar)),
+                class: "btn btn-link btn-sm text-muted mt-1 w-100 text-center" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% if @corte_fecha %>
+  <div class="alert alert-info d-flex align-items-center gap-2 py-2 mb-3">
+    <i class="bi bi-calendar-check fs-5"></i>
+    <span>
+      Mostrando miembros en estado
+      <strong><%= { "activo" => "Activo", "quite" => "Quite", "irregular_temporal" => "Irregular Temporal", "irregular_permanente" => "Irregular Permanente" }[params[:estado].presence || "activo"] %></strong>
+      al <strong><%= l(@corte_fecha, format: :long) %></strong>
+      — <strong><%= @miembros.total_count %></strong> miembro(s)
+    </span>
+  </div>
+<% end %>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Numero</th>
+        <th>Nombre</th>
+        <th>Cedula</th>
+        <th>Logia</th>
+        <th>Grado</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @miembros.each do |miembro| %>
+        <tr>
+          <td><%= miembro.numero_miembro %></td>
+          <td><%= miembro.nombre_completo %></td>
+          <td><%= miembro.cedula %></td>
+          <td><%= miembro.logia.nombre %></td>
+          <td><%= miembro.grado %></td>
+          <td><%= render "shared/estado_badge", estado: miembro.estado %></td>
+          <td>
+            <%= link_to "Ver", miembro_path(miembro), class: "btn btn-sm btn-outline-primary" %>
+            <% if policy(miembro).update? %>
+              <%= link_to "Editar", edit_miembro_path(miembro), class: "btn btn-sm btn-outline-secondary" %>
+              <% if miembro.activo? %>
+                <%= link_to cambiar_estado_miembro_path(miembro), class: "btn btn-sm btn-outline-warning" do %>
+                  <i class="bi bi-person-dash me-1"></i>Desactivar
+                <% end %>
+              <% else %>
+                <%= link_to cambiar_estado_miembro_path(miembro), class: "btn btn-sm btn-outline-success" do %>
+                  <i class="bi bi-person-check me-1"></i>Reactivar
+                <% end %>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @miembros %>
+
+<% end %> <%# fin tab miembros %>

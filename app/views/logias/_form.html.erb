@@ -1,0 +1,112 @@
+<%= form_with(model: @logia, class: "needs-validation") do |f| %>
+  <% if @logia.errors.any? %>
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">Se encontraron <%= pluralize(@logia.errors.count, "error") %>:</h4>
+      <ul class="mb-0">
+        <% @logia.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# ── Identificación básica ──────────────────────────────── %>
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <%= f.label :nombre, class: "form-label fw-semibold" %>
+      <%= f.text_field :nombre, class: "form-control #{'is-invalid' if @logia.errors[:nombre].any?}" %>
+      <% if @logia.errors[:nombre].any? %>
+        <div class="invalid-feedback"><%= @logia.errors[:nombre].join(", ") %></div>
+      <% end %>
+    </div>
+    <div class="col-md-3">
+      <%= f.label :codigo, class: "form-label fw-semibold" %>
+      <%= f.text_field :codigo, class: "form-control #{'is-invalid' if @logia.errors[:codigo].any?}", placeholder: "LOG001" %>
+      <% if @logia.errors[:codigo].any? %>
+        <div class="invalid-feedback"><%= @logia.errors[:codigo].join(", ") %></div>
+      <% end %>
+    </div>
+    <div class="col-md-3">
+      <%= f.label :slug, "Subdominio / Slug", class: "form-label fw-semibold" %>
+      <%= f.text_field :slug, class: "form-control #{'is-invalid' if @logia.errors[:slug].any?}",
+                       placeholder: "losmagios" %>
+      <%
+        _base = request.host.split(".").drop(1).join(".")
+        _port = (request.port != 80 && request.port != 443) ? ":#{request.port}" : ""
+        _base_with_port = _base.present? ? "#{_base}#{_port}" : "#{request.host}#{_port}"
+        _preview_slug = @logia.slug.presence || "mi-logia"
+      %>
+      <div class="form-text">URL: <strong><%= _preview_slug %>.<%= _base_with_port %></strong></div>
+      <% if @logia.errors[:slug].any? %>
+        <div class="invalid-feedback"><%= @logia.errors[:slug].join(", ") %></div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Branding / White-label ─────────────────────────────── %>
+  <div class="card border-secondary mb-4">
+    <div class="card-header bg-light">
+      <h6 class="mb-0"><i class="bi bi-palette me-2"></i>Personalización (White-label)</h6>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <%= f.label :nombre_app, "Nombre de la app", class: "form-label" %>
+          <%= f.text_field :nombre_app, class: "form-control", placeholder: "Ej: Los Magios" %>
+          <div class="form-text">Si está vacío se usa el nombre de la logia.</div>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :icono, "Icono (emoji)", class: "form-label" %>
+          <%= f.text_field :icono, class: "form-control", placeholder: "👁️" %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :color_primario, "Color primario", class: "form-label" %>
+          <div class="input-group">
+            <input type="color" value="<%= @logia.color_display %>"
+                   class="form-control form-control-color"
+                   oninput="document.getElementById('color_primario_text').value=this.value">
+            <%= f.text_field :color_primario, class: "form-control", placeholder: "#1B2A4A",
+                             id: "color_primario_text",
+                             value: (@logia.color_primario.presence || "#1B2A4A") %>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :logo, "Logo (imagen)", class: "form-label" %>
+          <%= f.file_field :logo, class: "form-control", accept: "image/*" %>
+          <% if @logia.logo.attached? %>
+            <div class="mt-1">
+              <%= image_tag @logia.logo, height: 30, class: "rounded" %>
+              <small class="text-muted ms-1">Logo actual</small>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-12">
+          <%= f.label :lema, "Lema / tagline", class: "form-label" %>
+          <%= f.text_field :lema, class: "form-control", placeholder: "Ej: We Do! We Do!" %>
+        </div>
+      </div>
+
+      <hr class="my-3">
+      <h6 class="text-muted small mb-3">Terminología personalizada <span class="text-muted fw-normal">(dejar vacío para usar los términos por defecto)</span></h6>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <%= f.label :termino_miembro, "Término para «Miembro»", class: "form-label" %>
+          <%= f.text_field :termino_miembro, class: "form-control", placeholder: "Miembro" %>
+        </div>
+        <div class="col-md-4">
+          <%= f.label :termino_logia, "Término para «Logia»", class: "form-label" %>
+          <%= f.text_field :termino_logia, class: "form-control", placeholder: "Logia" %>
+        </div>
+        <div class="col-md-4">
+          <%= f.label :termino_cobro, "Término para «Cobro»", class: "form-label" %>
+          <%= f.text_field :termino_cobro, class: "form-control", placeholder: "Cobro" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancelar", logias_path, class: "btn btn-outline-secondary ms-2" %>
+  </div>
+<% end %>

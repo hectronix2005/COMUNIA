@@ -1,0 +1,50 @@
+<%= form_with(model: @rol, url: @rol.persisted? ? role_path(@rol) : roles_path, class: "needs-validation") do |f| %>
+  <% if @rol.errors.any? %>
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">Se encontraron <%= pluralize(@rol.errors.count, "error") %>:</h4>
+      <ul class="mb-0">
+        <% @rol.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :nombre, class: "form-label" %>
+    <%= f.text_field :nombre, class: "form-control #{'is-invalid' if @rol.errors[:nombre].any?}", placeholder: "Ej: Tesorero" %>
+    <% if @rol.errors[:nombre].any? %>
+      <div class="invalid-feedback"><%= @rol.errors[:nombre].join(", ") %></div>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :codigo, class: "form-label" %>
+    <%= f.text_field :codigo, class: "form-control #{'is-invalid' if @rol.errors[:codigo].any?}", placeholder: "Ej: tesorero" %>
+    <% if @rol.errors[:codigo].any? %>
+      <div class="invalid-feedback"><%= @rol.errors[:codigo].join(", ") %></div>
+    <% end %>
+    <div class="form-text">Identificador unico en minusculas, sin espacios.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :descripcion, class: "form-label" %>
+    <%= f.text_field :descripcion, class: "form-control", placeholder: "Descripcion opcional del rol" %>
+  </div>
+
+  <% if current_user.rol_ref&.es_super_admin? %>
+    <div class="mb-3">
+      <%= f.label :logia_id, "Tenant", class: "form-label" %>
+      <%= f.select :logia_id,
+            options_from_collection_for_select(Logia.ordenadas, :id, :nombre_display, @rol.logia_id),
+            { include_blank: "— COMUNIA (todos los tenants) —" },
+            class: "form-select" %>
+      <div class="form-text">Dejar vacío para un rol compartido entre todos los tenants.</div>
+    </div>
+  <% end %>
+
+  <div class="mt-4">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancelar", roles_path, class: "btn btn-outline-secondary ms-2" %>
+  </div>
+<% end %>

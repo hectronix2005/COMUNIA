@@ -1,0 +1,100 @@
+class ApplicationController < ActionController::Base
+  include Pundit::Authorization
+
+  allow_browser versions: :modern
+  before_action :authenticate_user!
+  before_action :configure_permitted_parameters, if: :devise_controller?
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+  helper_method :current_miembro, :current_logia, :display_logia
+
+  def current_miembro
+    @current_miembro ||= current_user&.miembro
+  end
+
+  # Para scoping de datos: siempre tiene valor (fallback a primera logia).
+  def current_logia
+    @current_logia ||= resolve_tenant
+  end
+
+  # Para branding visual: nil cuando es contexto de plataforma (sin subdominio, sin usuario, sin preview).
+  # Evita mostrar el branding de un tenant específico en la pantalla de admin/login genérico.
+  def display_logia
+    return @display_logia if defined?(@display_logia)
+    @display_logia = if previewing_tenant? || tenant_subdomain.present?
+      current_logia
+    elsif current_user&.logia_id.present?
+      current_user.logia
+    end
+    # nil implícito → branding neutro de plataforma
+    @display_logia
+  end
+
+  private
+
+  # Extrae el subdominio directamente del host (evita bugs de request.subdomain con .localhost).
+  # "freemasons.localhost" → "freemasons" | "localhost" → nil
+  def tenant_subdomain
+    parts = request.host.split(".")
+    parts.length > 1 ? parts.first : nil
+  end
+
+  # Tenant resolution priority:
+  #   1. Super-admin preview session override
+  #   2. Subdomain in the request (freemasons.localhost → slug "freemasons")
+  #   3. Logged-in user's assigned logia
+  #   4. First logia (fallback for super-admins without subdomain)
+  def resolve_tenant
+    if session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?
+      return Logia.find_by(id: session[:preview_logia_id]) || Logia.ordenadas.first
+    end
+    if (sub = tenant_subdomain) && (logia = Logia.find_by(slug: sub))
+      return logia
+    end
+    current_user&.logia || Logia.ordenadas.first
+  end
+
+  helper_method :previewing_tenant?, :platform_admin_context?
+
+  def previewing_tenant?
+    session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?
+  end
+
+  # Contexto de plataforma: super admin sin subdominio y sin preview activo.
+  # En este contexto se muestran todos los tenants.
+  def platform_admin_context?
+    current_user&.rol_ref&.es_super_admin? &&
+      tenant_subdomain.blank? &&
+      !previewing_tenant?
+  end
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:account_update, keys: [:nombre, :apellido])
+  end
+
+  def user_not_authorized
+    flash[:alert] = "No tienes permiso para realizar esta acción."
+    redirect_back(fallback_location: root_path)
+  end
+
+  # Restringe el acceso a un módulo al usuario que tenga el cargo indicado
+  # (vigente) en su ficha de miembro. admin_logia y super_admin pasan siempre.
+  def require_cargo!(nombre_cargo)
+    return if current_user&.tiene_cargo?(nombre_cargo)
+    flash[:alert] = "Acceso restringido: requiere el cargo de #{nombre_cargo}."
+    redirect_to dashboard_path
+  end
+
+  def require_tesorero!
+    require_cargo!("Tesorero")
+  end
+
+  def require_hospitalario!
+    require_cargo!("Hospitalario")
+  end
+
+  def after_sign_in_path_for(resource)
+    dashboard_path
+  end
+end

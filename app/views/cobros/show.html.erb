@@ -1,0 +1,319 @@
+<% content_for(:title, "Cobro - #{@cobro.periodo_cobro.nombre}") %>
+
+<style>
+  .payment-steps { display: flex; align-items: center; justify-content: center; }
+  .payment-steps .step { display: flex; flex-direction: column; align-items: center; position: relative; }
+  .payment-steps .step-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #dee2e6; background: #fff; color: #adb5bd; font-size: 1.2rem; }
+  .payment-steps .step.completed .step-circle { background: #1B7A4A; border-color: #1B7A4A; color: #fff; }
+  .payment-steps .step.active .step-circle { background: #C9A84C; border-color: #C9A84C; color: #fff; box-shadow: 0 0 0 4px rgba(201,168,76,0.2); }
+  .payment-steps .step span { font-size: 0.8rem; margin-top: 6px; color: #6c757d; }
+  .payment-steps .step.completed span, .payment-steps .step.active span { color: #1B2A4A; font-weight: 600; }
+  .payment-steps .step-line { flex: 1; height: 2px; background: #dee2e6; margin: 0 8px; margin-bottom: 22px; }
+  .payment-steps .step-line.completed { background: #1B7A4A; }
+</style>
+
+<%
+  # Determine step states based on cobro estado
+  step_generado  = "completed"
+  step_soporte   = ""
+  step_validado  = ""
+  line_1         = ""
+  line_2         = ""
+
+  case @cobro.estado
+  when "soporte_adjunto"
+    step_soporte = "active"
+    line_1       = "completed"
+  when "pagado"
+    step_soporte  = "completed"
+    step_validado = "completed"
+    line_1        = "completed"
+    line_2        = "completed"
+  when "vencido"
+    step_generado = "active"
+  when "pendiente"
+    step_generado = "active"
+  end
+%>
+
+<%# ── Page header ── %>
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><%= link_to "Cobros", cobros_path %></li>
+        <li class="breadcrumb-item active"><%= @cobro.periodo_cobro.nombre %></li>
+      </ol>
+    </nav>
+    <h1 class="h3 fw-bold mb-0">
+      <i class="bi bi-receipt me-2"></i>Detalle del Cobro
+    </h1>
+  </div>
+  <div>
+    <%= render "shared/estado_badge", estado: @cobro.estado %>
+  </div>
+</div>
+
+<%# ── Payment Steps Timeline ── %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-4">
+    <div class="payment-steps">
+      <div class="step <%= step_generado %>">
+        <div class="step-circle"><i class="bi bi-clock"></i></div>
+        <span>Generado</span>
+      </div>
+      <div class="step-line <%= line_1 %>"></div>
+      <div class="step <%= step_soporte %>">
+        <div class="step-circle"><i class="bi bi-paperclip"></i></div>
+        <span>Soporte</span>
+      </div>
+      <div class="step-line <%= line_2 %>"></div>
+      <div class="step <%= step_validado %>">
+        <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+        <span>Validado</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Cobro Info Card ── %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white border-bottom">
+    <h5 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i>Informaci&oacute;n del Cobro</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-calendar3 text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Periodo</small>
+            <span class="fw-semibold"><%= @cobro.periodo_cobro.nombre %></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-person text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Miembro</small>
+            <span class="fw-semibold"><%= @cobro.miembro.nombre_completo %></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-building text-primary"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Logia</small>
+            <span class="fw-semibold"><%= @cobro.miembro.logia.nombre %></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center">
+          <div class="bg-light rounded-circle p-2 me-3">
+            <i class="bi bi-currency-dollar text-success"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block">Monto</small>
+            <span class="fw-semibold fs-5 text-success"><%= pesos(@cobro.monto) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Pago Info Card ── %>
+<% if @cobro.pago.present? %>
+  <% cobros_grupo = @cobro.pago.cobros_grupo %>
+  <% es_multiple = cobros_grupo.count > 1 %>
+
+  <% if es_multiple %>
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+      <i class="bi bi-collection-fill me-3 fs-4"></i>
+      <div>
+        <strong>Pago Multiple</strong> &mdash; Este soporte cubre
+        <strong><%= cobros_grupo.count %> periodos</strong>:
+        <%= cobros_grupo.map { |c| c.periodo_cobro.nombre }.join(", ") %>.
+        Total: <strong><%= pesos(cobros_grupo.sum(:monto)) %></strong>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0 fw-semibold">
+          <i class="bi bi-list-check me-2 text-primary"></i>Periodos del Pago Multiple
+        </h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Periodo</th>
+                <th class="text-end">Monto</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">RC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% cobros_grupo.each do |cobro_g| %>
+                <tr class="<%= 'table-active' if cobro_g.id == @cobro.id %>">
+                  <td class="fw-semibold">
+                    <%= link_to cobro_g.periodo_cobro.nombre, cobro_path(cobro_g) %>
+                    <% if cobro_g.id == @cobro.id %>
+                      <i class="bi bi-arrow-left-short text-primary"></i>
+                    <% end %>
+                  </td>
+                  <td class="text-end"><%= pesos(cobro_g.monto) %></td>
+                  <td class="text-center"><%= render "shared/estado_badge", estado: cobro_g.estado %></td>
+                  <td class="text-center"><%= cobro_g.pago&.numero_rc || "-" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-light">
+              <tr>
+                <td class="fw-bold">Total</td>
+                <td class="text-end fw-bold text-success"><%= pesos(cobros_grupo.sum(:monto)) %></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom">
+      <h5 class="mb-0 fw-semibold"><i class="bi bi-credit-card me-2 text-primary"></i>Informaci&oacute;n del Pago</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="d-flex align-items-center">
+            <div class="bg-light rounded-circle p-2 me-3">
+              <i class="bi bi-cash-stack text-success"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Monto Pagado</small>
+              <span class="fw-semibold fs-5"><%= pesos(@cobro.pago.monto_pagado) %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex align-items-center">
+            <div class="bg-light rounded-circle p-2 me-3">
+              <i class="bi bi-calendar-check text-primary"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Fecha de Pago</small>
+              <span class="fw-semibold"><%= l(@cobro.pago.fecha_pago, format: :short) rescue @cobro.pago.fecha_pago %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex align-items-center">
+            <div class="bg-light rounded-circle p-2 me-3">
+              <i class="bi bi-wallet2 text-primary"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">M&eacute;todo de Pago</small>
+              <span class="fw-semibold"><%= @cobro.pago.metodo_pago.humanize %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex align-items-center">
+            <div class="bg-light rounded-circle p-2 me-3">
+              <i class="bi bi-hash text-primary"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">N&uacute;mero RC</small>
+              <span class="fw-semibold"><%= @cobro.pago.numero_rc || "Pendiente de validaci&oacute;n" %></span>
+            </div>
+          </div>
+        </div>
+        <% if @cobro.pago.observaciones.present? %>
+          <div class="col-12">
+            <div class="d-flex align-items-start">
+              <div class="bg-light rounded-circle p-2 me-3">
+                <i class="bi bi-chat-text text-primary"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Observaciones</small>
+                <span><%= @cobro.pago.observaciones %></span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Soportes Preview ── %>
+      <% if @cobro.pago.soportes.attached? %>
+        <hr class="my-4">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-file-earmark-image me-1"></i>Soporte(s) de Pago
+          <% if @cobro.pago.soportes.count > 1 %>
+            <span class="badge bg-primary ms-1"><%= @cobro.pago.soportes.count %></span>
+          <% end %>
+        </h6>
+        <% @cobro.pago.soportes.each_with_index do |soporte, idx| %>
+          <div class="mb-3">
+            <% if @cobro.pago.soportes.count > 1 %>
+              <small class="text-muted fw-semibold">Comprobante <%= idx + 1 %></small>
+            <% end %>
+            <% if soporte.content_type.start_with?("image") %>
+              <div class="text-center bg-light rounded-3 p-3" style="max-width: 520px;">
+                <%= image_tag rails_blob_path(soporte, disposition: "inline"),
+                      class: "img-fluid rounded shadow-sm",
+                      style: "max-width: 100%;",
+                      alt: "Soporte de pago #{idx + 1}" %>
+              </div>
+            <% end %>
+            <div class="mt-2">
+              <%= link_to rails_blob_path(soporte, disposition: "inline"), target: "_blank", class: "btn btn-sm btn-outline-primary" do %>
+                <i class="bi bi-download me-1"></i>Descargar <%= soporte.filename %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Recibo de Caja link ── %>
+  <% if @cobro.pago.validado? %>
+    <div class="text-center mb-4">
+      <%= link_to recibo_reportes_path(pago_id: @cobro.pago.id), class: "btn btn-outline-primary", target: "_blank" do %>
+        <i class="bi bi-printer me-1"></i>Ver Recibo de Caja
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── Action Buttons ── %>
+<div class="d-flex gap-2 flex-wrap">
+  <% if policy(@cobro).adjuntar_soporte? %>
+    <%= link_to adjuntar_soporte_cobro_path(@cobro), class: "btn btn-success" do %>
+      <i class="bi bi-upload me-1"></i>Adjuntar Soporte
+    <% end %>
+  <% end %>
+  <% if policy(@cobro).validar? %>
+    <%= link_to validar_cobro_path(@cobro), class: "btn btn-warning" do %>
+      <i class="bi bi-check-square me-1"></i>Validar Pago
+    <% end %>
+  <% end %>
+  <%= link_to cobros_path, class: "btn btn-outline-dark" do %>
+    <i class="bi bi-arrow-left me-1"></i>Volver
+  <% end %>
+</div>

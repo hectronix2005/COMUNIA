@@ -1,0 +1,47 @@
+es:
+  devise:
+    confirmations:
+      confirmed: Tu cuenta ha sido confirmada.
+      send_instructions: Recibirás un correo con instrucciones sobre cómo confirmar tu cuenta.
+      send_paranoid_instructions: Si tu correo existe en nuestra base de datos, recibirás un correo con instrucciones sobre cómo confirmar tu cuenta.
+    failure:
+      already_authenticated: Ya has iniciado sesión.
+      inactive: Tu cuenta aún no ha sido activada.
+      invalid: "%{authentication_keys} o contraseña inválidos."
+      locked: Tu cuenta está bloqueada.
+      last_attempt: Tienes un intento más antes de que tu cuenta sea bloqueada.
+      not_found_in_database: "%{authentication_keys} o contraseña inválidos."
+      timeout: Tu sesión ha expirado. Por favor, inicia sesión nuevamente.
+      unauthenticated: Necesitas iniciar sesión o registrarte antes de continuar.
+      unconfirmed: Debes confirmar tu cuenta para continuar.
+    mailer:
+      reset_password_instructions:
+        subject: Instrucciones para restablecer tu contraseña
+    passwords:
+      no_token: No puedes acceder a esta página si no es mediante un correo de restablecimiento de contraseña.
+      send_instructions: Recibirás un correo con instrucciones sobre cómo restablecer tu contraseña.
+      send_paranoid_instructions: Si tu correo existe en nuestra base de datos, recibirás un correo con instrucciones para restablecer tu contraseña.
+      updated: Tu contraseña ha sido cambiada. Ya iniciaste sesión.
+      updated_not_active: Tu contraseña ha sido cambiada.
+    registrations:
+      destroyed: Tu cuenta ha sido cancelada. Esperamos verte pronto.
+      signed_up: Bienvenido. Tu cuenta ha sido creada.
+      updated: Tu cuenta ha sido actualizada.
+    sessions:
+      signed_in: Has iniciado sesión.
+      signed_out: Has cerrado sesión.
+      already_signed_out: Has cerrado sesión.
+    unlocks:
+      send_instructions: Recibirás un correo con instrucciones para desbloquear tu cuenta.
+      send_paranoid_instructions: Si tu cuenta existe, recibirás un correo con instrucciones para desbloquearla.
+      unlocked: Tu cuenta ha sido desbloqueada. Por favor, inicia sesión.
+  errors:
+    messages:
+      already_confirmed: ya fue confirmado, por favor intenta iniciar sesión
+      confirmation_period_expired: necesita ser confirmado en %{period}, por favor solicita uno nuevo
+      expired: ha expirado, por favor solicita uno nuevo
+      not_found: no encontrado
+      not_locked: no estaba bloqueado
+      not_saved:
+        one: "Un error impidió guardar este %{resource}:"
+        other: "%{count} errores impidieron guardar este %{resource}:"

@@ -1,0 +1,391 @@
+<%
+  colores       = CalendarioEvento::COLORES
+  tipos_rec     = CalendarioEvento::RECURRENCIA_TIPOS
+  dias_semana   = [["L",0],["M",1],["X",2],["J",3],["V",4],["S",5],["D",6]]
+  dias_activos  = evento.recurrencia_dias.to_s.split(",").map(&:to_i)
+  fmt_dt        = ->(dt) { dt&.strftime("%Y-%m-%dT%H:%M") }
+  fmt_d         = ->(d)  { d&.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d }
+%>
+
+<%= form_with model: evento,
+      url:    evento.new_record? ? calendario_index_path : calendario_path(evento),
+      method: evento.new_record? ? :post : :patch,
+      id:     "evento-form" do |f| %>
+
+  <%= hidden_field_tag :vista_retorno, params[:vista] %>
+
+  <% if evento.errors.any? %>
+    <div class="alert alert-danger py-2 small">
+      <% evento.errors.full_messages.each { |m| content_tag(:div, m) } %>
+      <%= evento.errors.full_messages.map { |m| "<div>#{m}</div>" }.join.html_safe %>
+    </div>
+  <% end %>
+
+  <%# ── Color picker ─────────────────────────────────────────── %>
+  <div class="mb-3 d-flex align-items-center gap-3">
+    <div id="color-preview"
+         style="width:18px;height:18px;border-radius:50%;background:<%= evento.color || '#4285f4' %>;flex-shrink:0;box-shadow:0 0 0 2px #fff,0 0 0 3px <%= evento.color || '#4285f4' %>;"></div>
+    <%= f.hidden_field :color, id: "color-field", value: evento.color || "#4285f4" %>
+    <div class="d-flex flex-wrap gap-1 align-items-center">
+      <% colores.each do |nombre, hex| %>
+        <button type="button"
+                class="color-swatch"
+                title="<%= nombre %>"
+                data-hex="<%= hex %>"
+                style="width:22px;height:22px;border-radius:50%;background:<%= hex %>;
+                       border:none;cursor:pointer;
+                       box-shadow:<%= (evento.color || '#4285f4') == hex ? '0 0 0 2px #fff,0 0 0 4px ' + hex : 'none' %>;"
+                onclick="calSelectColor(this)"></button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Título ──────────────────────────────────────────────── %>
+  <div class="mb-3">
+    <%= f.text_field :titulo,
+          class: "form-control form-control-lg border-0 border-bottom rounded-0 ps-0 shadow-none",
+          placeholder: "Añadir título",
+          required: true,
+          style: "font-size:1.05rem;" %>
+  </div>
+
+  <%# ── Todo el día ────────────────────────────────────────── %>
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= f.check_box :todo_el_dia,
+            class: "form-check-input",
+            id:    "cb-todo-dia",
+            onchange: "calToggleTodoDia(this.checked)" %>
+      <label class="form-check-label small" for="cb-todo-dia">Todo el día</label>
+    </div>
+  </div>
+
+  <%# ── Inicio / Fin  (single pair — no duplicates) ────────── %>
+  <div class="mb-3 row g-2">
+    <div class="col-6">
+      <label class="form-label small text-muted mb-1">Inicio</label>
+      <%# datetime-local shown by default %>
+      <input type="datetime-local"
+             name="calendario_evento[inicio]"
+             id="inicio-dt"
+             class="form-control form-control-sm"
+             value="<%= fmt_dt.call(evento.inicio || Time.current.beginning_of_hour + 1.hour) %>"
+             required>
+      <%# date shown when todo_el_dia %>
+      <input type="date"
+             name="calendario_evento[inicio]"
+             id="inicio-d"
+             class="form-control form-control-sm d-none"
+             value="<%= fmt_d.call(evento.inicio&.to_date || Date.current) %>"
+             disabled>
+    </div>
+    <div class="col-6">
+      <label class="form-label small text-muted mb-1">Fin</label>
+      <input type="datetime-local"
+             name="calendario_evento[fin]"
+             id="fin-dt"
+             class="form-control form-control-sm"
+             value="<%= fmt_dt.call(evento.fin || Time.current.beginning_of_hour + 2.hours) %>"
+             required>
+      <input type="date"
+             name="calendario_evento[fin]"
+             id="fin-d"
+             class="form-control form-control-sm d-none"
+             value="<%= fmt_d.call(evento.fin&.to_date || Date.current) %>"
+             disabled>
+    </div>
+  </div>
+
+  <%# ── Ubicación ──────────────────────────────────────────── %>
+  <div class="mb-3">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="bi bi-geo-alt text-muted"></i>
+      </span>
+      <%= f.text_field :ubicacion,
+            class: "form-control border-start-0",
+            placeholder: "Añadir ubicación" %>
+    </div>
+  </div>
+
+  <%# ── Descripción ────────────────────────────────────────── %>
+  <div class="mb-3">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text bg-white border-end-0 align-items-start pt-2">
+        <i class="bi bi-text-left text-muted"></i>
+      </span>
+      <%= f.text_area :descripcion,
+            class: "form-control border-start-0",
+            placeholder: "Añadir descripción",
+            rows: 2 %>
+    </div>
+  </div>
+
+  <%# ── Repetición ─────────────────────────────────────────── %>
+  <% if evento.new_record? %>
+    <div class="mb-3">
+      <div class="card border" style="border-radius:.5rem;">
+        <div class="card-header bg-white py-2 px-3 d-flex align-items-center gap-2 border-bottom-0"
+             style="border-radius:.5rem .5rem 0 0;">
+          <div class="form-check form-switch mb-0">
+            <input type="checkbox"
+                   class="form-check-input"
+                   id="cb-repetir"
+                   onchange="calToggleRepetir(this.checked)"
+                   <%= evento.recurrencia_tipo.present? ? "checked" : "" %>>
+            <label class="form-check-label small fw-semibold" for="cb-repetir">
+              <i class="bi bi-arrow-repeat me-1"></i>Repetir evento
+            </label>
+          </div>
+        </div>
+
+        <div id="recurrencia-panel" class="<%= evento.recurrencia_tipo.blank? ? 'd-none' : '' %> card-body py-3 px-3 border-top">
+
+          <%# Tipo + Intervalo %>
+          <div class="row g-2 mb-3">
+            <div class="col-7">
+              <label class="form-label small text-muted mb-1">Repetir</label>
+              <%= f.select :recurrencia_tipo,
+                    tipos_rec.map { |k,v| [v, k] },
+                    { include_blank: "Seleccionar…" },
+                    class: "form-select form-select-sm",
+                    id:    "sel-recurrencia-tipo",
+                    onchange: "calTipoChanged(this.value)" %>
+            </div>
+            <div class="col-5">
+              <label class="form-label small text-muted mb-1">Cada</label>
+              <div class="input-group input-group-sm">
+                <%= f.number_field :recurrencia_intervalo,
+                      min: 1, max: 99, value: (evento.recurrencia_intervalo || 1),
+                      class: "form-control",
+                      id:    "num-intervalo" %>
+                <span class="input-group-text" id="lbl-unidad" style="font-size:.75rem;">semana(s)</span>
+              </div>
+            </div>
+          </div>
+
+          <%# Días de la semana (solo para tipo=semanal) %>
+          <div id="dias-semana-panel" class="mb-3 <%= evento.recurrencia_tipo == 'semanal' ? '' : 'd-none' %>">
+            <label class="form-label small text-muted mb-2">Días de la semana</label>
+            <div class="d-flex gap-1 flex-wrap">
+              <% dias_semana.each do |label, idx| %>
+                <label class="dia-btn">
+                  <input type="checkbox"
+                         name="calendario_evento[recurrencia_dias][]"
+                         value="<%= idx %>"
+                         class="d-none dia-check"
+                         <%= dias_activos.include?(idx) ? "checked" : "" %>
+                         onchange="calDiaToggle(this)">
+                  <span class="btn btn-sm"
+                        style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;
+                               border-radius:50%;font-size:.75rem;font-weight:700;
+                               background:<%= dias_activos.include?(idx) ? current_logia.color_display : '#f1f3f4' %>;
+                               color:<%= dias_activos.include?(idx) ? '#fff' : '#3c4043' %>;
+                               border:none;cursor:pointer;"
+                        data-idx="<%= idx %>"
+                        onclick="calDiaClick(this)">
+                    <%= label %>
+                  </span>
+                </label>
+              <% end %>
+            </div>
+            <%# Hidden field to send dias as comma-separated when using GET form %>
+            <%= f.hidden_field :recurrencia_dias, id: "hidden-recurrencia-dias", value: evento.recurrencia_dias %>
+          </div>
+
+          <%# Fin de la repetición %>
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-2">Finaliza</label>
+            <div class="d-flex flex-column gap-2">
+              <% [["nunca","Nunca"],["fecha","En una fecha"],["ocurrencias","Después de N veces"]].each do |val,lbl| %>
+                <div class="form-check">
+                  <input type="radio"
+                         class="form-check-input"
+                         name="calendario_evento[recurrencia_fin]"
+                         id="fin-<%= val %>"
+                         value="<%= val %>"
+                         <%= (evento.recurrencia_fin || 'nunca') == val ? 'checked' : '' %>
+                         onchange="calFinChanged('<%= val %>')">
+                  <label class="form-check-label small" for="fin-<%= val %>"><%= lbl %></label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div id="fin-fecha-panel" class="<%= (evento.recurrencia_fin == 'fecha') ? '' : 'd-none' %> mt-2">
+            <label class="form-label small text-muted mb-1">Hasta la fecha</label>
+            <%= f.date_field :recurrencia_hasta,
+                  class: "form-control form-control-sm",
+                  value: evento.recurrencia_hasta || (Date.current + 3.months) %>
+          </div>
+          <div id="fin-count-panel" class="<%= (evento.recurrencia_fin == 'ocurrencias') ? '' : 'd-none' %> mt-2">
+            <label class="form-label small text-muted mb-1">Número de repeticiones</label>
+            <div class="input-group input-group-sm" style="max-width:160px;">
+              <%= f.number_field :recurrencia_count,
+                    min: 2, max: 365, value: (evento.recurrencia_count || 10),
+                    class: "form-control" %>
+              <span class="input-group-text">veces</span>
+            </div>
+          </div>
+
+        </div><%# /recurrencia-panel %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ── Botones ─────────────────────────────────────────────── %>
+  <div class="d-flex justify-content-between align-items-center pt-2">
+    <%= link_to "Cancelar", :back, class: "btn btn-sm btn-outline-secondary" %>
+    <div class="d-flex gap-2">
+      <% unless evento.new_record? %>
+        <% if evento.instancia_de_serie? || evento.recurrente? %>
+          <div class="dropdown">
+            <button type="button" class="btn btn-sm btn-outline-danger dropdown-toggle">
+              Eliminar
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <%= link_to "Solo este evento",
+                    calendario_path(evento, eliminar: "uno"),
+                    data: { turbo_method: :delete, turbo_confirm: "¿Eliminar solo este evento?" },
+                    class: "dropdown-item small" %>
+              <%= link_to "Este y los siguientes",
+                    calendario_path(evento, eliminar: "siguientes"),
+                    data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este evento y los siguientes?" },
+                    class: "dropdown-item small" %>
+              <%= link_to "Toda la serie",
+                    calendario_path(evento, eliminar: "serie"),
+                    data: { turbo_method: :delete, turbo_confirm: "¿Eliminar TODA la serie de eventos?" },
+                    class: "dropdown-item small text-danger" %>
+            </ul>
+          </div>
+        <% else %>
+          <%= link_to "Eliminar",
+                calendario_path(evento),
+                data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este evento?" },
+                class: "btn btn-sm btn-outline-danger" %>
+        <% end %>
+
+        <% if evento.instancia_de_serie? %>
+          <%= f.hidden_field :editar_serie, value: "false" %>
+          <div class="dropdown">
+            <button type="submit" form="evento-form" class="btn btn-sm text-white" style="background:#1B2A4A;">
+              Guardar
+            </button>
+            <button type="button" class="btn btn-sm text-white dropdown-toggle dropdown-toggle-split" style="background:#1B2A4A;"
+                    data-bs-toggle="dropdown"></button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li>
+                <button type="submit" form="evento-form" class="dropdown-item small"
+                        onclick="document.getElementById('editar-serie-hidden').value='false'">
+                  Solo este evento
+                </button>
+              </li>
+              <li>
+                <button type="submit" form="evento-form" class="dropdown-item small"
+                        onclick="document.getElementById('editar-serie-hidden').value='true'">
+                  Toda la serie
+                </button>
+              </li>
+            </ul>
+          </div>
+          <input type="hidden" id="editar-serie-hidden" name="editar_serie" value="false">
+        <% else %>
+          <%= f.submit "Guardar cambios",
+                class: "btn btn-sm text-white",
+                style: "background:#1B2A4A;" %>
+        <% end %>
+      <% else %>
+        <%= f.submit "Crear evento",
+              class: "btn btn-sm text-white",
+              style: "background:#1B2A4A;",
+              id: "btn-crear" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<script>
+/* ── Color picker ──────────────────────────────────────────── */
+function calSelectColor(btn) {
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.style.boxShadow = 'none';
+  });
+  var hex = btn.dataset.hex;
+  btn.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + hex;
+  document.getElementById('color-field').value = hex;
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('color-preview').style.boxShadow = '0 0 0 2px #fff, 0 0 0 3px ' + hex;
+}
+
+/* ── Todo el día toggle ─────────────────────────────────────── */
+function calToggleTodoDia(allDay) {
+  ['inicio','fin'].forEach(function(f) {
+    var dt  = document.getElementById(f + '-dt');
+    var d   = document.getElementById(f + '-d');
+    if (allDay) {
+      // copy date part from datetime to date field, then disable datetime
+      if (dt.value) d.value = dt.value.split('T')[0];
+      dt.disabled = true; dt.classList.add('d-none');
+      d.disabled  = false; d.classList.remove('d-none');
+    } else {
+      // copy date from date field back to datetime
+      if (d.value) dt.value = d.value + 'T00:00';
+      d.disabled  = true;  d.classList.add('d-none');
+      dt.disabled = false; dt.classList.remove('d-none');
+    }
+  });
+}
+
+/* Apply on load (for edit view) */
+(function() {
+  var cb = document.getElementById('cb-todo-dia');
+  if (cb && cb.checked) calToggleTodoDia(true);
+})();
+
+/* ── Repetición toggle ──────────────────────────────────────── */
+function calToggleRepetir(on) {
+  var panel = document.getElementById('recurrencia-panel');
+  if (!panel) return;
+  panel.classList.toggle('d-none', !on);
+  // clear tipo if turning off
+  if (!on) document.getElementById('sel-recurrencia-tipo').value = '';
+}
+
+/* ── Recurrencia tipo changed ───────────────────────────────── */
+var UNIDADES = { diaria:'día(s)', semanal:'semana(s)', mensual:'mes(es)', anual:'año(s)' };
+function calTipoChanged(tipo) {
+  var lbl = document.getElementById('lbl-unidad');
+  if (lbl) lbl.textContent = UNIDADES[tipo] || 'unidad(es)';
+  var dsPanel = document.getElementById('dias-semana-panel');
+  if (dsPanel) dsPanel.classList.toggle('d-none', tipo !== 'semanal');
+}
+
+/* ── Fin de repetición changed ──────────────────────────────── */
+function calFinChanged(val) {
+  document.getElementById('fin-fecha-panel').classList.toggle('d-none', val !== 'fecha');
+  document.getElementById('fin-count-panel').classList.toggle('d-none', val !== 'ocurrencias');
+}
+
+/* ── Días de la semana ──────────────────────────────────────── */
+function calDiaClick(span) {
+  var idx  = span.dataset.idx;
+  var cb   = span.closest('label').querySelector('.dia-check');
+  var on   = !cb.checked;
+  cb.checked = on;
+  var logiColor = '<%= current_logia.color_display %>';
+  span.style.background = on ? logiColor : '#f1f3f4';
+  span.style.color       = on ? '#fff'    : '#3c4043';
+  // update hidden comma-sep field
+  var activos = Array.from(document.querySelectorAll('.dia-check:checked')).map(c => c.value);
+  var hidden  = document.getElementById('hidden-recurrencia-dias');
+  if (hidden) hidden.value = activos.join(',');
+}
+// prevent double-trigger
+function calDiaToggle(cb) { /* handled by calDiaClick */ }
+
+/* ── Pre-fill tipo unidad label on load ─────────────────────── */
+(function() {
+  var sel = document.getElementById('sel-recurrencia-tipo');
+  if (sel && sel.value) calTipoChanged(sel.value);
+})();
+</script>

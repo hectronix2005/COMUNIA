@@ -1,0 +1,13 @@
+<% content_for(:title, "Nuevo Evento") %>
+
+<div class="container" style="max-width:600px;margin-top:2rem;">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header text-white d-flex align-items-center gap-2" style="background:#1B2A4A;">
+      <i class="bi bi-calendar-plus fs-5"></i>
+      <span class="fw-semibold">Nuevo Evento</span>
+    </div>
+    <div class="card-body p-4">
+      <%= render "form", evento: @evento %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,221 @@
+<%= form_with(model: @miembro, multipart: true, class: "needs-validation") do |f| %>
+  <% if @miembro.errors.any? %>
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">Se encontraron <%= pluralize(@miembro.errors.count, "error") %>:</h4>
+      <ul class="mb-0">
+        <% @miembro.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @miembro.new_record? %>
+    <fieldset class="mb-4">
+      <legend class="h5">Datos del usuario</legend>
+
+      <%= f.fields_for :user_attributes, (@miembro.user || User.new) do |u| %>
+        <div class="mb-3">
+          <%= u.label :nombre, class: "form-label" %>
+          <%= u.text_field :nombre, class: "form-control #{'is-invalid' if @miembro.errors[:nombre].any? || @miembro.errors[:'user.nombre'].any?}" %>
+        </div>
+
+        <div class="mb-3">
+          <%= u.label :apellido, class: "form-label" %>
+          <%= u.text_field :apellido, class: "form-control #{'is-invalid' if @miembro.errors[:apellido].any? || @miembro.errors[:'user.apellido'].any?}" %>
+        </div>
+
+        <div class="mb-3">
+          <%= u.label :email, class: "form-label" %>
+          <%= u.email_field :email, class: "form-control #{'is-invalid' if @miembro.errors[:email].any? || @miembro.errors[:'user.email'].any?}" %>
+        </div>
+
+        <div class="mb-3">
+          <%= u.label :password, "Contrasena", class: "form-label" %>
+          <%= u.password_field :password, class: "form-control #{'is-invalid' if @miembro.errors[:password].any? || @miembro.errors[:'user.password'].any?}" %>
+        </div>
+      <% end %>
+    </fieldset>
+
+    <fieldset class="mb-4">
+      <legend class="h5">Datos del miembro</legend>
+
+      <div class="mb-3">
+        <%= f.label :numero_miembro, class: "form-label" %>
+        <%= f.text_field :numero_miembro, class: "form-control #{'is-invalid' if @miembro.errors[:numero_miembro].any?}" %>
+        <% if @miembro.errors[:numero_miembro].any? %>
+          <div class="invalid-feedback"><%= @miembro.errors[:numero_miembro].join(", ") %></div>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :cedula, class: "form-label" %>
+        <%= f.text_field :cedula, class: "form-control #{'is-invalid' if @miembro.errors[:cedula].any?}" %>
+        <% if @miembro.errors[:cedula].any? %>
+          <div class="invalid-feedback"><%= @miembro.errors[:cedula].join(", ") %></div>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :grado, class: "form-label" %>
+        <%= f.select :grado,
+              [["Aprendiz", "Aprendiz"], ["Compañero", "Compañero"], ["Maestro", "Maestro"]],
+              { prompt: "Seleccione un grado" },
+              { class: "form-select #{'is-invalid' if @miembro.errors[:grado].any?}" } %>
+        <% if @miembro.errors[:grado].any? %>
+          <div class="invalid-feedback"><%= @miembro.errors[:grado].join(", ") %></div>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :logia_id, "Logia", class: "form-label" %>
+        <%= f.collection_select :logia_id, @logias, :id, :nombre,
+              { prompt: "Seleccione una logia" },
+              { class: "form-select #{'is-invalid' if @miembro.errors[:logia_id].any? || @miembro.errors[:logia].any?}" } %>
+        <% if @miembro.errors[:logia_id].any? || @miembro.errors[:logia].any? %>
+          <div class="invalid-feedback"><%= (@miembro.errors[:logia_id] + @miembro.errors[:logia]).join(", ") %></div>
+        <% end %>
+      </div>
+    </fieldset>
+  <% else %>
+    <%
+      estado_actual = @miembro.estado
+      opciones_estado = [
+        { valor: "activo",               icon: "bi-check-circle-fill", color: "success",   label: "Activo",               desc: "Miembro en plena actividad. Se le genera cobro de cuota mensual." },
+        { valor: "quite",                icon: "bi-door-open",          color: "secondary", label: "Quite",                desc: "Renunció a la Logia. No se genera cobro. Permanente." },
+        { valor: "irregular_temporal",   icon: "bi-pause-circle",       color: "warning",   label: "Irregular Temporal",   desc: "Irregularidad por tiempo determinado." },
+        { valor: "irregular_permanente", icon: "bi-x-circle",           color: "danger",    label: "Irregular Permanente", desc: "Irregularidad indefinida. No se genera cobro." },
+      ]
+    %>
+    <fieldset class="mb-4">
+      <legend class="h5">Datos del miembro</legend>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <%= f.label :numero_miembro, class: "form-label" %>
+          <%= f.text_field :numero_miembro, class: "form-control #{'is-invalid' if @miembro.errors[:numero_miembro].any?}" %>
+          <% if @miembro.errors[:numero_miembro].any? %>
+            <div class="invalid-feedback"><%= @miembro.errors[:numero_miembro].join(", ") %></div>
+          <% end %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :cedula, class: "form-label" %>
+          <%= f.text_field :cedula, class: "form-control #{'is-invalid' if @miembro.errors[:cedula].any?}" %>
+          <% if @miembro.errors[:cedula].any? %>
+            <div class="invalid-feedback"><%= @miembro.errors[:cedula].join(", ") %></div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :grado, class: "form-label" %>
+          <%= f.select :grado,
+                [["Aprendiz", "Aprendiz"], ["Compañero", "Compañero"], ["Maestro", "Maestro"]],
+                { prompt: "Seleccione un grado" },
+                { class: "form-select #{'is-invalid' if @miembro.errors[:grado].any?}" } %>
+          <% if @miembro.errors[:grado].any? %>
+            <div class="invalid-feedback"><%= @miembro.errors[:grado].join(", ") %></div>
+          <% end %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :fecha_ingreso, "Fecha de Ingreso a la Logia", class: "form-label" %>
+          <%= f.date_field :fecha_ingreso,
+                class: "form-control #{'is-invalid' if @miembro.errors[:fecha_ingreso].any?}" %>
+          <div class="form-text">Fecha real de iniciación o ingreso (no la del sistema).</div>
+          <% if @miembro.errors[:fecha_ingreso].any? %>
+            <div class="invalid-feedback"><%= @miembro.errors[:fecha_ingreso].join(", ") %></div>
+          <% end %>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="mb-4">
+      <legend class="h5">Estado</legend>
+
+      <div class="row g-2" id="edit-estado-opciones">
+        <% opciones_estado.each do |op| %>
+          <div class="col-md-6">
+            <input type="radio" class="btn-check" name="miembro[estado]"
+                   id="edit_estado_<%= op[:valor] %>" value="<%= op[:valor] %>"
+                   <%= "checked" if estado_actual == op[:valor] %>
+                   onchange="editMostrarFechas(this.value)">
+            <label class="btn btn-outline-<%= op[:color] %> w-100 text-start p-3" for="edit_estado_<%= op[:valor] %>">
+              <i class="bi <%= op[:icon] %> me-2"></i><strong><%= op[:label] %></strong>
+              <br><small class="fw-normal opacity-75"><%= op[:desc] %></small>
+            </label>
+          </div>
+        <% end %>
+      </div>
+
+      <div id="edit-fechas-inactividad" class="mt-3 <%= estado_actual == 'activo' ? 'd-none' : '' %>">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fecha de Salida <span class="text-danger">*</span></label>
+            <%= f.date_field :estado_desde, class: "form-control #{'is-invalid' if @miembro.errors[:estado_desde].any?}" %>
+            <% if @miembro.errors[:estado_desde].any? %>
+              <div class="invalid-feedback"><%= @miembro.errors[:estado_desde].join(", ") %></div>
+            <% end %>
+          </div>
+          <div id="edit-campo-hasta" class="col-md-6 <%= @miembro.quite? ? 'd-none' : '' %>">
+            <label class="form-label fw-semibold">Vigente Hasta <span class="text-muted small">(opcional)</span></label>
+            <%= f.date_field :estado_hasta, class: "form-control" %>
+            <div class="form-text">Dejar en blanco si es indefinido.</div>
+          </div>
+          <div id="edit-quite-nota" class="col-md-6 align-items-center <%= @miembro.quite? ? 'd-flex' : 'd-none' %>">
+            <div class="alert alert-secondary mb-0 py-2 px-3 w-100">
+              <i class="bi bi-infinity me-1"></i><small>Quite es permanente &mdash; sin fecha de fin.</small>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label fw-semibold">Motivo / Observaciones <span class="text-muted small">(opcional)</span></label>
+          <%= f.text_area :estado_motivo, class: "form-control", rows: 2,
+                placeholder: "Ej: Viaje al exterior, dificultades económicas..." %>
+        </div>
+        <div class="mt-3">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-paperclip me-1"></i>Soporte Documental
+            <span class="text-danger">*</span>
+          </label>
+          <input type="file" name="soporte_archivo" class="form-control"
+                 accept=".jpg,.jpeg,.png,.webp,.pdf">
+          <div class="form-text">JPG, PNG, WEBP o PDF — Máx. 10MB. Obligatorio al cambiar estado.</div>
+        </div>
+      </div>
+    </fieldset>
+
+    <script>
+    function editMostrarFechas(estado) {
+      const campos = document.getElementById('edit-fechas-inactividad')
+      const campoHasta = document.getElementById('edit-campo-hasta')
+      const quiteNota = document.getElementById('edit-quite-nota')
+      if (estado === 'activo') {
+        campos.classList.add('d-none')
+        campos.querySelectorAll('input[type=date]').forEach(i => i.value = '')
+      } else {
+        campos.classList.remove('d-none')
+        if (estado === 'quite') {
+          campoHasta.classList.add('d-none')
+          campoHasta.querySelector('input').value = ''
+          quiteNota.classList.remove('d-none')
+          quiteNota.classList.add('d-flex')
+        } else {
+          campoHasta.classList.remove('d-none')
+          quiteNota.classList.add('d-none')
+          quiteNota.classList.remove('d-flex')
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const checked = document.querySelector('input[name="miembro[estado]"]:checked')
+      if (checked) editMostrarFechas(checked.value)
+    })
+    </script>
+  <% end %>
+
+  <div class="mt-4">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancelar", miembros_path, class: "btn btn-outline-secondary ms-2" %>
+  </div>
+<% end %>

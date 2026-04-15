@@ -1,0 +1,55 @@
+<%= form_with(model: @periodo, class: "row g-3") do |f| %>
+  <% if @periodo.errors.any? %>
+    <div class="col-12">
+      <div class="alert alert-danger">
+        <h6><%= pluralize(@periodo.errors.count, "error") %> impidieron guardar el periodo:</h6>
+        <ul class="mb-0">
+          <% @periodo.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="col-md-6">
+    <%= f.label :anio, "A&ntilde;o".html_safe, class: "form-label" %>
+    <%= f.number_field :anio, class: "form-control", min: 2024, max: 2030, required: true %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :mes, "Mes", class: "form-label" %>
+    <%= f.select :mes,
+          PeriodoCobro::MESES.map { |k, v| [v, k] },
+          { include_blank: "-- Seleccione un mes --" },
+          class: "form-select", required: true %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :monto, "Monto", class: "form-label" %>
+    <div class="input-group">
+      <span class="input-group-text">$</span>
+      <%= f.number_field :monto, class: "form-control", min: 0, step: 1, required: true %>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :fecha_vencimiento, "Fecha de Vencimiento", class: "form-label" %>
+    <%= f.date_field :fecha_vencimiento, class: "form-control", required: true %>
+  </div>
+
+  <% if @periodo.persisted? %>
+    <div class="col-md-6">
+      <%= f.label :estado, "Estado", class: "form-label" %>
+      <%= f.select :estado,
+            PeriodoCobro.estados.keys.map { |e| [e.humanize, e] },
+            {},
+            class: "form-select" %>
+    </div>
+  <% end %>
+
+  <div class="col-12">
+    <%= f.submit @periodo.persisted? ? "Actualizar Periodo" : "Crear Periodo", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", periodo_cobros_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

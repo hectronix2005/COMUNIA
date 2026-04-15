@@ -1,0 +1,27 @@
+<%
+  config = case estado.to_s
+           when "pendiente"
+             { css: "badge-pendiente", icon: "bi-clock", label: "Pendiente" }
+           when "soporte_adjunto"
+             { css: "badge-soporte", icon: "bi-paperclip", label: "Soporte Adjunto" }
+           when "pagado"
+             { css: "badge-pagado", icon: "bi-check-circle", label: "Pagado" }
+           when "vencido"
+             { css: "badge-vencido", icon: "bi-exclamation-circle", label: "Vencido" }
+           when "activo"
+             { css: "badge-pagado", icon: "bi-check-circle", label: "Activo" }
+           when "quite"
+             { css: "bg-dark", icon: "bi-door-open", label: "Quite" }
+           when "irregular_temporal"
+             { css: "bg-warning text-dark", icon: "bi-pause-circle", label: "Irregular Temporal" }
+           when "irregular_permanente"
+             { css: "badge-vencido", icon: "bi-x-circle", label: "Irregular Permanente" }
+           when "cerrado"
+             { css: "bg-secondary", icon: "bi-lock", label: "Cerrado" }
+           else
+             { css: "bg-secondary", icon: "bi-question-circle", label: estado.to_s.humanize }
+           end
+%>
+<span class="badge rounded-pill <%= config[:css] %>">
+  <i class="bi <%= config[:icon] %> me-1"></i><%= config[:label] %>
+</span>

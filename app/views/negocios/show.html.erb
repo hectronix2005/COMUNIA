@@ -1,0 +1,219 @@
+<% content_for(:title, @anuncio.titulo) %>
+
+<div class="container py-3 marketplace-wrapper">
+  <div class="mb-3">
+    <%= link_to negocios_path, class: "btn btn-sm btn-link text-muted ps-0" do %>
+      <i class="bi bi-arrow-left me-1"></i>Volver al marketplace
+    <% end %>
+  </div>
+
+  <div class="row g-4">
+    <%# ── Columna izquierda: galería ──────────────────────── %>
+    <div class="col-lg-7">
+      <div class="mp-gallery card border-0 shadow-sm overflow-hidden">
+        <% imagenes = []
+           if @anuncio.respond_to?(:imagenes) && @anuncio.imagenes.attached?
+             imagenes = @anuncio.imagenes.to_a
+           elsif @anuncio.imagen.attached?
+             imagenes = [@anuncio.imagen]
+           end %>
+
+        <% if imagenes.any? %>
+          <div id="mpGalleryCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner bg-dark" style="aspect-ratio: 4/3;">
+              <% imagenes.each_with_index do |img, i| %>
+                <div class="carousel-item <%= 'active' if i == 0 %> h-100 text-center">
+                  <img src="<%= rails_blob_path(img) %>" class="h-100 w-100" style="object-fit: contain;" alt="<%= @anuncio.titulo %>">
+                </div>
+              <% end %>
+            </div>
+            <% if imagenes.size > 1 %>
+              <button class="carousel-control-prev" type="button" data-bs-target="#mpGalleryCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#mpGalleryCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+              </button>
+              <div class="carousel-indicators">
+                <% imagenes.each_with_index do |_, i| %>
+                  <button type="button" data-bs-target="#mpGalleryCarousel" data-bs-slide-to="<%= i %>" class="<%= 'active' if i == 0 %>"></button>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="aspect-ratio: 4/3;">
+            <i class="bi bi-image display-1 opacity-25"></i>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Descripción %>
+      <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Descripción</h5>
+          <% if @anuncio.descripcion.present? %>
+            <div style="white-space: pre-wrap;" class="text-body"><%= @anuncio.descripcion %></div>
+          <% else %>
+            <p class="text-muted fst-italic mb-0">Sin descripción.</p>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @anuncio.latitud.present? && @anuncio.longitud.present? %>
+        <div class="card border-0 shadow-sm mt-3">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>Ubicación</h5>
+            <div id="mp-map" style="height: 300px; border-radius: 8px; z-index: 0;"
+                 data-lat="<%= @anuncio.latitud %>" data-lng="<%= @anuncio.longitud %>"></div>
+          </div>
+        </div>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+          (function() {
+            var el = document.getElementById('mp-map');
+            if (!el || !window.L) return;
+            var lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
+            var map = L.map(el).setView([lat, lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap'
+            }).addTo(map);
+            L.marker([lat, lng]).addTo(map).bindPopup(<%= raw @anuncio.titulo.to_json %>).openPopup();
+          })();
+        </script>
+      <% end %>
+    </div>
+
+    <%# ── Columna derecha: info, vendedor, acciones ───────── %>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm sticky-lg-top" style="top: 1rem;">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-<%= @anuncio.tipo_color %>"><%= @anuncio.tipo_label %></span>
+            <% if @anuncio.respond_to?(:estado) && @anuncio.estado.present? && @anuncio.estado != "disponible" %>
+              <span class="badge bg-dark"><%= @anuncio.estado.humanize %></span>
+            <% end %>
+            <% if @anuncio.categoria.present? %>
+              <span class="badge bg-light text-dark border"><%= @anuncio.categoria %></span>
+            <% end %>
+          </div>
+
+          <h3 class="fw-bold mb-2"><%= @anuncio.titulo %></h3>
+
+          <% if @anuncio.precio.present? && @anuncio.tipo != "empleo" %>
+            <div class="fs-2 fw-bold text-primary mb-3">
+              <%= number_to_currency(@anuncio.precio, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+              <small class="text-muted fs-6 fw-normal"><%= @anuncio.moneda %></small>
+            </div>
+          <% elsif @anuncio.tipo == "empleo" %>
+            <div class="fs-5 text-success fw-semibold mb-3"><i class="bi bi-briefcase me-1"></i>Oferta laboral</div>
+          <% end %>
+
+          <div class="text-muted small d-flex flex-column gap-2 mb-3">
+            <% if @anuncio.ubicacion.present? %>
+              <div><i class="bi bi-geo-alt me-1"></i><%= @anuncio.ubicacion %></div>
+            <% end %>
+            <div><i class="bi bi-clock me-1"></i>Publicado <%= time_ago_in_words(@anuncio.created_at) %> atrás</div>
+            <% if @anuncio.respond_to?(:vistas_count) && @anuncio.vistas_count.to_i > 0 %>
+              <div><i class="bi bi-eye me-1"></i><%= pluralize(@anuncio.vistas_count, "vista") %></div>
+            <% end %>
+          </div>
+
+          <hr>
+
+          <%# Vendedor %>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: 600;">
+              <%= @anuncio.user.nombre_completo.to_s.first&.upcase || "?" %>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold"><%= @anuncio.user.nombre_completo %></div>
+              <div class="small text-muted"><i class="bi bi-building me-1"></i><%= @anuncio.logia.nombre_display %></div>
+            </div>
+          </div>
+
+          <%# Acciones %>
+          <div class="d-grid gap-2">
+            <% es_propietario = @anuncio.user_id == current_user.id %>
+            <% es_admin = current_user.rol_ref&.es_super_admin? || current_user.rol_ref&.codigo == "admin_logia" %>
+
+            <% if !es_propietario %>
+              <%= form_with url: negocio_iniciar_conversacion_path(@anuncio), local: true do %>
+                <div class="mb-2">
+                  <textarea name="cuerpo" class="form-control" rows="2" placeholder="Hola, me interesa tu anuncio..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-chat-dots me-2"></i>Enviar mensaje al vendedor
+                </button>
+              <% end %>
+            <% end %>
+
+            <% if @anuncio.contacto.present? %>
+              <a href="<%= contacto_href(@anuncio.contacto) %>" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-telephone me-2"></i><%= @anuncio.contacto %>
+              </a>
+            <% end %>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1" onclick="navigator.share ? navigator.share({title:'<%= j @anuncio.titulo %>', url:location.href}) : navigator.clipboard.writeText(location.href).then(()=>alert('Enlace copiado'))">
+                <i class="bi bi-share me-1"></i>Compartir
+              </button>
+              <% if !es_propietario %>
+                <button type="button" class="btn btn-outline-warning btn-sm flex-grow-1" data-bs-toggle="modal" data-bs-target="#reportModal">
+                  <i class="bi bi-flag me-1"></i>Reportar
+                </button>
+              <% end %>
+              <% if es_propietario || es_admin %>
+                <%= link_to edit_negocio_path(@anuncio), class: "btn btn-outline-secondary btn-sm" do %>
+                  <i class="bi bi-pencil"></i>
+                <% end %>
+                <%= link_to negocio_path(@anuncio), data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este anuncio?" },
+                      class: "btn btn-outline-danger btn-sm" do %>
+                  <i class="bi bi-trash"></i>
+                <% end %>
+              <% end %>
+            </div>
+
+            <% if current_user %>
+              <%= render "negocios/fav_btn_inline", anuncio: @anuncio %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Modal reportar ─────────────────────────────────────── %>
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with url: negocio_reportar_path(@anuncio), local: true do %>
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-flag me-2 text-warning"></i>Reportar anuncio</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Motivo</label>
+            <select name="negocio_reporte[motivo]" class="form-select" required>
+              <option value="">Selecciona un motivo...</option>
+              <% NegocioReporte::MOTIVOS.each do |m| %>
+                <option value="<%= m %>"><%= NegocioReporte::MOTIVO_LABEL[m] %></option>
+              <% end %>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descripción (opcional)</label>
+            <textarea name="negocio_reporte[descripcion]" class="form-control" rows="3" placeholder="Detalles adicionales..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Enviar reporte</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

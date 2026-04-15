@@ -1,0 +1,52 @@
+<%
+  viewer = begin
+    current_user
+  rescue
+    nil
+  end
+  propio  = viewer && mensaje.user_id == viewer.id
+  color   = mensaje.user.miembro&.logia&.color_display || "#6c757d"
+%>
+<div class="d-flex mb-3 <%= propio ? 'justify-content-end' : 'justify-content-start' %>">
+
+  <% unless propio %>
+    <div class="rounded-circle text-white d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+         style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:<%= color %>;">
+      <%= mensaje.user.nombre[0].upcase %><%= mensaje.user.apellido[0].upcase %>
+    </div>
+  <% end %>
+
+  <div style="max-width:68%">
+    <% unless propio %>
+      <div class="small fw-semibold mb-1 ms-1" style="color:<%= color %>">
+        <%= mensaje.user.nombre_completo %>
+        <span class="text-muted fw-normal ms-1" style="font-size:.7rem">
+          &mdash; <%= mensaje.user.miembro&.logia&.nombre %>
+        </span>
+      </div>
+    <% end %>
+
+    <div class="rounded-3 px-3 py-2 <%= propio ? 'text-white' : 'bg-light border' %>"
+         style="<%= propio ? 'background:#1B2A4A' : '' %>; word-break:break-word; font-size:.9rem;">
+      <%= mensaje.contenido %>
+    </div>
+
+    <div class="small text-muted mt-1 <%= propio ? 'text-end me-1' : 'text-start ms-1' %>"
+         style="font-size:.67rem">
+      <%= mensaje.created_at.strftime("%d/%m/%Y %H:%M") %>
+      <% if mensaje.dm? %>
+        &nbsp;<i class="bi bi-lock-fill" title="Mensaje privado"></i>
+      <% elsif mensaje.canal == "tenant" %>
+        &nbsp;<i class="bi bi-globe2" title="Canal Tenant" style="color:#1B2A4A;"></i>
+      <% end %>
+    </div>
+  </div>
+
+  <% if propio && viewer %>
+    <div class="rounded-circle text-white d-flex align-items-center justify-content-center ms-2 flex-shrink-0"
+         style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:#1B2A4A;">
+      <%= viewer.nombre[0].upcase %><%= viewer.apellido[0].upcase %>
+    </div>
+  <% end %>
+
+</div>

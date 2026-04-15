@@ -1,0 +1,51 @@
+<%= form_with(model: [logia, tarifa], class: "row g-3") do |f| %>
+  <% if tarifa.errors.any? %>
+    <div class="col-12">
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          <% tarifa.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="col-12">
+    <%= f.label :monto, "Cuota Mensual por Miembro", class: "form-label fw-semibold" %>
+    <div class="input-group">
+      <span class="input-group-text">$</span>
+      <%= f.number_field :monto, class: "form-control", min: 0, step: 1000, required: true %>
+    </div>
+    <div class="form-text">Monto total que paga cada miembro al mes.</div>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :vigente_desde, "Vigente Desde", class: "form-label fw-semibold" %>
+    <%= f.date_field :vigente_desde, class: "form-control", required: true %>
+    <div class="form-text">Inicio del rango de vigencia.</div>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :vigente_hasta, "Vigente Hasta", class: "form-label fw-semibold" %>
+    <%= f.date_field :vigente_hasta, class: "form-control", required: true %>
+    <div class="form-text">Fin del rango de vigencia.</div>
+  </div>
+
+  <div class="col-12">
+    <div class="alert alert-info border-0 mb-0">
+      <i class="bi bi-info-circle me-2"></i>
+      <% if tarifa.new_record? %>
+        Al registrar esta tarifa, se guardar&aacute; un snapshot del desglose actual de conceptos.
+      <% else %>
+        Solo se modifica el rango de vigencia y monto. El desglose permanece como fue registrado.
+      <% end %>
+      <strong>No puede haber dos tarifas que cubran el mismo rango de fechas.</strong>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <%= f.submit tarifa.new_record? ? "Registrar Tarifa" : "Guardar Cambios", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", logia_tarifas_path(logia), class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

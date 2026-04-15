@@ -1,0 +1,37 @@
+<% form_url = logia.persisted? ? tenant_logia_path(@tenant, logia) : tenant_logias_path(@tenant) %>
+<%= form_with(model: logia, url: form_url, method: logia.persisted? ? :patch : :post, class: "needs-validation") do |f| %>
+  <% if logia.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% logia.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row g-3">
+    <div class="col-md-3">
+      <%= f.label :codigo, "Código", class: "form-label fw-semibold" %>
+      <%= f.text_field :codigo, class: "form-control #{'is-invalid' if logia.errors[:codigo].any?}",
+            placeholder: "LOG001", value: logia.codigo %>
+      <div class="form-text">Único dentro de este tenant.</div>
+      <% if logia.errors[:codigo].any? %>
+        <div class="invalid-feedback"><%= logia.errors[:codigo].join(", ") %></div>
+      <% end %>
+    </div>
+    <div class="col-md-9">
+      <%= f.label :nombre, class: "form-label fw-semibold" %>
+      <%= f.text_field :nombre, class: "form-control #{'is-invalid' if logia.errors[:nombre].any?}",
+            placeholder: "Ej: #{@tenant.t_logia} del Norte" %>
+      <% if logia.errors[:nombre].any? %>
+        <div class="invalid-feedback"><%= logia.errors[:nombre].join(", ") %></div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <%= f.submit (logia.persisted? ? "Guardar cambios" : "Crear Logia"), class: "btn btn-primary" %>
+    <%= link_to "Cancelar", tenant_path(@tenant), class: "btn btn-outline-secondary ms-2" %>
+  </div>
+<% end %>

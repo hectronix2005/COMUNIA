@@ -1,0 +1,74 @@
+<% content_for(:title, "COMUNIA — Tenants") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>Tenants</h1>
+    <small class="text-muted">Cada tenant es una organización independiente con su propio white-label</small>
+  </div>
+  <%= link_to new_tenant_path, class: "btn btn-primary" do %>
+    <i class="bi bi-plus-circle me-1"></i>Nuevo Tenant
+  <% end %>
+</div>
+
+<div class="row g-3">
+  <% @tenants.each do |tenant| %>
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-2" style="border-color: <%= tenant.color_display %> !important;">
+        <div class="card-header d-flex align-items-center gap-2"
+             style="background: <%= tenant.color_display %>; color: #fff;">
+          <% if tenant.logo.attached? %>
+            <%= image_tag tenant.logo, height: 24, class: "rounded" %>
+          <% else %>
+            <span><%= tenant.icono_display %></span>
+          <% end %>
+          <strong><%= tenant.nombre_display %></strong>
+          <span class="badge bg-light text-dark ms-auto"><%= tenant.codigo %></span>
+        </div>
+        <div class="card-body pb-2">
+          <% if tenant.lema_display.present? %>
+            <p class="text-muted small fst-italic mb-2">"<%= tenant.lema_display %>"</p>
+          <% end %>
+          <% if tenant.slug.present? %>
+            <div class="text-muted small mb-1">
+              <%
+                _base = request.host.split(".").drop(1).join(".")
+                _port = (request.port != 80 && request.port != 443) ? ":#{request.port}" : ""
+                _base_with_port = _base.present? ? "#{_base}#{_port}" : "#{request.host}#{_port}"
+              %>
+              <i class="bi bi-globe me-1"></i><code><%= tenant.slug %>.<%= _base_with_port %></code>
+            </div>
+            <div class="small">
+              <% login_url = "http://#{tenant.slug}.#{request.host_with_port}/login" %>
+              <%= link_to login_url, target: "_blank", rel: "noopener", class: "text-decoration-none" do %>
+                <i class="bi bi-box-arrow-in-right me-1"></i>Ir al login
+              <% end %>
+            </div>
+          <% else %>
+            <div class="text-warning small">
+              <i class="bi bi-exclamation-triangle me-1"></i>Sin subdominio configurado
+            </div>
+          <% end %>
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-1 flex-wrap">
+          <%= link_to tenant_path(tenant), class: "btn btn-sm btn-outline-dark flex-fill text-center" do %>
+            <i class="bi bi-diagram-3 me-1"></i><%= tenant.t_logia.pluralize %> (<%= tenant.logias.count %>)
+          <% end %>
+          <%= button_to preview_tenant_path(tenant), method: :post,
+                class: "btn btn-sm fw-semibold flex-fill text-center text-white",
+                style: "background: #{tenant.color_display}; border-color: #{tenant.color_display}",
+                title: "Previsualizar como #{tenant.nombre_display}" do %>
+            <i class="bi bi-play-fill me-1"></i>Vista previa
+          <% end %>
+          <%= link_to edit_tenant_path(tenant), class: "btn btn-sm btn-outline-primary flex-fill text-center" do %>
+            <i class="bi bi-pencil"></i> Configurar
+          <% end %>
+          <%= button_to tenant_path(tenant), method: :delete,
+                class: "btn btn-sm btn-outline-danger",
+                form: { data: { turbo_confirm: "¿Eliminar el tenant «#{tenant.nombre_display}»?" } } do %>
+            <i class="bi bi-trash"></i>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

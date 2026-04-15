@@ -1,0 +1,580 @@
+<% content_for(:title, "Dashboard — #{@logia.nombre_display}") %>
+
+<div class="container-fluid py-4">
+
+  <%# ---- Page Header ---- %>
+  <div class="page-header mb-4">
+    <div>
+      <h1 class="h3 fw-bold"><%= @logia.icono_display %> <%= @logia.nombre_display %></h1>
+      <p class="text-muted mb-0">Panel de control <span class="badge bg-secondary ms-1"><%= @logia.codigo %></span></p>
+    </div>
+    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
+  </div>
+
+  <%# ---- Fila superior: Miembros ---- %>
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <%= link_to miembros_path, class: "text-decoration-none" do %>
+        <div class="card stat-card stat-card-primary h-100" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.2)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-people-fill"></i></div>
+            <div class="ms-3">
+              <h3 class="mb-0 fw-bold text-white"><%= @miembros_activos %></h3>
+              <span class="text-white-50 small text-uppercase">Miembros Activos</span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="col-xl-9 col-md-6 d-flex align-items-center">
+      <p class="text-muted mb-0 small">
+        <i class="bi bi-info-circle me-1"></i>
+        Todos los indicadores financieros y de cobranza se gestionan desde el <strong>M&oacute;dulo de Tesorer&iacute;a</strong> a continuaci&oacute;n.
+      </p>
+    </div>
+  </div>
+
+  <%# ====================================================== %>
+  <%# ---- MÓDULO DE TESORERÍA ----------------------------- %>
+  <%# ====================================================== %>
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header d-flex align-items-center gap-2 py-3" style="background: linear-gradient(135deg, #1B2A4A 0%, #2c4a7c 100%); color:#fff; border-radius: .5rem .5rem 0 0; cursor:pointer;"
+         data-bs-toggle="collapse" data-bs-target="#tesoreriaBody" aria-expanded="false" aria-controls="tesoreriaBody">
+      <i class="bi bi-bank2 fs-4"></i>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold text-white">M&oacute;dulo de Tesorer&iacute;a</h5>
+        <small class="opacity-75">Cobranza · Recaudaci&oacute;n · Reportes</small>
+      </div>
+      <i class="bi bi-chevron-down ms-auto" id="tesoreriaChevron" style="transition:transform .25s"></i>
+    </div>
+
+    <div class="collapse" id="tesoreriaBody">
+    <div class="card-body p-4">
+
+      <%# ── 1. Estado de cobros ──────────────────────────── %>
+      <h6 class="text-muted text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em">
+        <i class="bi bi-receipt me-1"></i>Estado de <%= @logia.t_cobro.pluralize %>
+      </h6>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+          <%= link_to cobros_path(estado: "pendiente"), class: "text-decoration-none" do %>
+            <div class="card stat-card stat-card-warning h-100" style="cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+              <div class="card-body d-flex align-items-center py-3">
+                <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-clock-history"></i></div>
+                <div class="ms-3">
+                  <h3 class="mb-0 fw-bold text-white"><%= @pendientes %></h3>
+                  <span class="text-white-50 small text-uppercase">Pendientes</span>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to cobros_path(estado: "soporte_adjunto"), class: "text-decoration-none" do %>
+            <div class="card stat-card stat-card-info h-100" style="cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+              <div class="card-body d-flex align-items-center py-3">
+                <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-paperclip"></i></div>
+                <div class="ms-3">
+                  <h3 class="mb-0 fw-bold text-white"><%= @soporte_adjunto %></h3>
+                  <span class="text-white-50 small text-uppercase">Por Validar</span>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to cobros_path(estado: "pagado"), class: "text-decoration-none" do %>
+            <div class="card stat-card stat-card-success h-100" style="cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+              <div class="card-body d-flex align-items-center py-3">
+                <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="ms-3">
+                  <h3 class="mb-0 fw-bold text-white"><%= @pagados %></h3>
+                  <span class="text-white-50 small text-uppercase">Pagados</span>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to cobros_path(estado: "vencido"), class: "text-decoration-none" do %>
+            <div class="card stat-card stat-card-danger h-100" style="cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+              <div class="card-body d-flex align-items-center py-3">
+                <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-exclamation-circle"></i></div>
+                <div class="ms-3">
+                  <h3 class="mb-0 fw-bold text-white"><%= @vencidos %></h3>
+                  <span class="text-white-50 small text-uppercase">Vencidos</span>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# ── 2. Resumen financiero ────────────────────────── %>
+      <h6 class="text-muted text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em">
+        <i class="bi bi-cash-stack me-1"></i>Resumen Financiero
+      </h6>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+          <%= link_to recaudacion_reportes_path(fecha_desde: Date.current.beginning_of_month, fecha_hasta: Date.current.end_of_month), class: "text-decoration-none" do %>
+            <div class="border rounded p-3 text-center h-100 bg-light" style="transition:background .15s" onmouseenter="this.style.background='#e8f5e9'" onmouseleave="this.style.background=''">
+              <div class="text-muted small text-uppercase fw-semibold mb-1"><i class="bi bi-calendar-month me-1"></i>Recaudado este mes</div>
+              <div class="fs-5 fw-bold text-success"><%= pesos(@monto_mes) %></div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to recaudacion_reportes_path(fecha_desde: Date.current.beginning_of_year, fecha_hasta: Date.current.end_of_year), class: "text-decoration-none" do %>
+            <div class="border rounded p-3 text-center h-100 bg-light" style="transition:background .15s" onmouseenter="this.style.background='#e3f2fd'" onmouseleave="this.style.background=''">
+              <div class="text-muted small text-uppercase fw-semibold mb-1"><i class="bi bi-graph-up me-1"></i>Recaudado este año</div>
+              <div class="fs-5 fw-bold text-primary"><%= pesos(@monto_anio) %></div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to cartera_reportes_path, class: "text-decoration-none" do %>
+            <div class="border rounded p-3 text-center h-100 bg-light" style="transition:background .15s" onmouseenter="this.style.background='#fff8e1'" onmouseleave="this.style.background=''">
+              <div class="text-muted small text-uppercase fw-semibold mb-1"><i class="bi bi-wallet2 me-1"></i>Cartera pendiente</div>
+              <div class="fs-5 fw-bold text-warning"><%= pesos(@monto_cartera) %></div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-6 col-xl-3">
+          <%= link_to morosos_reportes_path, class: "text-decoration-none" do %>
+            <div class="border rounded p-3 text-center h-100 bg-light" style="transition:background .15s" onmouseenter="this.style.background='#fce4ec'" onmouseleave="this.style.background=''">
+              <div class="text-muted small text-uppercase fw-semibold mb-1"><i class="bi bi-exclamation-triangle me-1"></i>En mora</div>
+              <div class="fs-5 fw-bold text-danger"><%= pesos(@monto_mora) %></div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# ── 3. Accesos rápidos ───────────────────────────── %>
+      <h6 class="text-muted text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em">
+        <i class="bi bi-lightning me-1"></i>Acciones Rápidas
+      </h6>
+      <div class="row g-2 mb-4">
+        <div class="col-auto">
+          <%= link_to cobros_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-receipt me-1"></i><%= @logia.t_cobro.pluralize %>
+          <% end %>
+        </div>
+        <div class="col-auto">
+          <%= link_to cobros_path(estado: "soporte_adjunto"), class: "btn btn-outline-info position-relative" do %>
+            <i class="bi bi-paperclip me-1"></i>Por Validar
+            <% if @soporte_adjunto > 0 %>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem"><%= @soporte_adjunto %></span>
+            <% end %>
+          <% end %>
+        </div>
+        <div class="col-auto">
+          <%= link_to periodo_cobros_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-calendar-check me-1"></i>Periodos
+          <% end %>
+        </div>
+        <% if current_user.tiene_permiso?("logias", "gestionar_conceptos") && current_user.logia.present? %>
+          <div class="col-auto">
+            <%= link_to logia_conceptos_cobro_path(current_user.logia), class: "btn btn-outline-secondary" do %>
+              <i class="bi bi-list-columns-reverse me-1"></i>Cuota Mensual
+            <% end %>
+          </div>
+        <% end %>
+        <% if current_user.tiene_permiso?("reportes", "recaudacion") %>
+          <div class="col-auto">
+            <%= link_to recaudacion_reportes_path, class: "btn btn-outline-success" do %>
+              <i class="bi bi-cash-stack me-1"></i>Recaudaci&oacute;n
+            <% end %>
+          </div>
+        <% end %>
+        <% if current_user.tiene_permiso?("reportes", "cartera") %>
+          <div class="col-auto">
+            <%= link_to cartera_reportes_path, class: "btn btn-outline-warning" do %>
+              <i class="bi bi-wallet2 me-1"></i>Cartera
+            <% end %>
+          </div>
+        <% end %>
+        <% if current_user.tiene_permiso?("reportes", "morosos") %>
+          <div class="col-auto">
+            <%= link_to morosos_reportes_path, class: "btn btn-outline-danger" do %>
+              <i class="bi bi-exclamation-triangle me-1"></i>Morosos
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── 4. Cobros por validar ────────────────────────── %>
+      <h6 class="text-muted text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em">
+        <i class="bi bi-hourglass-split me-1"></i>Cobros por Validar
+        <span class="badge bg-info ms-1 fw-normal" style="font-size:.7rem"><%= @cobros_por_validar.size %></span>
+      </h6>
+      <% if @cobros_por_validar.any? %>
+        <div class="table-responsive rounded border">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Miembro</th>
+                <th>Periodo</th>
+                <th class="text-end">Monto</th>
+                <th>Actualizado</th>
+                <th class="text-center">Acci&oacute;n</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @cobros_por_validar.each do |cobro| %>
+                <tr>
+                  <td class="fw-semibold"><%= cobro.miembro.nombre_completo %></td>
+                  <td><%= cobro.periodo_cobro.nombre %></td>
+                  <td class="text-end fw-semibold"><%= pesos(cobro.monto) %></td>
+                  <td><small class="text-muted"><i class="bi bi-clock me-1"></i>hace <%= time_ago_in_words(cobro.updated_at) %></small></td>
+                  <td class="text-center">
+                    <%= link_to validar_cobro_path(cobro), class: "btn btn-sm btn-primary" do %>
+                      <i class="bi bi-check2-square me-1"></i>Validar
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <div class="text-end mt-2">
+          <%= link_to cobros_path(estado: "soporte_adjunto"), class: "btn btn-sm btn-outline-secondary" do %>
+            Ver todos <i class="bi bi-arrow-right ms-1"></i>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
+          <strong>Todo al d&iacute;a</strong><br>
+          <small>No hay cobros pendientes de validaci&oacute;n.</small>
+        </div>
+      <% end %>
+
+    </div><%# /card-body %>
+    </div><%# /collapse %>
+  </div><%# /card tesorería %>
+
+  <script>
+    (function() {
+      var el = document.getElementById('tesoreriaBody');
+      var chevron = document.getElementById('tesoreriaChevron');
+      el.addEventListener('show.bs.collapse', function() { chevron.style.transform = 'rotate(180deg)'; });
+      el.addEventListener('hide.bs.collapse', function() { chevron.style.transform = 'rotate(0deg)'; });
+    })();
+  </script>
+
+  <%# ====================================================== %>
+  <%# ---- MÓDULO RED SOCIAL ------------------------------ %>
+  <%# ====================================================== %>
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-header d-flex align-items-center gap-2 py-3"
+         style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
+         data-bs-toggle="collapse" data-bs-target="#redSocialBody" aria-expanded="false">
+      <i class="bi bi-people-fill fs-4"></i>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold text-white">Red Social</h5>
+        <small class="opacity-75">Chat · Calendario · Comunicaci&oacute;n entre miembros</small>
+      </div>
+      <i class="bi bi-chevron-down" id="redSocialChevron" style="transition:transform .25s"></i>
+    </div>
+
+    <div class="collapse" id="redSocialBody">
+      <div class="card-body p-4" style="background:#031a10;color:#fff">
+        <div class="mb-4 d-flex gap-2 flex-wrap">
+          <%= link_to chat_path, class: "btn btn-outline-light d-inline-flex align-items-center gap-2" do %>
+            <i class="bi bi-chat-dots-fill fs-5"></i>
+            <div class="text-start">
+              <div class="fw-semibold">Abrir Chat</div>
+              <small class="opacity-75">Canal general de <%= current_logia.nombre_display %></small>
+            </div>
+          <% end %>
+          <%= link_to calendario_index_path, class: "btn btn-outline-light d-inline-flex align-items-center gap-2" do %>
+            <i class="bi bi-calendar3 fs-5"></i>
+            <div class="text-start">
+              <div class="fw-semibold">Calendario</div>
+              <small class="opacity-75">Eventos y tenidas</small>
+            </div>
+          <% end %>
+        </div>
+
+        <% ultimos = ChatMensaje.where(logia: current_logia).includes(:user).order(created_at: :desc).limit(3).reverse %>
+        <% if ultimos.any? %>
+          <h6 class="text-uppercase fw-semibold mb-2" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+            <i class="bi bi-clock me-1"></i>&Uacute;ltimos mensajes
+          </h6>
+          <div class="border border-secondary rounded p-3" style="background:rgba(255,255,255,.07)">
+            <% ultimos.each do |m| %>
+              <div class="d-flex gap-2 mb-2">
+                <div class="rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:28px;height:28px;font-size:.65rem;font-weight:700;background:#065f46;">
+                  <%= m.user.nombre[0].upcase %><%= m.user.apellido[0].upcase %>
+                </div>
+                <div>
+                  <span class="fw-semibold small" style="color:#fff"><%= m.user.nombre_completo %></span>
+                  <span class="small ms-1" style="color:rgba(255,255,255,.5)"><%= m.created_at.strftime("%d/%m %H:%M") %></span>
+                  <div class="small" style="color:rgba(255,255,255,.8)"><%= truncate(m.contenido, length: 80) %></div>
+                </div>
+              </div>
+            <% end %>
+            <div class="text-end mt-1">
+              <%= link_to "Ver chat completo →", chat_path, class: "small fw-semibold text-decoration-none", style: "color:#6ee7b7" %>
+            </div>
+          </div>
+        <% else %>
+          <div class="text-center py-3" style="color:rgba(255,255,255,.6)">
+            <i class="bi bi-chat-square-text fs-3 d-block mb-2"></i>
+            <small>Sin mensajes aún. <%= link_to "Inicia la conversación", chat_path, style: "color:#6ee7b7;font-weight:600" %></small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var rs = document.getElementById('redSocialBody');
+      var ch = document.getElementById('redSocialChevron');
+      if (rs && ch) {
+        rs.addEventListener('show.bs.collapse', function() { ch.style.transform = 'rotate(180deg)'; });
+        rs.addEventListener('hide.bs.collapse', function() { ch.style.transform = 'rotate(0deg)'; });
+      }
+    })();
+  </script>
+
+  <%# ====================================================== %>
+  <%# ---- MÓDULO BIBLIOTECA ----------------------------- %>
+  <%# ====================================================== %>
+  <div class="card mb-4 border-0 shadow-sm mt-4">
+    <div class="card-header d-flex align-items-center gap-2 py-3"
+         style="background:linear-gradient(135deg,#2e1065 0%,#4c1d95 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
+         data-bs-toggle="collapse" data-bs-target="#bibliotecaBody" aria-expanded="false">
+      <i class="bi bi-book-half fs-4"></i>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold text-white">Biblioteca</h5>
+        <small class="opacity-75">Planchas · Libros · Recursos masónicos</small>
+      </div>
+      <i class="bi bi-chevron-down ms-auto" id="bibliotecaChevron" style="transition:transform .25s"></i>
+    </div>
+    <div class="collapse" id="bibliotecaBody">
+      <div class="card-body p-4" style="background:#150a30;color:#fff">
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-bar-chart me-1"></i>Resumen
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-xl-3">
+            <%= link_to biblioteca_planchas_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#4c1d95;cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-file-earmark-text"></i></div>
+                  <div class="ms-3">
+                    <h3 class="mb-0 fw-bold" style="color:#fff"><%= @biblioteca_planchas_count || 0 %></h3>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Planchas</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-3">
+            <%= link_to biblioteca_libros_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#6d28d9;cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-book"></i></div>
+                  <div class="ms-3">
+                    <h3 class="mb-0 fw-bold" style="color:#fff"><%= @biblioteca_libros_count || 0 %></h3>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Libros</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-lightning me-1"></i>Acciones Rápidas
+        </h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <%= link_to biblioteca_planchas_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-file-earmark-text me-1"></i>Ver Planchas
+          <% end %>
+          <%= link_to new_biblioteca_plancha_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-plus-lg me-1"></i>Nueva Plancha
+          <% end %>
+          <%= link_to biblioteca_libros_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-book me-1"></i>Ver Libros
+          <% end %>
+          <%= link_to new_biblioteca_libro_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-plus-lg me-1"></i>Agregar Libro
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ====================================================== %>
+  <%# ---- MÓDULO HOSPITALIA ----------------------------- %>
+  <%# ====================================================== %>
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header d-flex align-items-center gap-2 py-3"
+         style="background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
+         data-bs-toggle="collapse" data-bs-target="#hospitaliaBody" aria-expanded="false">
+      <i class="bi bi-heart-pulse fs-4"></i>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold text-white">Hospitalia</h5>
+        <small class="opacity-75">Fondo de apoyo mutuo · Cumpleaños · Familiares</small>
+      </div>
+      <i class="bi bi-chevron-down ms-auto" id="hospitaliaChevron" style="transition:transform .25s"></i>
+    </div>
+    <div class="collapse" id="hospitaliaBody">
+      <div class="card-body p-4" style="background:#130303;color:#fff">
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-cash-stack me-1"></i>Estado del Fondo
+        </h6>
+        <div class="row g-3 mb-4">
+          <% h_recaudado = HospitaliaRecaudo.de_logia(current_logia.id).sum(:monto) %>
+          <% h_gastado   = HospitaliaGasto.de_logia(current_logia.id).sum(:monto) %>
+          <div class="col-6 col-xl-3">
+            <%= link_to hospitalia_recaudos_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#14532d;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-arrow-down-circle"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;"><%= number_to_currency(h_recaudado, unit: "$", delimiter: ".", separator: ",") %></div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Recaudos</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-3">
+            <%= link_to hospitalia_gastos_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#7f1d1d;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-arrow-up-circle"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;"><%= number_to_currency(h_gastado, unit: "$", delimiter: ".", separator: ",") %></div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Gastos</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-3">
+            <% saldo = h_recaudado - h_gastado %>
+            <%= link_to hospitalia_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:<%= saldo >= 0 ? '#1e3a5f' : '#7f1d1d' %>;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-wallet2"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;"><%= number_to_currency(saldo, unit: "$", delimiter: ".", separator: ",") %></div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Saldo</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-3">
+            <%= link_to hospitalia_cumpleanos_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#78350f;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-balloon-heart"></i></div>
+                  <div class="ms-3">
+                    <h3 class="mb-0 fw-bold" style="color:#fff"><%= @hospitalia_cumpleanos || 0 %></h3>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Cumpleaños</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-lightning me-1"></i>Acciones Rápidas
+        </h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <%= link_to hospitalia_recaudos_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-arrow-down-circle me-1"></i>Recaudos
+          <% end %>
+          <%= link_to hospitalia_gastos_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-arrow-up-circle me-1"></i>Gastos
+          <% end %>
+          <%= link_to hospitalia_cumpleanos_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-balloon-heart me-1"></i>Cumpleaños
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ====================================================== %>
+  <%# ---- MÓDULO NEGOCIOS ------------------------------- %>
+  <%# ====================================================== %>
+  <div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header d-flex align-items-center gap-2 py-3"
+         style="background:linear-gradient(135deg,#0c2340 0%,#1e3a5f 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
+         data-bs-toggle="collapse" data-bs-target="#negociosBody" aria-expanded="false">
+      <i class="bi bi-briefcase fs-4"></i>
+      <div class="flex-grow-1">
+        <h5 class="mb-0 fw-bold text-white">Negocios</h5>
+        <small class="opacity-75">Servicios · Productos · Empleos del Tenant</small>
+      </div>
+      <i class="bi bi-chevron-down ms-auto" id="negociosChevron" style="transition:transform .25s"></i>
+    </div>
+    <div class="collapse" id="negociosBody">
+      <div class="card-body p-4" style="background:#040c18;color:#fff">
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-bar-chart me-1"></i>Anuncios Activos
+        </h6>
+        <%
+          ids_tenant = [current_logia.id] + (current_logia.tenant_id.nil? ? current_logia.logias.pluck(:id) : [])
+          neg_bg = { "servicio" => "#1e3a5f", "producto" => "#14532d", "empleo" => "#78350f" }
+        %>
+        <div class="row g-3 mb-4">
+          <% NegocioAnuncio::TIPOS.each do |tipo| %>
+            <% count = NegocioAnuncio.where(logia_id: ids_tenant).activos.de_tipo(tipo).count %>
+            <div class="col-4">
+              <%= link_to negocios_path(tipo: tipo), class: "text-decoration-none" do %>
+                <div class="card h-100" style="background:<%= neg_bg[tipo] %>;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                  <div class="card-body text-center py-3">
+                    <h3 class="mb-0 fw-bold" style="color:#fff"><%= count %></h3>
+                    <span style="color:rgba(255,255,255,.7);font-size:.72rem;" class="text-uppercase"><%= NegocioAnuncio::TIPO_LABEL[tipo] %></span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
+          <i class="bi bi-lightning me-1"></i>Acciones Rápidas
+        </h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <%= link_to negocios_path, class: "btn btn-outline-light" do %>
+            <i class="bi bi-grid me-1"></i>Ver Marketplace
+          <% end %>
+          <%= link_to new_negocio_path(tipo: "servicio"), class: "btn btn-outline-light" do %>
+            <i class="bi bi-plus-lg me-1"></i>Servicio
+          <% end %>
+          <%= link_to new_negocio_path(tipo: "producto"), class: "btn btn-outline-light" do %>
+            <i class="bi bi-plus-lg me-1"></i>Producto
+          <% end %>
+          <%= link_to new_negocio_path(tipo: "empleo"), class: "btn btn-outline-light" do %>
+            <i class="bi bi-plus-lg me-1"></i>Empleo
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      [
+        ['bibliotecaBody',  'bibliotecaChevron'],
+        ['hospitaliaBody',  'hospitaliaChevron'],
+        ['negociosBody',    'negociosChevron']
+      ].forEach(function(p) {
+        var el = document.getElementById(p[0]), ch = document.getElementById(p[1]);
+        if (el && ch) {
+          el.addEventListener('show.bs.collapse', function() { ch.style.transform = 'rotate(180deg)'; });
+          el.addEventListener('hide.bs.collapse', function() { ch.style.transform = 'rotate(0deg)'; });
+        }
+      });
+    })();
+  </script>
+
+</div>

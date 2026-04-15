@@ -1,0 +1,93 @@
+<% content_for(:title, "Rol: #{@rol.nombre}") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1>
+      <i class="bi bi-shield-lock"></i> <%= @rol.nombre %>
+      <% if @rol.es_sistema? %>
+        <span class="badge bg-warning text-dark fs-6">Sistema</span>
+      <% end %>
+    </h1>
+    <% if @rol.descripcion.present? %>
+      <p class="text-muted mb-0"><%= @rol.descripcion %></p>
+    <% end %>
+  </div>
+  <div>
+    <% if policy(@rol).update? %>
+      <%= link_to edit_role_path(@rol), class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-pencil"></i> Editar
+      <% end %>
+    <% end %>
+    <%= link_to roles_path, class: "btn btn-outline-primary" do %>
+      <i class="bi bi-arrow-left"></i> Volver
+    <% end %>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h5 class="card-title text-muted">Codigo</h5>
+        <p class="fs-4"><code><%= @rol.codigo %></code></p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h5 class="card-title text-muted">Usuarios</h5>
+        <p class="fs-4"><%= @rol.users.count %></p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <h5 class="card-title text-muted">Permisos</h5>
+        <p class="fs-4"><%= @rol.permisos.count %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @rol.users.any? %>
+  <h3 class="mb-3"><i class="bi bi-people"></i> Usuarios con este rol</h3>
+  <div class="table-responsive mb-4">
+    <table class="table table-sm table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Logia / Tenant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @rol.users.includes(:logia).order(:apellido, :nombre).each do |u| %>
+          <tr>
+            <td><%= u.nombre_completo %></td>
+            <td><code><%= u.email %></code></td>
+            <td>
+              <% if u.logia.present? %>
+                <%= u.logia.nombre_display %>
+              <% else %>
+                <span class="text-muted fst-italic">COMUNIA (plataforma)</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<% if policy(@rol).gestionar_permisos? %>
+  <h3 class="mb-3"><i class="bi bi-key"></i> Permisos</h3>
+  <% if @rol.es_super_admin? %>
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle"></i> El rol <strong>Super Admin</strong> tiene acceso total a todas las funciones del sistema, independientemente de los permisos asignados aqui.
+    </div>
+  <% end %>
+
+  <%= render "roles/permisos_matrix", rol: @rol, permisos_por_recurso: @permisos_por_recurso, permisos_asignados: @permisos_asignados %>
+<% end %>

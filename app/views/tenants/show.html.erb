@@ -1,0 +1,169 @@
+<% content_for(:title, "#{@tenant.nombre_display} — COMUNIA") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <% if @tenant.logo.attached? %>
+      <%= image_tag @tenant.logo, height: 40, class: "rounded" %>
+    <% else %>
+      <span style="font-size:2rem"><%= @tenant.icono_display %></span>
+    <% end %>
+    <div>
+      <h1 class="h3 mb-0"><%= @tenant.nombre_display %></h1>
+      <%
+        _base = request.host.split(".").drop(1).join(".")
+        _port = (request.port != 80 && request.port != 443) ? ":#{request.port}" : ""
+        _base_with_port = _base.present? ? "#{_base}#{_port}" : "#{request.host}#{_port}"
+      %>
+      <small class="text-muted"><%= @tenant.slug %>.<%= _base_with_port %></small>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to edit_tenant_path(@tenant), class: "btn btn-outline-secondary btn-sm" do %>
+      <i class="bi bi-pencil me-1"></i>Configurar branding
+    <% end %>
+    <%= link_to tenants_path, class: "btn btn-outline-secondary btn-sm" do %>
+      <i class="bi bi-arrow-left me-1"></i>Volver
+    <% end %>
+  </div>
+</div>
+
+<%# ── Administradores del Tenant ──────────────────────────── %>
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center"
+       style="background: <%= @tenant.color_display %>; color: #fff;">
+    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Administradores del Tenant</h5>
+    <button class="btn btn-sm btn-light text-dark fw-semibold"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#form-nuevo-admin-tenant"
+            aria-expanded="false">
+      <i class="bi bi-plus-circle me-1"></i>Nuevo administrador
+    </button>
+  </div>
+
+  <div class="collapse" id="form-nuevo-admin-tenant">
+    <div class="card-body border-bottom bg-light">
+      <%= form_with url: crear_admin_tenant_tenant_path(@tenant), method: :post, class: "row g-2 align-items-end" do |f| %>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold mb-1">Nombre</label>
+          <input type="text" name="admin_tenant[nombre]" class="form-control form-control-sm" required placeholder="Ej: Juan">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold mb-1">Apellido</label>
+          <input type="text" name="admin_tenant[apellido]" class="form-control form-control-sm" required placeholder="Ej: Pérez">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold mb-1">Correo electrónico</label>
+          <input type="email" name="admin_tenant[email]" class="form-control form-control-sm" required placeholder="correo@ejemplo.com">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold mb-1">Contraseña</label>
+          <input type="password" name="admin_tenant[password]" class="form-control form-control-sm" required minlength="6">
+        </div>
+        <div class="col-md-1 d-grid">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-check-lg"></i>
+          </button>
+        </div>
+      <% end %>
+      <p class="text-muted small mb-0 mt-1 px-1">
+        <i class="bi bi-info-circle me-1"></i>
+        El administrador del tenant puede gestionar <strong>todas las <%= @tenant.t_logia.downcase.pluralize %></strong> de <strong><%= @tenant.nombre_display %></strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <% if @admins_tenant.any? %>
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Alcance</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @admins_tenant.each do |admin| %>
+            <tr>
+              <td><code><%= admin.username %></code></td>
+              <td><%= admin.nombre_completo %></td>
+              <td class="text-muted small"><%= admin.email %></td>
+              <td>
+                <span class="badge bg-primary">
+                  <i class="bi bi-diagram-3 me-1"></i>Todo <%= @tenant.nombre_display %>
+                </span>
+              </td>
+              <td class="text-end">
+                <%= button_to quitar_admin_tenant_tenant_path(@tenant),
+                      method: :delete,
+                      params: { user_id: admin.id },
+                      class: "btn btn-sm btn-outline-danger",
+                      form: { data: { turbo_confirm: "¿Quitar rol de administrador a #{admin.nombre_completo}?" } } do %>
+                  <i class="bi bi-person-dash"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-shield-exclamation fs-2 d-block mb-2"></i>
+        Este tenant no tiene administrador asignado aún.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# ── Sub-unidades del tenant (término configurable) ──────── %>
+<% t_sub = @tenant.t_logia %>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center"
+       style="background: <%= @tenant.color_display %>; color: #fff;">
+    <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i><%= t_sub.pluralize %></h5>
+    <%= link_to new_tenant_logia_path(@tenant), class: "btn btn-sm btn-light text-dark fw-semibold" do %>
+      <i class="bi bi-plus-circle me-1"></i><%= t_sub %> nueva
+    <% end %>
+  </div>
+  <div class="card-body p-0">
+    <% if @logias.any? %>
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th class="text-center"><%= @tenant.t_miembro.pluralize %></th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @logias.each do |logia| %>
+            <tr>
+              <td><code><%= logia.codigo %></code></td>
+              <td><%= logia.nombre %></td>
+              <td class="text-center"><%= logia.miembros.count %></td>
+              <td>
+                <%= link_to edit_tenant_logia_path(@tenant, logia), class: "btn btn-sm btn-outline-secondary" do %>
+                  <i class="bi bi-pencil"></i>
+                <% end %>
+                <%= button_to tenant_logia_path(@tenant, logia), method: :delete,
+                      class: "btn btn-sm btn-outline-danger",
+                      form: { data: { turbo_confirm: "¿Eliminar «#{logia.nombre}»?" } } do %>
+                  <i class="bi bi-trash"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-diagram-3 fs-2 d-block mb-2"></i>
+        Este tenant aún no tiene <%= t_sub.downcase.pluralize %>. Agrega el primero.
+      </div>
+    <% end %>
+  </div>
+</div>

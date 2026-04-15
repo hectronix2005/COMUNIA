@@ -1,0 +1,139 @@
+<% content_for(:title, @libro.titulo) %>
+
+<div class="container py-4" style="max-width:700px;">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <%= link_to biblioteca_libros_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i>
+    <% end %>
+    <% if @libro.categoria.present? %>
+      <span class="badge bg-light text-dark border"><%= @libro.categoria %></span>
+    <% end %>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-start justify-content-between mb-2">
+        <h4 class="fw-bold mb-0"><%= @libro.titulo %></h4>
+        <% if controller.send(:puede_gestionar?) && @libro.logia_id == current_logia.id %>
+          <div class="d-flex gap-2">
+            <%= link_to edit_biblioteca_libro_path(@libro), class: "btn btn-sm btn-outline-secondary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <%= link_to @libro, data: { turbo_method: :delete, turbo_confirm: "¿Eliminar este libro?" },
+                  class: "btn btn-sm btn-outline-danger" do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="row g-3 text-muted small mb-3">
+        <% if @libro.autor.present? %>
+          <div class="col-auto"><i class="bi bi-person me-1"></i><%= @libro.autor %></div>
+        <% end %>
+        <% if @libro.anio.present? %>
+          <div class="col-auto"><i class="bi bi-calendar me-1"></i><%= @libro.anio %></div>
+        <% end %>
+        <div class="col-auto"><i class="bi bi-person-badge me-1"></i>Subido por <%= @libro.user.nombre_completo %></div>
+      </div>
+
+      <%# Rating summary %>
+      <% promedio = @libro.promedio_calificacion %>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <% 5.times do |i| %>
+          <i class="bi bi-star<%= i < promedio.to_i ? '-fill' : (i < promedio.ceil && promedio % 1 >= 0.5 ? '-half' : '') %> text-warning"></i>
+        <% end %>
+        <span class="fw-semibold"><%= promedio > 0 ? promedio.to_s : "–" %></span>
+        <span class="text-muted small">(<%= @libro.total_calificaciones %> calificaciones)</span>
+      </div>
+
+      <% if @libro.descripcion.present? %>
+        <div style="white-space:pre-wrap;" class="mb-3"><%= @libro.descripcion %></div>
+      <% end %>
+
+      <%# Download / Link %>
+      <% if @libro.archivo.attached? %>
+        <div class="border rounded p-3 bg-light d-flex align-items-center gap-3">
+          <i class="bi bi-file-earmark fs-4 text-primary"></i>
+          <div>
+            <div class="fw-semibold small"><%= @libro.archivo.filename %></div>
+            <div class="text-muted" style="font-size:.75rem;"><%= number_to_human_size(@libro.archivo.byte_size) %></div>
+          </div>
+          <%= link_to rails_blob_path(@libro.archivo, disposition: "attachment"),
+                class: "btn btn-sm btn-outline-primary ms-auto" do %>
+            <i class="bi bi-download me-1"></i>Descargar
+          <% end %>
+        </div>
+      <% elsif @libro.url_externa.present? %>
+        <a href="<%= @libro.url_externa %>" target="_blank" rel="noopener"
+           class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-box-arrow-up-right me-1"></i>Ver recurso externo
+        </a>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Calificación del usuario %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-star me-2"></i>Tu calificación</h6>
+      <% if @calificacion %>
+        <p class="mb-2">
+          <% @calificacion.puntuacion.times do %><i class="bi bi-star-fill text-warning"></i><% end %>
+          <% (5 - @calificacion.puntuacion).times do %><i class="bi bi-star text-muted"></i><% end %>
+        </p>
+        <% if @calificacion.comentario.present? %>
+          <p class="text-muted small mb-2"><%= @calificacion.comentario %></p>
+        <% end %>
+        <p class="text-muted small mb-0">Calificaste con <%= @calificacion.puntuacion %>/5 estrellas.</p>
+      <% end %>
+      <%= form_with model: [@libro, @nueva_calificacion],
+            url: calificar_biblioteca_libro_path(@libro), method: :post do |f| %>
+        <div class="mb-3">
+          <div class="d-flex gap-2">
+            <% 1.upto(5) do |n| %>
+              <div class="form-check form-check-inline">
+                <%= f.radio_button :puntuacion, n, id: "star_#{n}",
+                      class: "form-check-input",
+                      checked: @calificacion&.puntuacion == n %>
+                <%= label_tag "star_#{n}", class: "form-check-label" do %>
+                  <i class="bi bi-star-fill text-warning"></i> <%= n %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <div class="mb-3">
+          <%= f.text_area :comentario, rows: 2, class: "form-control form-control-sm",
+                placeholder: "Comentario opcional...",
+                value: @calificacion&.comentario %>
+        </div>
+        <%= f.submit @calificacion ? "Actualizar calificación" : "Calificar",
+              class: "btn btn-primary btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Todas las calificaciones %>
+  <% if @libro.calificaciones.any? %>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h6 class="fw-semibold mb-3">Opiniones de hermanos</h6>
+        <% @libro.calificaciones.includes(:user).order(created_at: :desc).each do |cal| %>
+          <div class="mb-3 pb-3 border-bottom last-child-no-border">
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fw-semibold small"><%= cal.user.nombre_completo %></span>
+              <div>
+                <% cal.puntuacion.times do %><i class="bi bi-star-fill text-warning" style="font-size:.8rem;"></i><% end %>
+                <% (5 - cal.puntuacion).times do %><i class="bi bi-star text-muted" style="font-size:.8rem;"></i><% end %>
+              </div>
+            </div>
+            <% if cal.comentario.present? %>
+              <p class="text-muted small mt-1 mb-0"><%= cal.comentario %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,51 @@
+<% content_for(:title, "Conversación") %>
+
+<div class="container py-3" style="max-width: 800px;">
+  <% otro = @conversacion.otro_usuario(current_user) %>
+  <% anuncio = @conversacion.negocio_anuncio %>
+
+  <div class="mb-3">
+    <%= link_to negocio_conversaciones_path, class: "btn btn-sm btn-link text-muted ps-0" do %>
+      <i class="bi bi-arrow-left me-1"></i>Mis conversaciones
+    <% end %>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body d-flex gap-3 align-items-center">
+      <% img = anuncio.imagen_principal %>
+      <% if img %>
+        <img src="<%= rails_blob_path(img) %>" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+      <% end %>
+      <div class="flex-grow-1">
+        <div class="fw-semibold"><%= link_to anuncio.titulo, negocio_path(anuncio), class: "text-decoration-none text-dark" %></div>
+        <div class="small text-muted">Con <%= otro.nombre_completo %></div>
+      </div>
+      <% if anuncio.precio.present? && anuncio.tipo != "empleo" %>
+        <div class="fw-bold text-primary"><%= number_to_currency(anuncio.precio, unit: "$", delimiter: ".", precision: 0) %></div>
+      <% end %>
+    </div>
+  </div>
+
+  <%= turbo_stream_from [@conversacion, :mensajes] %>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div id="mensajes-list" class="d-flex flex-column gap-2 p-3" style="max-height: 55vh; overflow-y: auto;">
+        <% @mensajes.each do |m| %>
+          <%= render "negocio_mensajes/mensaje", mensaje: m %>
+        <% end %>
+      </div>
+
+      <div class="border-top p-3" id="mensaje-form">
+        <%= render "negocio_mensajes/form", conversacion: @conversacion, mensaje: @mensaje %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    var list = document.getElementById("mensajes-list");
+    if (list) list.scrollTop = list.scrollHeight;
+  })();
+</script>

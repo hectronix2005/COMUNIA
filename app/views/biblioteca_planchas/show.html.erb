@@ -1,0 +1,57 @@
+<% content_for(:title, @plancha.titulo) %>
+
+<div class="container py-4" style="max-width:700px;">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <%= link_to biblioteca_planchas_path, class: "btn btn-sm btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left"></i>
+    <% end %>
+    <span class="badge bg-secondary"><%= @plancha.grado %></span>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-start justify-content-between mb-3">
+        <h4 class="fw-bold mb-0"><%= @plancha.titulo %></h4>
+        <% if controller.send(:puede_gestionar?) && @plancha.logia_id == current_logia.id %>
+          <div class="d-flex gap-2">
+            <%= link_to edit_biblioteca_plancha_path(@plancha), class: "btn btn-sm btn-outline-secondary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <%= link_to @plancha, data: { turbo_method: :delete, turbo_confirm: "¿Eliminar esta plancha?" },
+                  class: "btn btn-sm btn-outline-danger" do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="row g-3 mb-3 text-muted small">
+        <% if @plancha.autor.present? %>
+          <div class="col-auto"><i class="bi bi-person me-1"></i><%= @plancha.autor %></div>
+        <% end %>
+        <% if @plancha.anio.present? %>
+          <div class="col-auto"><i class="bi bi-calendar me-1"></i><%= @plancha.anio %></div>
+        <% end %>
+        <div class="col-auto"><i class="bi bi-person-badge me-1"></i>Publicado por <%= @plancha.user.nombre_completo %></div>
+      </div>
+
+      <% if @plancha.descripcion.present? %>
+        <div style="white-space:pre-wrap;" class="mb-3"><%= @plancha.descripcion %></div>
+      <% end %>
+
+      <% if @plancha.documento.attached? %>
+        <div class="border rounded p-3 bg-light d-flex align-items-center gap-3">
+          <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
+          <div>
+            <div class="fw-semibold small"><%= @plancha.documento.filename %></div>
+            <div class="text-muted" style="font-size:.75rem;"><%= number_to_human_size(@plancha.documento.byte_size) %></div>
+          </div>
+          <%= link_to rails_blob_path(@plancha.documento, disposition: "attachment"),
+                class: "btn btn-sm btn-outline-primary ms-auto" do %>
+            <i class="bi bi-download me-1"></i>Descargar
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

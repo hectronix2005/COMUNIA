@@ -1,0 +1,9 @@
+<%= turbo_frame_tag "fav_inline_#{anuncio.id}" do %>
+  <% is_fav = anuncio.favorito_de?(current_user) %>
+  <%= button_to toggle_favorito_negocio_path(anuncio, inline: 1),
+        method: :post,
+        class: "btn btn-sm w-100 #{is_fav ? 'btn-danger' : 'btn-outline-danger'}" do %>
+    <i class="bi bi-heart<%= is_fav ? '-fill' : '' %> me-1"></i>
+    <%= is_fav ? "En favoritos" : "Guardar en favoritos" %>
+  <% end %>
+<% end %>

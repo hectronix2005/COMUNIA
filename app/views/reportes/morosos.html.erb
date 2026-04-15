@@ -1,0 +1,55 @@
+<% content_for(:title, "Reporte de Morosos") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Reporte de Morosos</h1>
+  <%= link_to "Exportar Excel", morosos_reportes_path(format: :xlsx, logia_id: params[:logia_id]), class: "btn btn-success" %>
+</div>
+
+<%= form_tag morosos_reportes_path, method: :get, class: "row g-3 mb-4" do %>
+  <div class="col-md-4">
+    <%= select_tag :logia_id,
+          options_from_collection_for_select(@logias, :id, :nombre, params[:logia_id]),
+          include_blank: "-- Todas las Logias --",
+          class: "form-select" %>
+  </div>
+  <div class="col-md-4">
+    <%= submit_tag "Filtrar", class: "btn btn-primary" %>
+    <%= link_to "Limpiar", morosos_reportes_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>
+
+<div class="alert alert-danger">
+  <strong>Total en mora:</strong> <%= number_to_currency(@total, unit: "$", delimiter: ".", separator: ",", precision: 0) %>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Miembro</th>
+        <th>Logia</th>
+        <th>Periodo</th>
+        <th>Monto</th>
+        <th>Estado</th>
+        <th>D&iacute;as de mora</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @cobros.each do |cobro| %>
+        <tr>
+          <td><%= cobro.miembro.nombre_completo %></td>
+          <td><%= cobro.miembro.logia.nombre %></td>
+          <td><%= cobro.periodo_cobro.nombre %></td>
+          <td><%= number_to_currency(cobro.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></td>
+          <td><%= render "shared/estado_badge", estado: cobro.estado %></td>
+          <td>
+            <% dias = (Date.current - cobro.periodo_cobro.fecha_vencimiento).to_i %>
+            <span class="badge bg-danger"><%= dias %> d&iacute;as</span>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @cobros %>

@@ -1,0 +1,13 @@
+<% current_id = defined?(current_user) && current_user ? current_user.id : (local_assigns[:current_user_id] || nil)
+   propio = current_id.present? && mensaje.user_id == current_id %>
+<div class="d-flex <%= propio ? 'justify-content-end' : 'justify-content-start' %>" data-mensaje-id="<%= mensaje.id %>">
+  <div class="p-2 px-3 rounded-3 shadow-sm" style="max-width: 75%; background: <%= propio ? '#1B2A4A' : '#f1f3f5' %>; color: <%= propio ? '#fff' : '#212529' %>;">
+    <% unless propio %>
+      <div class="small fw-semibold mb-1"><%= mensaje.user.nombre_completo %></div>
+    <% end %>
+    <div style="white-space: pre-wrap; word-break: break-word;"><%= mensaje.cuerpo %></div>
+    <div class="small <%= propio ? 'text-white-50' : 'text-muted' %> text-end mt-1" style="font-size: .7rem;">
+      <%= mensaje.created_at.strftime("%d/%m %H:%M") %>
+    </div>
+  </div>
+</div>

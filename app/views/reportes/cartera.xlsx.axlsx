@@ -1,0 +1,18 @@
+wb = xlsx_package.workbook
+wb.add_worksheet(name: "Cartera") do |sheet|
+  sheet.add_row ["Miembro", "Logia", "Periodo", "Monto", "Estado", "Vencimiento"], style: wb.styles.add_style(b: true, bg_color: "1a1a2e", fg_color: "FFFFFF")
+
+  @cobros.each do |cobro|
+    sheet.add_row [
+      cobro.miembro.nombre_completo,
+      cobro.miembro.logia.nombre,
+      cobro.periodo_cobro.nombre,
+      cobro.monto.to_f,
+      cobro.estado.humanize,
+      cobro.periodo_cobro.fecha_vencimiento.to_s
+    ]
+  end
+
+  sheet.add_row []
+  sheet.add_row ["Total", "", "", @total.to_f], style: wb.styles.add_style(b: true)
+end

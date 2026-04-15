@@ -1,0 +1,24 @@
+<% flash.each do |type, message| %>
+  <% next if message.blank? %>
+  <%
+    case type.to_s
+    when "notice", "success"
+      alert_class = "alert-success"
+      icon_class  = "bi-check-circle-fill"
+    when "alert", "error"
+      alert_class = "alert-danger"
+      icon_class  = "bi-exclamation-triangle-fill"
+    when "warning"
+      alert_class = "alert-warning"
+      icon_class  = "bi-info-circle-fill"
+    else
+      alert_class = "alert-info"
+      icon_class  = "bi-info-circle-fill"
+    end
+  %>
+  <div class="alert <%= alert_class %> alert-dismissible fade show d-flex align-items-center flash-animate" role="alert">
+    <i class="bi <%= icon_class %> me-2"></i>
+    <div><%= message %></div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+<% end %>
