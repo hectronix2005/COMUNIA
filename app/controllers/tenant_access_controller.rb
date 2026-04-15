@@ -10,7 +10,7 @@ class TenantAccessController < ApplicationController
     end
 
     session[:tenant_slug] = logia.slug
-    destino = user_signed_in? ? root_path : tenant_login_path(logia.slug)
+    destino = user_signed_in? ? root_path : new_user_session_path(tenant_slug: logia.slug)
     redirect_to destino, notice: "Contexto: #{logia.nombre_display}."
   end
 

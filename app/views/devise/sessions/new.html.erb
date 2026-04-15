@@ -29,7 +29,14 @@
       <% end %>
     </div>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "needs-validation" }) do |f| %>
+    <%
+      tenant_slug_for_form = params[:tenant_slug].presence || session[:tenant_slug].presence
+      form_url = tenant_slug_for_form ? session_path(resource_name, tenant_slug: tenant_slug_for_form) : session_path(resource_name)
+    %>
+    <%= form_for(resource, as: resource_name, url: form_url, html: { class: "needs-validation" }) do |f| %>
+      <% if tenant_slug_for_form %>
+        <%= hidden_field_tag :tenant_slug, tenant_slug_for_form %>
+      <% end %>
       <div class="form-floating mb-3">
         <%= f.text_field :email,
             autofocus: true,

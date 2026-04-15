@@ -1,24 +1,24 @@
 Rails.application.routes.draw do
-  devise_for :users, path: "", path_names: {
-    sign_in: "login",
-    sign_out: "logout"
-  }
-
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "dashboard#index"
 
-  get "dashboard", to: "dashboard#index", as: :dashboard
+  # Entrada/salida de contexto de tenant (fuera del scope opcional).
+  get    "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
+  delete "t",       to: "tenant_access#exit_tenant", as: :exit_tenant
+
+  # Todas las rutas aceptan opcionalmente el prefijo /t/:tenant_slug/ para
+  # que tras el login la URL conserve el contexto del tenant.
+  scope "(/t/:tenant_slug)", constraints: { tenant_slug: /[a-z0-9][a-z0-9\-_]*/ } do
+    devise_for :users, path: "", path_names: {
+      sign_in: "login",
+      sign_out: "logout"
+    }
+
+    get "dashboard", to: "dashboard#index", as: :dashboard
 
   # ── Plataforma COMUNIA (sin subdominio, super admin) ──────────
   resources :users, only: [:edit, :update]
-
-  get  "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
-  delete "t",     to: "tenant_access#exit_tenant", as: :exit_tenant
-
-  devise_scope :user do
-    get "t/:tenant_slug/login", to: "tenant_logins#new", as: :tenant_login
-  end
 
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do
@@ -128,5 +128,6 @@ Rails.application.routes.draw do
   end
   resources :negocio_conversaciones, path: "mis-conversaciones", only: [:index, :show] do
     resources :mensajes, only: [:create], controller: "negocio_mensajes"
+  end
   end
 end
