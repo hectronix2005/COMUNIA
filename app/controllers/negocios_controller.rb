@@ -41,8 +41,8 @@ class NegociosController < ApplicationController
   end
 
   def show
-    NegocioAnuncio.where(id: @anuncio.id).update_all("vistas_count = COALESCE(vistas_count,0) + 1")
-    @anuncio.reload
+    # Increment atómico en una sola query (antes eran update_all + reload).
+    @anuncio.increment!(:vistas_count)
   end
 
   def new

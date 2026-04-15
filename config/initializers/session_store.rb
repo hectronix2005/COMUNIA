@@ -4,4 +4,7 @@
 # cerrar sesión desde otro contexto la cookie no se borra correctamente.
 Rails.application.config.session_store :cookie_store,
                                        key: "_gran_logia_de_colombia_session",
-                                       path: "/"
+                                       path: "/",
+                                       secure: Rails.env.production?,
+                                       httponly: true,
+                                       same_site: :lax

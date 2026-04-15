@@ -1,8 +1,11 @@
 class HospitaliaGasto < ApplicationRecord
+  include AttachmentValidations
+
   belongs_to :logia
   belongs_to :user
   belongs_to :beneficiario, class_name: "Miembro", foreign_key: :beneficiario_id, optional: true
   has_one_attached :soporte
+  validates_attachment :soporte, types: :doc, max: 10.megabytes
 
   validates :concepto, presence: true, length: { maximum: 200 }
   validates :monto,    presence: true, numericality: { greater_than: 0 }

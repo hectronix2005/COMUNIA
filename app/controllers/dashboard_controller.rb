@@ -29,14 +29,17 @@ class DashboardController < ApplicationController
     @total_vencidos = Cobro.vencido.count
     @cobros_recientes = Cobro.soporte_adjunto.includes(miembro: [:user, :logia]).order(updated_at: :desc).limit(10)
 
-    @resumen_por_logia = Logia.ordenadas.map do |logia|
-      cobros = Cobro.por_logia(logia.id)
+    # Agrupamos en UNA sola query: total por (logia_id, estado) en lugar
+    # de 4 counts × N logias. Reduce de O(4N) queries a O(1).
+    counts = Cobro.joins(:miembro).group("miembros.logia_id", :estado).count
+    @resumen_por_logia = @logias.map do |logia|
+      stats = counts.select { |(lid, _), _| lid == logia.id }
       {
         logia: logia,
-        pendientes: cobros.pendiente.count,
-        soporte_adjunto: cobros.soporte_adjunto.count,
-        pagados: cobros.pagado.count,
-        vencidos: cobros.vencido.count
+        pendientes:      stats[[logia.id, "pendiente"]]       || 0,
+        soporte_adjunto: stats[[logia.id, "soporte_adjunto"]] || 0,
+        pagados:         stats[[logia.id, "pagado"]]          || 0,
+        vencidos:        stats[[logia.id, "vencido"]]         || 0
       }
     end
 

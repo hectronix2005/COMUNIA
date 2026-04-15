@@ -1,4 +1,6 @@
 class MiembroEstadoCambio < ApplicationRecord
+  include AttachmentValidations
+
   ESTADO_COLORS = {
     "activo"               => "success",
     "quite"                => "dark",
@@ -17,6 +19,7 @@ class MiembroEstadoCambio < ApplicationRecord
   belongs_to :registrado_por, class_name: "User", optional: true
 
   has_one_attached :soporte
+  validates_attachment :soporte, types: :doc, max: 10.megabytes
 
   validates :estado, presence: true
   validates :desde,  presence: true

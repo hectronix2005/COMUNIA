@@ -55,8 +55,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Assets (JS, CSS, imágenes, fonts) → cache-first.
+  // Assets fingerprinted (`/assets/*-<hash>.{css,js,png,...}`) → cache-first.
+  // Estos archivos son inmutables: si el contenido cambia, el hash cambia y
+  // la URL es distinta, por lo que es seguro cachearlos indefinidamente.
+  const isFingerprintedAsset = url.pathname.startsWith("/assets/");
+
   if (
+    isFingerprintedAsset ||
     request.destination === "script" ||
     request.destination === "style" ||
     request.destination === "image" ||
@@ -71,7 +76,7 @@ self.addEventListener("fetch", (event) => {
             caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
           }
           return response;
-        });
+        }).catch(() => cached);
       })
     );
   }

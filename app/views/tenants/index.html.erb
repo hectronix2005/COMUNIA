@@ -61,7 +61,7 @@
         </div>
         <div class="card-footer bg-transparent d-flex gap-1 flex-wrap">
           <%= link_to tenant_path(tenant), class: "btn btn-sm btn-outline-dark flex-fill text-center" do %>
-            <i class="bi bi-diagram-3 me-1"></i><%= tenant.t_logia.pluralize %> (<%= tenant.logias.count %>)
+            <i class="bi bi-diagram-3 me-1"></i><%= tenant.t_logia.pluralize %> (<%= @logias_count[tenant.id] || 0 %>)
           <% end %>
           <%= button_to preview_tenant_path(tenant), method: :post,
                 class: "btn btn-sm fw-semibold flex-fill text-center text-white",

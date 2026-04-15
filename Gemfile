@@ -45,6 +45,9 @@ gem "image_processing", "~> 1.2"
 # Active Storage backend para Cloudflare R2 (S3-compatible)
 gem "aws-sdk-s3", "~> 1.180", require: false
 
+# Rate limiting / brute-force protection
+gem "rack-attack", "~> 6.7"
+
 # Authentication
 gem "devise", "~> 4.9"
 

@@ -1,4 +1,6 @@
 class NegocioAnuncio < ApplicationRecord
+  include AttachmentValidations
+
   TIPOS = %w[servicio producto empleo].freeze
   TIPO_LABEL = {
     "servicio" => "Servicio",
@@ -27,6 +29,8 @@ class NegocioAnuncio < ApplicationRecord
   belongs_to :user
   has_one_attached :imagen
   has_many_attached :imagenes
+  validates_attachment :imagen,   types: :image, max: 8.megabytes
+  validates_attachment :imagenes, types: :image, max: 8.megabytes, multi: true
   has_many :favoritos, class_name: "NegocioFavorito", dependent: :destroy
   has_many :usuarios_favoritos, through: :favoritos, source: :user
   has_many :conversaciones, class_name: "NegocioConversacion", dependent: :destroy

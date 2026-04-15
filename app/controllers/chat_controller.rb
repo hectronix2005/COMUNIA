@@ -34,7 +34,9 @@ class ChatController < ApplicationController
 
     mensaje = if con_id
       destinatario = User.find_by(id: con_id)
-      return head :unprocessable_entity unless destinatario
+      # Bloquea DM cross-tenant: el destinatario debe pertenecer al árbol
+      # del tenant del usuario actual.
+      return head :forbidden unless destinatario && tenant_members.exists?(id: con_id)
 
       ChatMensaje.new(
         logia:        current_logia,

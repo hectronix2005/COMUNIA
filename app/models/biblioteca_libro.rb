@@ -1,9 +1,12 @@
 class BibliotecaLibro < ApplicationRecord
+  include AttachmentValidations
+
   CATEGORIAS = %w[Filosofía Historia Ritual Esotérico Ciencia Arte Literatura Otro].freeze
 
   belongs_to :logia
   belongs_to :user
   has_one_attached :archivo
+  validates_attachment :archivo, types: :doc, max: 50.megabytes
   has_many :calificaciones, class_name: "BibliotecaCalificacion",
                             foreign_key: :libro_id, dependent: :destroy
 

@@ -1,4 +1,6 @@
 class Logia < ApplicationRecord
+  include AttachmentValidations
+
   # ── Jerarquía Tenant → Logia ────────────────────────────────
   belongs_to :tenant, class_name: "Logia", optional: true
   has_many :logias, class_name: "Logia", foreign_key: :tenant_id, dependent: :destroy
@@ -8,6 +10,7 @@ class Logia < ApplicationRecord
   has_many :conceptos_cobro, dependent: :destroy
   has_many :tarifas, dependent: :destroy
   has_one_attached :logo
+  validates_attachment :logo, types: :image, max: 5.megabytes
 
   validates :nombre, presence: true
   validates :codigo, presence: true,

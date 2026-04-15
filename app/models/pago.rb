@@ -1,7 +1,10 @@
 class Pago < ApplicationRecord
+  include AttachmentValidations
+
   belongs_to :cobro
   belongs_to :validado_por, class_name: "User", optional: true
   has_many_attached :soportes
+  validates_attachment :soportes, types: :doc, max: 10.megabytes, multi: true
 
   validates :monto_pagado, presence: true, numericality: { greater_than: 0 }
   validates :fecha_pago, presence: true
