@@ -49,8 +49,12 @@ class DashboardController < ApplicationController
 
   def dashboard_admin_logia_para(logia)
     @logia = logia
-    @miembros_activos = Miembro.activos.por_logia(logia.id).count
-    cobros = Cobro.por_logia(logia.id)
+    # Si la logia es raíz del tenant, agregamos datos de ella + todas sus hijas
+    # (de lo contrario las métricas del tenant-root mostrarían 0 cuando los
+    # miembros están asignados a las logias hijas).
+    ids = ids_tenant(logia)
+    @miembros_activos = Miembro.activos.where(logia_id: ids).count
+    cobros = Cobro.joins(:miembro).where(miembros: { logia_id: ids })
     @pendientes      = cobros.pendiente.count
     @soporte_adjunto = cobros.soporte_adjunto.count
     @pagados         = cobros.pagado.count
@@ -62,12 +66,12 @@ class DashboardController < ApplicationController
     @monto_mora     = cobros.vencido.sum(:monto)
     @monto_mes      = Pago.validados
                          .joins(cobro: :miembro)
-                         .where(miembros: { logia_id: logia.id })
+                         .where(miembros: { logia_id: ids })
                          .where(validado_at: Date.current.beginning_of_month..Date.current.end_of_month)
                          .sum(:monto_pagado)
     @monto_anio     = Pago.validados
                          .joins(cobro: :miembro)
-                         .where(miembros: { logia_id: logia.id })
+                         .where(miembros: { logia_id: ids })
                          .where(validado_at: Date.current.beginning_of_year..Date.current.end_of_year)
                          .sum(:monto_pagado)
 
