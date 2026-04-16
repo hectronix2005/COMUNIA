@@ -1,5 +1,9 @@
 build:
   docker:
     web: Dockerfile
+release:
+  image: web
+  command:
+    - bin/rails db:migrate
 run:
   web: HTTP_PORT=$PORT ./bin/thrust ./bin/rails server
