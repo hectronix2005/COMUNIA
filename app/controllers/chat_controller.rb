@@ -1,6 +1,7 @@
 class ChatController < ApplicationController
   def index
     @miembros_chat = tenant_members
+    @dm_recientes  = dm_recientes_users
 
     @con_id = params[:con].presence&.to_i
 
@@ -88,5 +89,22 @@ class ChatController < ApplicationController
     ids   = [logia.id]
     ids  += logia.logias.pluck(:id) if logia.tenant_id.nil?
     ids
+  end
+
+  def dm_recientes_users
+    # IDs de usuarios con los que el usuario actual ha intercambiado DMs
+    partner_ids = ChatMensaje.where(canal: "dm")
+      .where("user_id = :uid OR destinatario_id = :uid", uid: current_user.id)
+      .select("DISTINCT CASE WHEN user_id = #{current_user.id} THEN destinatario_id ELSE user_id END AS partner_id")
+      .map(&:partner_id)
+
+    return [] if partner_ids.empty?
+
+    tenant_member_ids = @miembros_chat.map(&:id)
+    valid_ids = partner_ids & tenant_member_ids
+
+    User.where(id: valid_ids)
+        .includes(miembro: :logia)
+        .order(:apellido, :nombre)
   end
 end
