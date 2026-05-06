@@ -59,7 +59,7 @@ gem "kaminari", "~> 1.2"
 
 # Excel export
 gem "caxlsx", "~> 4.1"
-gem "caxlsx_rails", "~> 0.6"
+gem "caxlsx_rails", "~> 0.7"
 
 # PDF generation
 gem "wicked_pdf", "~> 2.8"
