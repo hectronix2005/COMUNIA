@@ -1,6 +1,6 @@
 class HospitaliaController < ApplicationController
   include ActionView::Helpers::NumberHelper
-  before_action :require_hospitalario!
+  before_action :require_hospitalario!, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar]
 
   def index
     @recaudos = HospitaliaRecaudo.de_logia(current_logia.id).ordenados.limit(10)

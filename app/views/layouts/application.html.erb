@@ -142,7 +142,7 @@
 
                 <%# ── Red Social ── %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-people-fill"></i> Red Social
                   </a>
@@ -158,6 +158,11 @@
                     <li>
                       <%= link_to calendario_index_path, class: "dropdown-item #{'active' if request.path.start_with?('/calendario')}" do %>
                         <i class="bi bi-calendar3 me-2"></i>Calendario
+                      <% end %>
+                    </li>
+                    <li>
+                      <%= link_to hospitalia_cumpleanos_path, class: "dropdown-item #{'active' if request.path.start_with?('/hospitalia/cumpleanos')}" do %>
+                        <i class="bi bi-balloon-heart me-2 text-warning"></i>Cumpleaños
                       <% end %>
                     </li>
                   </ul>
