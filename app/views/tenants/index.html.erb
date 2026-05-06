@@ -29,29 +29,13 @@
             <p class="text-muted small fst-italic mb-2">"<%= tenant.lema_display %>"</p>
           <% end %>
           <% if tenant.slug.present? %>
-            <div class="text-muted small mb-1">
-              <%
-                _base = request.host.split(".").drop(1).join(".")
-                _port = (request.port != 80 && request.port != 443) ? ":#{request.port}" : ""
-                _base_with_port = _base.present? ? "#{_base}#{_port}" : "#{request.host}#{_port}"
-              %>
-              <i class="bi bi-globe me-1"></i><code><%= tenant.slug %>.<%= _base_with_port %></code>
-            </div>
-            <div class="small">
-              <% login_url = "http://#{tenant.slug}.#{request.host_with_port}/login" %>
-              <%= link_to login_url, target: "_blank", rel: "noopener", class: "text-decoration-none" do %>
-                <i class="bi bi-box-arrow-in-right me-1"></i>Ir al login (subdominio)
-              <% end %>
-            </div>
-            <div class="small">
+            <div class="small mb-1">
               <%= link_to enter_tenant_path(tenant.slug), target: "_blank", rel: "noopener", class: "text-decoration-none" do %>
-                <i class="bi bi-link-45deg me-1"></i>Acceso directo (path)
+                <i class="bi bi-box-arrow-in-right me-1"></i>Entrar al tenant
               <% end %>
-              <div class="text-muted" style="font-size: 0.75rem">
-                <%= link_to "#{request.base_url}/t/#{tenant.slug}", target: "_blank", rel: "noopener", class: "text-muted text-decoration-none" do %>
-                  <code><%= request.base_url %>/t/<%= tenant.slug %></code>
-                <% end %>
-              </div>
+            </div>
+            <div class="text-muted" style="font-size: 0.75rem">
+              <code><%= request.base_url %>/t/<%= tenant.slug %></code>
             </div>
           <% else %>
             <div class="text-warning small">
