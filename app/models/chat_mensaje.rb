@@ -1,5 +1,6 @@
 class ChatMensaje < ApplicationRecord
   CANALES = %w[logia tenant dm].freeze
+  REACCIONES_PERMITIDAS = %w[👍 ❤️ 😂 😮 😢 🙏].freeze
 
   belongs_to :logia
   belongs_to :user
@@ -17,6 +18,9 @@ class ChatMensaje < ApplicationRecord
         a, b, b, a
       )
   }
+  scope :unread_dm_for, ->(user_id) {
+    where(canal: "dm", destinatario_id: user_id, leido_at: nil)
+  }
 
   after_create_commit :broadcast_mensaje
   after_create_commit :notificar_destinatarios
@@ -31,6 +35,49 @@ class ChatMensaje < ApplicationRecord
     when "tenant" then "chat_tenant_#{logia_id}"
     else               "chat_logia_#{logia_id}"
     end
+  end
+
+  def marcar_leido!(lector)
+    return unless dm? && destinatario_id == lector.id && leido_at.nil?
+    update_column(:leido_at, Time.current)
+  end
+
+  def toggle_reaccion!(usr, emoji)
+    return unless REACCIONES_PERMITIDAS.include?(emoji)
+    r = reacciones.dup
+    r[emoji] ||= []
+    if r[emoji].include?(usr.id)
+      r[emoji].delete(usr.id)
+      r.delete(emoji) if r[emoji].empty?
+    else
+      r[emoji] << usr.id
+    end
+    update!(reacciones: r)
+    broadcast_replace_to(
+      stream_name,
+      target:  "msg-reacciones-#{id}",
+      partial: "chat/mensaje_reacciones",
+      locals:  { mensaje: self }
+    )
+  end
+
+  def leido?
+    leido_at.present?
+  end
+
+  # Hash { partner_user_id => ChatMensaje }
+  def self.ultimo_mensaje_dm(user_id)
+    sql = <<~SQL
+      SELECT DISTINCT ON (partner_id) *
+      FROM (
+        SELECT *,
+          CASE WHEN user_id = #{user_id.to_i} THEN destinatario_id ELSE user_id END AS partner_id
+        FROM chat_mensajes
+        WHERE canal = 'dm' AND (user_id = #{user_id.to_i} OR destinatario_id = #{user_id.to_i})
+      ) sub
+      ORDER BY partner_id, created_at DESC
+    SQL
+    find_by_sql(sql).index_by { |m| m[:partner_id] }
   end
 
   private

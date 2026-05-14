@@ -104,8 +104,12 @@ Rails.application.routes.draw do
   delete "push_subscriptions", to: "push_subscriptions#destroy"
 
   # ── Red Social ────────────────────────────────────────────
-  get  "chat", to: "chat#index",  as: :chat
-  post "chat", to: "chat#create"
+  get  "chat",               to: "chat#index",        as: :chat
+  post "chat",               to: "chat#create"
+  post "chat/marcar_leido",  to: "chat#marcar_leido",  as: :chat_marcar_leido
+  post "chat/reaccionar",    to: "chat#reaccionar",    as: :chat_reaccionar
+  get  "chat/buscar",        to: "chat#buscar",        as: :chat_buscar
+  post "chat/typing",        to: "chat#typing",        as: :chat_typing
 
   # ── Calendario ────────────────────────────────────────────
   get   "calendario/sincronizaciones",        to: "calendario#sincronizaciones",  as: :calendario_sincronizaciones

@@ -1,0 +1,11 @@
+admin_role:
+  nombre: Admin Logia Test
+  codigo: admin_logia_test
+  es_sistema: true
+  created_at: <%= Time.current %>
+
+miembro_role:
+  nombre: Miembro Test
+  codigo: miembro_test
+  es_sistema: false
+  created_at: <%= Time.current %>

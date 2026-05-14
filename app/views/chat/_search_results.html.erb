@@ -1,0 +1,19 @@
+<% if resultados.blank? %>
+  <div class="text-center text-muted py-4" style="font-size:.82rem;">
+    <i class="bi bi-search me-1"></i>Sin resultados
+  </div>
+<% else %>
+  <div class="list-group list-group-flush">
+    <% resultados.each do |m| %>
+      <a href="#mensaje_<%= m.id %>" class="list-group-item list-group-item-action py-2 px-3"
+         data-action="click->chat-search#scrollTo" data-msg-id="mensaje_<%= m.id %>"
+         style="font-size:.82rem;">
+        <div class="d-flex justify-content-between">
+          <span class="fw-semibold text-truncate"><%= m.user.nombre_chat %></span>
+          <span class="text-muted" style="font-size:.68rem;"><%= m.created_at.strftime("%d/%m/%y %H:%M") %></span>
+        </div>
+        <div class="text-muted text-truncate"><%= m.contenido.truncate(80) %></div>
+      </a>
+    <% end %>
+  </div>
+<% end %>

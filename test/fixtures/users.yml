@@ -1,0 +1,19 @@
+alice:
+  nombre: Alice
+  apellido: Sender
+  username: asender
+  email: alice@test.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  rol: miembro
+  logia: freemasons
+  rol_ref: miembro_role
+
+bob:
+  nombre: Bob
+  apellido: Receiver
+  username: breceiver
+  email: bob@test.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  rol: miembro
+  logia: freemasons
+  rol_ref: miembro_role

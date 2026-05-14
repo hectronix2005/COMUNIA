@@ -1,0 +1,47 @@
+<%
+  u_display  = u.nombre_chat
+  u_initials = u_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
+  ultimo_msg = local_assigns[:ultimo]
+  unread_n   = local_assigns[:unread] || 0
+  is_hidden  = local_assigns[:hidden]
+  is_activo  = local_assigns[:activo]
+%>
+<%= link_to chat_path(con: u.id),
+      class: "chat-item dm-item #{is_activo ? 'active' : ''} #{is_hidden ? 'dm-hidden' : ''}",
+      data: { nombre: "#{u.nombre} #{u.apellido}".downcase } do %>
+  <div class="chat-avatar" style="background:<%= u.miembro&.logia&.color_display || '#6c757d' %>;color:#fff;">
+    <%= u_initials %>
+    <% if u.online? %><span class="online-dot"></span><% end %>
+  </div>
+  <div class="flex-grow-1 min-w-0">
+    <div class="d-flex justify-content-between align-items-baseline">
+      <span class="fw-semibold text-truncate" style="font-size:.88rem;"><%= u_display %></span>
+      <% if ultimo_msg %>
+        <span class="text-muted flex-shrink-0 ms-2" style="font-size:.68rem;">
+          <% if ultimo_msg.created_at.to_date == Date.current %>
+            <%= ultimo_msg.created_at.strftime("%H:%M") %>
+          <% elsif ultimo_msg.created_at.to_date == Date.yesterday %>
+            Ayer
+          <% else %>
+            <%= ultimo_msg.created_at.strftime("%d/%m/%y") %>
+          <% end %>
+        </span>
+      <% end %>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="text-muted text-truncate" style="font-size:.76rem;">
+        <% if ultimo_msg %>
+          <% if ultimo_msg.user_id == (defined?(current_user) ? current_user&.id : nil) %>
+            <i class="bi bi-check2-all me-1" style="font-size:.7rem;<%= ultimo_msg.leido? ? 'color:#53bdeb;' : 'color:#8696a0;' %>"></i>
+          <% end %>
+          <%= ultimo_msg.contenido.truncate(40) %>
+        <% else %>
+          <span class="badge-logia"><%= u.miembro&.logia&.nombre || "—" %></span>
+        <% end %>
+      </div>
+      <% if unread_n > 0 %>
+        <span class="unread-badge ms-1"><%= unread_n > 99 ? '99+' : unread_n %></span>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,13 @@
+alice_miembro:
+  user: alice
+  logia: freemasons
+  numero_miembro: M001
+  cedula: "123456"
+  estado: 0
+
+bob_miembro:
+  user: bob
+  logia: freemasons
+  numero_miembro: M002
+  cedula: "789012"
+  estado: 0

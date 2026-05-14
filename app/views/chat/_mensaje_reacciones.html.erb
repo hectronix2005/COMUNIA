@@ -1,0 +1,14 @@
+<% if mensaje.reacciones.present? %>
+  <%
+    viewer = begin current_user rescue nil end
+    propio = viewer && mensaje.user_id == viewer.id
+  %>
+  <div class="msg-reacciones" style="padding:0 4%;justify-content:<%= propio ? 'flex-end' : 'flex-start' %>;margin-left:<%= propio ? '0' : '34px' %>;">
+    <% mensaje.reacciones.each do |emoji, user_ids| %>
+      <% next if user_ids.blank? %>
+      <span class="msg-reaccion <%= viewer && user_ids.include?(viewer.id) ? 'msg-reaccion--active' : '' %>">
+        <%= emoji %> <span style="font-size:.62rem;"><%= user_ids.size %></span>
+      </span>
+    <% end %>
+  </div>
+<% end %>

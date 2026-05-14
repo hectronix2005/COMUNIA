@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -146,7 +146,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
     t.datetime "updated_at", null: false
     t.integer "destinatario_id"
     t.string "canal", default: "logia", null: false
+    t.datetime "leido_at"
+    t.jsonb "reacciones", default: {}, null: false
     t.index ["canal"], name: "index_chat_mensajes_on_canal"
+    t.index ["destinatario_id", "leido_at"], name: "index_chat_mensajes_unread_dm", where: "(((canal)::text = 'dm'::text) AND (leido_at IS NULL))"
     t.index ["logia_id"], name: "index_chat_mensajes_on_logia_id"
     t.index ["user_id"], name: "index_chat_mensajes_on_user_id"
   end
@@ -373,6 +376,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
     t.index ["user_id"], name: "index_negocio_reportes_on_user_id"
   end
 
+  create_table "notificaciones", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "logia_id"
+    t.string "tipo", null: false
+    t.string "titulo", null: false
+    t.text "cuerpo"
+    t.string "url"
+    t.boolean "leida", default: false, null: false
+    t.datetime "leida_at"
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["logia_id"], name: "index_notificaciones_on_logia_id"
+    t.index ["user_id", "leida", "created_at"], name: "index_notificaciones_on_user_id_and_leida_and_created_at", order: { created_at: :desc }
+    t.index ["user_id"], name: "index_notificaciones_on_user_id"
+  end
+
   create_table "pagos", force: :cascade do |t|
     t.bigint "cobro_id", null: false
     t.string "numero_rc"
@@ -412,6 +432,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
     t.string "descripcion"
     t.datetime "created_at", null: false
     t.index ["recurso", "accion"], name: "index_permisos_on_recurso_and_accion", unique: true
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "endpoint", null: false
+    t.text "p256dh", null: false
+    t.text "auth", null: false
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "endpoint"], name: "index_push_subscriptions_on_user_id_and_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "rol_permisos", force: :cascade do |t|
@@ -464,6 +496,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
     t.integer "failed_attempts", default: 0, null: false
     t.string "unlock_token"
     t.datetime "locked_at"
+    t.datetime "last_seen_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["logia_id"], name: "index_users_on_logia_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -503,9 +536,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_15_212548) do
   add_foreign_key "negocio_mensajes", "users"
   add_foreign_key "negocio_reportes", "negocio_anuncios"
   add_foreign_key "negocio_reportes", "users"
+  add_foreign_key "notificaciones", "logias"
+  add_foreign_key "notificaciones", "users"
   add_foreign_key "pagos", "cobros"
   add_foreign_key "pagos", "users", column: "validado_por_id"
   add_foreign_key "periodo_cobros", "users", column: "creado_por_id"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"
   add_foreign_key "roles", "logias"

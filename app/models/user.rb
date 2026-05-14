@@ -33,6 +33,14 @@ class User < ApplicationRecord
     "#{nombre} #{apellido}"
   end
 
+  def touch_last_seen!
+    update_column(:last_seen_at, Time.current) if last_seen_at.nil? || last_seen_at < 2.minutes.ago
+  end
+
+  def online?
+    last_seen_at.present? && last_seen_at > 5.minutes.ago
+  end
+
   # Primer nombre + primer apellido ("Hector Andrey Neira Duque" → "Hector Neira")
   def nombre_corto
     primer_nombre   = nombre.to_s.strip.split(/\s+/).first

@@ -1,0 +1,6 @@
+freemasons:
+  nombre: Freemasons Test
+  slug: freemasons
+  codigo: FR001
+  color_primario: "#1B2A4A"
+  created_at: <%= Time.current %>

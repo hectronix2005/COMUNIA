@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
+  after_action  :track_last_seen
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
@@ -135,5 +136,11 @@ class ApplicationController < ActionController::Base
   def after_sign_out_path_for(resource_or_scope)
     m = request.script_name.to_s.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)\z})
     m ? "/t/#{m[1]}/login" : new_user_session_path
+  end
+
+  def track_last_seen
+    current_user&.touch_last_seen! if current_user
+  rescue StandardError
+    # Non-critical, never break the request
   end
 end

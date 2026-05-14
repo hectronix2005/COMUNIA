@@ -1,0 +1,22 @@
+dm_alice_to_bob:
+  logia: freemasons
+  user: alice
+  destinatario_id: <%= ActiveRecord::FixtureSet.identify(:bob) %>
+  contenido: "Hola Bob, test message"
+  canal: dm
+  created_at: <%= 1.hour.ago %>
+
+dm_bob_to_alice:
+  logia: freemasons
+  user: bob
+  destinatario_id: <%= ActiveRecord::FixtureSet.identify(:alice) %>
+  contenido: "Hola Alice, reply"
+  canal: dm
+  created_at: <%= 30.minutes.ago %>
+
+channel_msg:
+  logia: freemasons
+  user: alice
+  contenido: "Mensaje en el canal"
+  canal: logia
+  created_at: <%= 15.minutes.ago %>

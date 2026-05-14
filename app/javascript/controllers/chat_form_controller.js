@@ -3,28 +3,55 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["input"]
 
+  #typingTimeout = null
+
   async submit(event) {
     event.preventDefault()
-    const contenido = this.inputTarget.value.trim()
+    const input = this.inputTarget
+    const contenido = input.value.trim()
     if (!contenido) return
 
-    const form = this.element
-    const url  = form.action
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
     try {
-      await fetch(url, {
+      await fetch(this.element.action, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "X-CSRF-Token": token
+          "X-CSRF-Token": csrfToken
         },
-        body: new URLSearchParams({ contenido })
+        body: `contenido=${encodeURIComponent(contenido)}`
       })
-      this.inputTarget.value = ""
-      this.inputTarget.focus()
-    } catch (e) {
-      console.error("Error enviando mensaje:", e)
+      input.value = ""
+      input.style.height = "auto"
+      input.focus()
+    } catch (err) {
+      console.warn("Chat send error:", err)
     }
+  }
+
+  keydown(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault()
+      this.submit(event)
+    }
+  }
+
+  autoResize() {
+    const el = this.inputTarget
+    el.style.height = "auto"
+    el.style.height = Math.min(el.scrollHeight, 120) + "px"
+  }
+
+  sendTyping() {
+    if (this.#typingTimeout) return
+    const stream = this.element.dataset.stream
+    if (!stream) return
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+    fetch("/chat/typing", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "X-CSRF-Token": csrfToken },
+      body: `stream=${encodeURIComponent(stream)}`
+    }).catch(() => {})
+    this.#typingTimeout = setTimeout(() => { this.#typingTimeout = null }, 3000)
   }
 }

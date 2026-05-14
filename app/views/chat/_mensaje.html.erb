@@ -1,60 +1,67 @@
 <%
-  viewer = begin
-    current_user
-  rescue
-    nil
-  end
-  propio  = viewer && mensaje.user_id == viewer.id
-  color   = mensaje.user.miembro&.logia&.color_display || "#6c757d"
+  viewer = begin current_user rescue nil end
+  propio = viewer && mensaje.user_id == viewer.id
+  continuacion = local_assigns[:continuacion]
+  color = mensaje.user.miembro&.logia&.color_display || "#6c757d"
+  sender_display = mensaje.user.nombre_chat
+  sender_initials = sender_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
 %>
-<div class="d-flex mb-3 <%= propio ? 'justify-content-end' : 'justify-content-start' %>">
+<div class="msg-row <%= propio ? 'msg-row--own' : '' %> <%= continuacion ? '' : 'msg-row--group-start' %>"
+     id="mensaje_<%= mensaje.id %>">
 
-  <%
-    sender_display    = mensaje.user.nombre_chat
-    sender_initials   = sender_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
-  %>
+  <%# Avatar (only for others, only on group start) %>
   <% unless propio %>
-    <div class="rounded-circle text-white d-flex align-items-center justify-content-center me-2 flex-shrink-0"
-         style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:<%= color %>;">
-      <%= sender_initials %>
-    </div>
+    <% if continuacion %>
+      <div style="width:28px;flex-shrink:0;margin-right:6px;"></div>
+    <% else %>
+      <div class="chat-avatar chat-avatar-sm me-1 flex-shrink-0" style="background:<%= color %>;color:#fff;align-self:flex-end;">
+        <%= sender_initials %>
+      </div>
+    <% end %>
   <% end %>
 
-  <div style="max-width:68%">
-    <% unless propio %>
-      <div class="small fw-semibold mb-1 ms-1" style="color:<%= color %>">
+  <div class="msg-bubble <%= propio ? 'msg-bubble--own' : 'msg-bubble--other' %>" style="position:relative;"
+       data-controller="chat-reaction" data-chat-reaction-id-value="<%= mensaje.id %>">
+
+    <%# Sender name (only for others, only on group start, only in channels) %>
+    <% if !propio && !continuacion && !mensaje.dm? %>
+      <div class="msg-sender" style="color:<%= color %>;">
         <%= sender_display %>
-        <span class="text-muted fw-normal ms-1" style="font-size:.7rem">
-          &mdash; <%= mensaje.user.miembro&.logia&.nombre %>
-        </span>
       </div>
     <% end %>
 
-    <div class="rounded-3 px-3 py-2 <%= propio ? 'text-white' : 'bg-light border' %>"
-         style="<%= propio ? 'background:#1B2A4A' : '' %>; word-break:break-word; font-size:.9rem;">
-      <%= mensaje.contenido %>
+    <%# Content %>
+    <div style="padding-right:55px;"><%= mensaje.contenido %></div>
+
+    <%# Time + read receipt %>
+    <div class="msg-meta" style="float:right;margin-top:-12px;margin-left:8px;">
+      <span class="msg-time"><%= mensaje.created_at.strftime("%H:%M") %></span>
+      <% if propio && mensaje.dm? %>
+        <% if mensaje.leido? %>
+          <i class="bi bi-check2-all msg-check msg-check--read"></i>
+        <% else %>
+          <i class="bi bi-check2-all msg-check msg-check--sent"></i>
+        <% end %>
+      <% end %>
     </div>
 
-    <div class="small text-muted mt-1 <%= propio ? 'text-end me-1' : 'text-start ms-1' %>"
-         style="font-size:.67rem">
-      <%= mensaje.created_at.strftime("%d/%m/%Y %H:%M") %>
-      <% if mensaje.dm? %>
-        &nbsp;<i class="bi bi-lock-fill" title="Mensaje privado"></i>
-      <% elsif mensaje.canal == "tenant" %>
-        &nbsp;<i class="bi bi-globe2" title="Canal Tenant" style="color:#1B2A4A;"></i>
+    <%# Emoji reaction trigger %>
+    <span class="emoji-picker-trigger" data-action="click->chat-reaction#showPicker">
+      <i class="bi bi-emoji-smile" style="color:#8696a0;"></i>
+    </span>
+
+    <%# Emoji picker (hidden, shown on click) %>
+    <div class="emoji-picker" data-chat-reaction-target="picker">
+      <% ChatMensaje::REACCIONES_PERMITIDAS.each do |e| %>
+        <span style="cursor:pointer;font-size:1rem;padding:0 2px;"
+              data-action="click->chat-reaction#react"
+              data-emoji="<%= e %>"><%= e %></span>
       <% end %>
     </div>
   </div>
+</div>
 
-  <% if propio && viewer %>
-    <%
-      viewer_display  = viewer.nombre_chat
-      viewer_initials = viewer_display.split(/\s+/).first(2).map { |p| p[0].to_s.upcase }.join.presence || "?"
-    %>
-    <div class="rounded-circle text-white d-flex align-items-center justify-content-center ms-2 flex-shrink-0"
-         style="width:34px;height:34px;font-size:.72rem;font-weight:700;background:#1B2A4A;">
-      <%= viewer_initials %>
-    </div>
-  <% end %>
-
+<%# Reactions bar %>
+<div id="msg-reacciones-<%= mensaje.id %>">
+  <%= render "chat/mensaje_reacciones", mensaje: mensaje %>
 </div>
