@@ -22,4 +22,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "negocio_mensaje", "negocio_mensajes"
   inflect.irregular "negocio_reporte", "negocio_reportes"
   inflect.irregular "negocio_favorito", "negocio_favoritos"
+  inflect.irregular "notificacion", "notificaciones"
+  inflect.irregular "push_subscription", "push_subscriptions"
 end
