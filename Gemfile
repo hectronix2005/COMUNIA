@@ -48,6 +48,9 @@ gem "aws-sdk-s3", "~> 1.180", require: false
 # Rate limiting / brute-force protection
 gem "rack-attack", "~> 6.7"
 
+# Push notifications
+gem "web-push", "~> 3.0"
+
 # Authentication
 gem "devise", "~> 4.9"
 

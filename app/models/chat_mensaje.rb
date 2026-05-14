@@ -19,6 +19,7 @@ class ChatMensaje < ApplicationRecord
   }
 
   after_create_commit :broadcast_mensaje
+  after_create_commit :notificar_destinatarios
 
   def dm?
     canal == "dm"
@@ -41,5 +42,9 @@ class ChatMensaje < ApplicationRecord
       partial: "chat/mensaje",
       locals:  { mensaje: self }
     )
+  end
+
+  def notificar_destinatarios
+    NotificarChatJob.perform_later(id)
   end
 end

@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="<%= (_logia&.nombre_display || 'COMUNIA').to_s[0,14] %>">
     <meta name="theme-color" content="<%= _logia&.color_display || '#1B2A4A' %>">
     <meta name="format-detection" content="telephone=no">
+    <meta name="vapid-public-key" content="<%= Rails.application.config.x.vapid[:public_key] %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -237,6 +238,32 @@
             </ul>
 
             <ul class="navbar-nav align-items-lg-center">
+              <%# ── Notification bell ── %>
+              <li class="nav-item me-2 dropdown" data-controller="notifications">
+                <%= turbo_stream_from "notificaciones_#{current_user.id}" %>
+                <a href="#" class="nav-link position-relative" role="button"
+                   data-action="click->notifications#togglePanel"
+                   style="padding:.4rem .5rem;">
+                  <i class="bi bi-bell" style="font-size:1.1rem;"></i>
+                  <% badge_count = current_user.notificaciones.no_leidas.count %>
+                  <span id="notification-badge"
+                    <% if badge_count > 0 %>
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="font-size:0.6rem;"
+                    <% end %>
+                  ><%= badge_count > 0 ? (badge_count > 99 ? '99+' : badge_count) : '' %></span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end p-0 shadow"
+                     style="width:340px;max-height:420px;overflow:hidden;"
+                     data-notifications-target="panel">
+                  <turbo-frame id="notificaciones-lista" data-notifications-target="frame" loading="lazy">
+                    <div class="text-center py-4 text-muted small">
+                      <div class="spinner-border spinner-border-sm me-1"></div> Cargando...
+                    </div>
+                  </turbo-frame>
+                </div>
+              </li>
+
               <li class="nav-item me-2 d-none d-lg-block">
                 <span class="badge rounded-pill <%= current_user.rol_ref&.es_super_admin? ? 'bg-warning text-dark' : (current_user.tiene_permiso?('miembros', 'index') ? 'bg-info' : 'bg-light text-dark') %>">
                   <%= current_user.nombre_rol %>

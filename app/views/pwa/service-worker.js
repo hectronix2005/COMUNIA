@@ -1,7 +1,7 @@
 // COMUNIA service worker — cache-first para assets estáticos,
 // network-first para navegación HTML, con fallback offline básico.
 
-const VERSION = "comunia-v1";
+const VERSION = "comunia-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const OFFLINE_FALLBACK = "/offline.html";
@@ -80,4 +80,43 @@ self.addEventListener("fetch", (event) => {
       })
     );
   }
+});
+
+// ── Push Notifications ──────────────────────────────────────
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || "COMUNIA";
+  const options = {
+    body: data.body || "",
+    icon: "/icon.png",
+    badge: "/icon.png",
+    data: { url: data.url || "/dashboard" },
+    tag: data.tag || "comunia-default",
+    renotify: true,
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options).then(() => {
+      if (data.badge_count !== undefined && navigator.setAppBadge) {
+        navigator.setAppBadge(data.badge_count);
+      }
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/dashboard";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if ("focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
 });

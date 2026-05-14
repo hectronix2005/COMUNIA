@@ -7,6 +7,8 @@ class User < ApplicationRecord
   belongs_to :logia, optional: true
   belongs_to :rol_ref, class_name: "Rol", optional: true
   has_one :miembro, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
+  has_many :notificaciones, dependent: :destroy
   has_many :negocio_favoritos, dependent: :destroy
   has_many :negocio_anuncios_favoritos, through: :negocio_favoritos, source: :negocio_anuncio
 

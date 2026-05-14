@@ -95,6 +95,14 @@ Rails.application.routes.draw do
     resources :permisos, only: [:create, :destroy], controller: "rol_permisos"
   end
 
+  # ── Notificaciones & Push ──────────────────────────────────
+  resources :notificaciones, only: [:index] do
+    member { patch :leer }
+    collection { post :leer_todas }
+  end
+  post   "push_subscriptions", to: "push_subscriptions#create"
+  delete "push_subscriptions", to: "push_subscriptions#destroy"
+
   # ── Red Social ────────────────────────────────────────────
   get  "chat", to: "chat#index",  as: :chat
   post "chat", to: "chat#create"
