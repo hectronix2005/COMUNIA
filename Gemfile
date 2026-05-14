@@ -61,7 +61,7 @@ gem "pundit", "~> 2.4"
 gem "kaminari", "~> 1.2"
 
 # Excel export
-gem "caxlsx", "~> 4.1"
+gem "caxlsx", "~> 4.4"
 gem "caxlsx_rails", "~> 0.6"
 
 # PDF generation
