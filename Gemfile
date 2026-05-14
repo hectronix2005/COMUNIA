@@ -52,7 +52,7 @@ gem "rack-attack", "~> 6.7"
 gem "web-push", "~> 3.0"
 
 # Authentication
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 
 # Authorization
 gem "pundit", "~> 2.4"
