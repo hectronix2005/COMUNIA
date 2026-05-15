@@ -19,10 +19,21 @@ class ChatController < ApplicationController
                              .includes(:user).order(:created_at).last(100)
       @stream   = "chat_dm_#{[current_user.id, @con_id].sort.join('_')}"
 
-      # Mark as read
-      ChatMensaje.unread_dm_for(current_user.id)
-                 .where(user_id: @con_id)
-                 .update_all(leido_at: Time.current)
+      # Mark as read + broadcast updated checks to sender
+      unread_msgs = ChatMensaje.unread_dm_for(current_user.id).where(user_id: @con_id)
+      msg_ids = unread_msgs.pluck(:id)
+      if msg_ids.any?
+        unread_msgs.update_all(leido_at: Time.current)
+        # Broadcast blue checks to the sender in real-time
+        msg_ids.each do |mid|
+          msg = ChatMensaje.find(mid)
+          msg.broadcast_replace_to(
+            @stream,
+            target: "msg-meta-#{mid}",
+            html: "<span class='msg-meta-inline' id='msg-meta-#{mid}'><span class='msg-time'>#{msg.created_at.strftime('%H:%M')}</span><i class='bi bi-check2-all msg-check msg-check--read'></i></span>".html_safe
+          )
+        end
+      end
 
     elsif params[:canal] == "logia"
       @canal    = "logia"

@@ -32,7 +32,7 @@
 
     <%# Content + inline time (WhatsApp style) %>
     <span class="msg-content"><%= mensaje.contenido %></span>
-    <span class="msg-meta-inline">
+    <span class="msg-meta-inline" id="msg-meta-<%= mensaje.id %>">
       <span class="msg-time"><%= mensaje.created_at.strftime("%H:%M") %></span>
       <% if propio && mensaje.dm? %>
         <% if mensaje.leido? %>
