@@ -12,15 +12,15 @@
   <%# Avatar (only for others, only on group start) %>
   <% unless propio %>
     <% if continuacion %>
-      <div style="width:28px;flex-shrink:0;margin-right:6px;"></div>
+      <div style="width:28px;flex-shrink:0;margin-right:4px;"></div>
     <% else %>
-      <div class="chat-avatar chat-avatar-sm me-1 flex-shrink-0" style="background:<%= color %>;color:#fff;align-self:flex-end;">
+      <div class="chat-avatar chat-avatar-sm flex-shrink-0" style="background:<%= color %>;align-self:flex-end;margin-right:4px;">
         <%= sender_initials %>
       </div>
     <% end %>
   <% end %>
 
-  <div class="msg-bubble <%= propio ? 'msg-bubble--own' : 'msg-bubble--other' %>" style="position:relative;"
+  <div class="msg-bubble <%= propio ? 'msg-bubble--own' : 'msg-bubble--other' %>"
        data-controller="chat-reaction" data-chat-reaction-id-value="<%= mensaje.id %>">
 
     <%# Sender name (only for others, only on group start, only in channels) %>
@@ -30,11 +30,9 @@
       </div>
     <% end %>
 
-    <%# Content %>
-    <div style="padding-right:55px;"><%= mensaje.contenido %></div>
-
-    <%# Time + read receipt %>
-    <div class="msg-meta" style="float:right;margin-top:-12px;margin-left:8px;">
+    <%# Content + inline time (WhatsApp style) %>
+    <span class="msg-content"><%= mensaje.contenido %></span>
+    <span class="msg-meta-inline">
       <span class="msg-time"><%= mensaje.created_at.strftime("%H:%M") %></span>
       <% if propio && mensaje.dm? %>
         <% if mensaje.leido? %>
@@ -43,17 +41,15 @@
           <i class="bi bi-check2-all msg-check msg-check--sent"></i>
         <% end %>
       <% end %>
-    </div>
-
-    <%# Emoji reaction trigger %>
-    <span class="emoji-picker-trigger" data-action="click->chat-reaction#showPicker">
-      <i class="bi bi-emoji-smile" style="color:#8696a0;"></i>
     </span>
 
-    <%# Emoji picker (hidden, shown on click) %>
+    <%# Emoji reaction trigger (shows on hover) %>
+    <span class="emoji-picker-trigger" data-action="click->chat-reaction#showPicker">
+      <i class="bi bi-chevron-down"></i>
+    </span>
     <div class="emoji-picker" data-chat-reaction-target="picker">
       <% ChatMensaje::REACCIONES_PERMITIDAS.each do |e| %>
-        <span style="cursor:pointer;font-size:1rem;padding:0 2px;"
+        <span style="cursor:pointer;font-size:1.1rem;padding:0 3px;"
               data-action="click->chat-reaction#react"
               data-emoji="<%= e %>"><%= e %></span>
       <% end %>
