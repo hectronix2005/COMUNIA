@@ -1,0 +1,84 @@
+<% content_for(:title, "Directorio") %>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-person-vcard me-2" style="color:#c5a24d;"></i>Directorio</h4>
+    <small class="text-muted"><%= @miembros.total_count %> miembros activos</small>
+  </div>
+  <% if current_user.miembro %>
+    <%= link_to edit_directorio_path(current_user.miembro), class: "btn btn-sm btn-outline-primary" do %>
+      <i class="bi bi-pencil me-1"></i>Mi perfil
+    <% end %>
+  <% end %>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 px-3">
+    <%= form_with url: directorio_index_path, method: :get, local: true, class: "row g-2 align-items-end" do |f| %>
+      <div class="col-md-5">
+        <input type="text" name="q" value="<%= params[:q] %>" class="form-control form-control-sm"
+               placeholder="Buscar por nombre, profesión, empresa...">
+      </div>
+      <div class="col-md-4">
+        <select name="logia_id" class="form-select form-select-sm">
+          <option value="">Todas las logias</option>
+          <% @logias.each do |l| %>
+            <option value="<%= l.id %>" <%= 'selected' if params[:logia_id].to_i == l.id %>><%= l.nombre %></option>
+          <% end %>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-1">
+        <button type="submit" class="btn btn-sm btn-primary flex-fill"><i class="bi bi-search me-1"></i>Buscar</button>
+        <%= link_to "Limpiar", directorio_index_path, class: "btn btn-sm btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row g-3">
+  <% @miembros.each do |m| %>
+    <div class="col-md-6 col-lg-4 col-xl-3">
+      <%= link_to directorio_path(m), class: "card h-100 text-decoration-none" do %>
+        <div class="card-body text-center py-3">
+          <div class="mx-auto mb-2 rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+               style="width:64px;height:64px;font-size:1.2rem;background:<%= m.logia.color_display || '#6c757d' %>;">
+            <% if m.user.avatar.attached? %>
+              <%= image_tag m.user.avatar, style: "width:64px;height:64px;border-radius:50%;object-fit:cover;" %>
+            <% else %>
+              <%= m.user.nombre[0] %><%= m.user.apellido[0] %>
+            <% end %>
+          </div>
+          <div class="fw-bold" style="font-size:.92rem;color:#111b21;"><%= m.user.nombre_completo %></div>
+          <% if m.profesion.present? %>
+            <div class="text-muted" style="font-size:.78rem;"><%= m.profesion %></div>
+          <% end %>
+          <% if m.empresa.present? %>
+            <div style="font-size:.72rem;color:#94a3b8;"><i class="bi bi-building me-1"></i><%= m.empresa %></div>
+          <% end %>
+          <div class="mt-1">
+            <span class="badge bg-light text-dark" style="font-size:.68rem;"><%= m.logia.nombre %></span>
+            <% if m.grado.present? %>
+              <span class="badge bg-light text-dark" style="font-size:.68rem;"><%= m.grado %></span>
+            <% end %>
+          </div>
+          <% if m.cargos.any? %>
+            <div class="mt-1">
+              <% m.miembro_cargos.vigentes.includes(:cargo).each do |mc| %>
+                <span class="badge" style="background:#c5a24d;color:#fff;font-size:.64rem;"><%= mc.cargo.nombre %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<% if @miembros.empty? %>
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-person-vcard fs-1 d-block mb-2 opacity-25"></i>
+    <p>No se encontraron miembros.</p>
+  </div>
+<% end %>
+
+<div class="mt-3"><%= paginate @miembros %></div>

@@ -6,9 +6,15 @@ class User < ApplicationRecord
 
   belongs_to :logia, optional: true
   belongs_to :rol_ref, class_name: "Rol", optional: true
+  has_one_attached :avatar
   has_one :miembro, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
   has_many :notificaciones, class_name: "Notificacion", dependent: :destroy
+  has_many :evento_confirmaciones, dependent: :destroy
+  has_many :encuesta_votos, dependent: :destroy
+  has_many :publicaciones, dependent: :destroy
+  has_many :publicacion_likes, dependent: :destroy
+  has_many :publicacion_comentarios, dependent: :destroy
   has_many :negocio_favoritos, dependent: :destroy
   has_many :negocio_anuncios_favoritos, through: :negocio_favoritos, source: :negocio_anuncio
 

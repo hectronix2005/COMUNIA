@@ -1,0 +1,83 @@
+<% content_for(:title, @encuesta.titulo) %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="mb-3">
+      <%= link_to encuestas_path, class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Encuestas
+      <% end %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="fw-bold mb-1"><%= @encuesta.titulo %></h5>
+            <% if @encuesta.descripcion.present? %>
+              <p class="text-muted mb-1" style="font-size:.88rem;"><%= @encuesta.descripcion %></p>
+            <% end %>
+            <div class="text-muted" style="font-size:.75rem;">
+              Creada por <%= @encuesta.user.nombre_corto %> · <%= time_ago_in_words(@encuesta.created_at) %>
+              <% if @encuesta.cierre_en.present? && !@encuesta.cerrada? %>
+                · Cierra <%= time_ago_in_words(@encuesta.cierre_en) %>
+              <% end %>
+            </div>
+          </div>
+          <% if @encuesta.cerrada_o_expirada? %>
+            <span class="badge bg-secondary">Cerrada</span>
+          <% else %>
+            <span class="badge bg-success">Activa</span>
+          <% end %>
+        </div>
+
+        <% if !@ya_voto && !@encuesta.cerrada_o_expirada? %>
+          <%# Voting form %>
+          <%= form_with url: votar_encuesta_path(@encuesta), method: :post, local: true do %>
+            <% @encuesta.encuesta_opciones.each do |op| %>
+              <div class="form-check mb-2 p-2 rounded" style="background:#f8fafc;">
+                <% if @encuesta.multiple? %>
+                  <input type="checkbox" name="opcion_ids[]" value="<%= op.id %>" class="form-check-input" id="op_<%= op.id %>">
+                <% else %>
+                  <input type="radio" name="opcion_ids[]" value="<%= op.id %>" class="form-check-input" id="op_<%= op.id %>">
+                <% end %>
+                <label class="form-check-label" for="op_<%= op.id %>" style="font-size:.9rem;"><%= op.texto %></label>
+              </div>
+            <% end %>
+            <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check2 me-1"></i>Votar</button>
+          <% end %>
+        <% else %>
+          <%# Results %>
+          <% @encuesta.encuesta_opciones.each do |op| %>
+            <div class="mb-2">
+              <div class="d-flex justify-content-between mb-1" style="font-size:.85rem;">
+                <span><%= op.texto %></span>
+                <span class="fw-bold"><%= op.votos_count %> (<%= op.porcentaje(@total_votos) %>%)</span>
+              </div>
+              <div class="progress" style="height:8px;border-radius:4px;">
+                <div class="progress-bar" style="width:<%= op.porcentaje(@total_votos) %>%;background:#1a2744;border-radius:4px;"></div>
+              </div>
+              <% unless @encuesta.anonima? %>
+                <div class="mt-1">
+                  <% op.encuesta_votos.includes(:user).each do |v| %>
+                    <span class="badge bg-light text-dark me-1" style="font-size:.65rem;"><%= v.user.nombre_corto %></span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+          <div class="text-center text-muted mt-3" style="font-size:.82rem;">
+            Total: <%= @total_votos %> votos
+            <% if @ya_voto %><span class="ms-2 text-success"><i class="bi bi-check-circle me-1"></i>Ya votaste</span><% end %>
+          </div>
+        <% end %>
+
+        <% if !@encuesta.cerrada_o_expirada? && (@encuesta.user_id == current_user.id || current_user.admin_logia? || current_user.super_admin?) %>
+          <div class="mt-3 pt-3 border-top">
+            <%= button_to "Cerrar encuesta", cerrar_encuesta_path(@encuesta), method: :post, class: "btn btn-sm btn-outline-danger",
+                  form: { data: { turbo_confirm: "¿Cerrar esta encuesta?" } } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

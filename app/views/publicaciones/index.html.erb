@@ -1,0 +1,125 @@
+<% content_for(:title, "Muro") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="fw-bold mb-3"><i class="bi bi-newspaper me-2" style="color:#c5a24d;"></i>Muro</h4>
+
+    <%# Compose box %>
+    <div class="card mb-3">
+      <div class="card-body py-3">
+        <%= form_with model: @nueva, url: publicaciones_path, local: true, class: "d-flex flex-column gap-2" do |f| %>
+          <div class="d-flex gap-2 align-items-start">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                 style="width:40px;height:40px;font-size:.8rem;background:<%= current_user.miembro&.logia&.color_display || '#6c757d' %>;">
+              <%= current_user.nombre[0] %><%= current_user.apellido[0] %>
+            </div>
+            <%= f.text_area :contenido, class: "form-control border-0", rows: 2,
+                  placeholder: "¿Qué quieres compartir, #{current_user.nombre}?",
+                  style: "resize:none;background:#f8fafc;" %>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <%= f.file_field :imagenes, multiple: true, accept: "image/*", class: "form-control form-control-sm",
+                    style: "max-width:220px;font-size:.78rem;" %>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">
+              <i class="bi bi-send me-1"></i>Publicar
+            </button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Posts %>
+    <% @publicaciones.each do |pub| %>
+      <div class="card mb-3" id="pub-<%= pub.id %>">
+        <div class="card-body pb-2">
+          <%# Header %>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                 style="width:40px;height:40px;font-size:.78rem;background:<%= pub.user.miembro&.logia&.color_display || '#6c757d' %>;">
+              <%= pub.user.nombre[0] %><%= pub.user.apellido[0] %>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-bold" style="font-size:.9rem;"><%= pub.user.nombre_completo %></div>
+              <div class="text-muted" style="font-size:.72rem;">
+                <%= time_ago_in_words(pub.created_at) %>
+                <span class="ms-1 badge bg-light text-dark" style="font-size:.62rem;"><%= pub.logia.nombre %></span>
+                <% if pub.fijada? %>
+                  <i class="bi bi-pin-fill ms-1" style="color:#c5a24d;" title="Fijada"></i>
+                <% end %>
+              </div>
+            </div>
+            <% if pub.user_id == current_user.id || current_user.admin_logia? || current_user.super_admin? %>
+              <div class="dropdown">
+                <i class="bi bi-three-dots text-muted" data-bs-toggle="dropdown" style="cursor:pointer;"></i>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <% if current_user.admin_logia? || current_user.super_admin? %>
+                    <li><%= button_to pub.fijada? ? "Desfijar" : "Fijar", toggle_pin_publicacion_path(pub), method: :post, class: "dropdown-item" %></li>
+                  <% end %>
+                  <li><%= button_to "Eliminar", publicacion_path(pub), method: :delete, class: "dropdown-item text-danger", form: { data: { turbo_confirm: "¿Eliminar publicación?" } } %></li>
+                </ul>
+              </div>
+            <% end %>
+          </div>
+
+          <%# Content %>
+          <div style="font-size:.9rem;line-height:1.5;white-space:pre-wrap;" class="mb-2"><%= pub.contenido %></div>
+
+          <%# Images %>
+          <% if pub.imagenes.attached? %>
+            <div class="d-flex gap-1 flex-wrap mb-2">
+              <% pub.imagenes.each do |img| %>
+                <%= image_tag img, style: "max-height:200px;border-radius:8px;object-fit:cover;", class: "img-fluid" %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <%# Actions bar %>
+          <div class="d-flex gap-3 pt-2 border-top" style="font-size:.85rem;">
+            <%= button_to toggle_like_publicacion_path(pub), method: :post, class: "btn btn-sm btn-link text-decoration-none p-0 #{ pub.liked_by?(current_user) ? 'text-danger' : 'text-muted' }" do %>
+              <i class="bi bi-<%= pub.liked_by?(current_user) ? 'heart-fill' : 'heart' %> me-1"></i><%= pub.likes_count %>
+            <% end %>
+            <span class="text-muted"><i class="bi bi-chat me-1"></i><%= pub.comentarios_count %></span>
+          </div>
+
+          <%# Comments %>
+          <% if pub.publicacion_comentarios.any? %>
+            <div class="mt-2 pt-2 border-top">
+              <% pub.publicacion_comentarios.includes(:user).order(:created_at).last(5).each do |c| %>
+                <div class="d-flex gap-2 mb-2">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                       style="width:28px;height:28px;font-size:.55rem;background:<%= c.user.miembro&.logia&.color_display || '#6c757d' %>;">
+                    <%= c.user.nombre[0] %><%= c.user.apellido[0] %>
+                  </div>
+                  <div style="background:#f8fafc;border-radius:12px;padding:6px 10px;font-size:.82rem;flex:1;">
+                    <span class="fw-bold" style="font-size:.78rem;"><%= c.user.nombre_corto %></span>
+                    <span class="text-muted ms-1" style="font-size:.68rem;"><%= time_ago_in_words(c.created_at) %></span>
+                    <div><%= c.contenido %></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <%# Comment input %>
+          <div class="mt-2">
+            <%= form_with url: comentar_publicacion_path(pub), method: :post, local: true, class: "d-flex gap-2" do %>
+              <input type="text" name="contenido" class="form-control form-control-sm" placeholder="Escribe un comentario..." style="border-radius:20px;font-size:.82rem;">
+              <button type="submit" class="btn btn-sm btn-outline-primary" style="border-radius:20px;"><i class="bi bi-send"></i></button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @publicaciones.empty? %>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-newspaper fs-1 d-block mb-2 opacity-25"></i>
+        <p>Aún no hay publicaciones. ¡Sé el primero en compartir!</p>
+      </div>
+    <% end %>
+
+    <div class="mt-3"><%= paginate @publicaciones %></div>
+  </div>
+</div>

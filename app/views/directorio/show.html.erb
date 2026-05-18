@@ -1,0 +1,97 @@
+<% content_for(:title, @miembro.user.nombre_completo) %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="mb-3">
+      <%= link_to directorio_index_path, class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Directorio
+      <% end %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+               style="width:80px;height:80px;font-size:1.5rem;background:<%= @miembro.logia.color_display || '#6c757d' %>;">
+            <% if @miembro.user.avatar.attached? %>
+              <%= image_tag @miembro.user.avatar, style: "width:80px;height:80px;border-radius:50%;object-fit:cover;" %>
+            <% else %>
+              <%= @miembro.user.nombre[0] %><%= @miembro.user.apellido[0] %>
+            <% end %>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-1"><%= @miembro.user.nombre_completo %></h4>
+            <% if @miembro.profesion.present? %>
+              <div style="font-size:.9rem;color:#475569;"><%= @miembro.profesion %></div>
+            <% end %>
+            <% if @miembro.empresa.present? %>
+              <div class="text-muted" style="font-size:.85rem;"><i class="bi bi-building me-1"></i><%= @miembro.empresa %></div>
+            <% end %>
+            <div class="mt-1">
+              <span class="badge bg-light text-dark"><%= @miembro.logia.nombre %></span>
+              <% if @miembro.grado.present? %>
+                <span class="badge bg-light text-dark"><%= @miembro.grado %></span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <% if @miembro.bio.present? %>
+          <div class="mb-3">
+            <h6 class="fw-bold small text-muted text-uppercase">Acerca de</h6>
+            <p style="font-size:.9rem;"><%= simple_format(@miembro.bio) %></p>
+          </div>
+        <% end %>
+
+        <div class="row g-3">
+          <% if @miembro.telefono.present? %>
+            <div class="col-sm-6">
+              <div class="text-muted small fw-bold text-uppercase">Teléfono</div>
+              <div style="font-size:.9rem;"><i class="bi bi-telephone me-1"></i><%= @miembro.telefono %></div>
+            </div>
+          <% end %>
+          <% if @miembro.habilidades.present? %>
+            <div class="col-sm-6">
+              <div class="text-muted small fw-bold text-uppercase">Habilidades</div>
+              <div style="font-size:.9rem;"><%= @miembro.habilidades %></div>
+            </div>
+          <% end %>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-bold text-uppercase">Miembro #</div>
+            <div style="font-size:.9rem;"><%= @miembro.numero_miembro %></div>
+          </div>
+          <% if @miembro.fecha_iniciacion.present? %>
+            <div class="col-sm-6">
+              <div class="text-muted small fw-bold text-uppercase">Fecha de iniciación</div>
+              <div style="font-size:.9rem;"><%= I18n.l(@miembro.fecha_iniciacion, format: :long) rescue @miembro.fecha_iniciacion %></div>
+            </div>
+          <% end %>
+          <% if @miembro.fecha_ingreso.present? %>
+            <div class="col-sm-6">
+              <div class="text-muted small fw-bold text-uppercase">Fecha de ingreso</div>
+              <div style="font-size:.9rem;"><%= I18n.l(@miembro.fecha_ingreso, format: :long) rescue @miembro.fecha_ingreso %></div>
+            </div>
+          <% end %>
+        </div>
+
+        <% cargos_vigentes = @miembro.miembro_cargos.vigentes.includes(:cargo) %>
+        <% if cargos_vigentes.any? %>
+          <div class="mt-3">
+            <h6 class="fw-bold small text-muted text-uppercase">Cargos vigentes</h6>
+            <% cargos_vigentes.each do |mc| %>
+              <span class="badge me-1" style="background:#c5a24d;color:#fff;"><%= mc.cargo.nombre %></span>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if @miembro.user_id == current_user.id %>
+          <div class="mt-3 pt-3 border-top">
+            <%= link_to edit_directorio_path(@miembro), class: "btn btn-sm btn-primary" do %>
+              <i class="bi bi-pencil me-1"></i>Editar mi perfil
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

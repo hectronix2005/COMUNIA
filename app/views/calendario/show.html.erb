@@ -97,7 +97,7 @@
       <% end %>
 
       <%# Logia / creador %>
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3 mb-3">
         <i class="bi bi-building text-muted"></i>
         <div>
           <div class="small fw-semibold" style="color:<%= @evento.logia.color_display %>;">
@@ -105,6 +105,58 @@
           </div>
           <div class="text-muted" style="font-size:.75rem;">Creado por <%= @evento.user.nombre_completo %></div>
         </div>
+      </div>
+
+      <%# ── RSVP / Asistencia ── %>
+      <div class="border-top pt-3">
+        <h6 class="fw-bold small text-muted text-uppercase mb-2">
+          <i class="bi bi-people me-1"></i>Asistencia
+        </h6>
+
+        <% mi_conf = @evento.evento_confirmaciones.find_by(user: current_user) %>
+        <div class="d-flex gap-2 mb-3">
+          <%= form_with url: calendario_evento_confirmaciones_path(@evento), method: :post, local: true, class: "d-flex gap-2" do %>
+            <input type="hidden" name="estado" value="confirmado">
+            <button type="submit" class="btn btn-sm <%= mi_conf&.confirmado? ? 'btn-success' : 'btn-outline-success' %>">
+              <i class="bi bi-check-circle me-1"></i>Asistiré
+            </button>
+          <% end %>
+          <%= form_with url: calendario_evento_confirmaciones_path(@evento), method: :post, local: true do %>
+            <input type="hidden" name="estado" value="rechazado">
+            <button type="submit" class="btn btn-sm <%= mi_conf&.rechazado? ? 'btn-danger' : 'btn-outline-danger' %>">
+              <i class="bi bi-x-circle me-1"></i>No puedo
+            </button>
+          <% end %>
+        </div>
+
+        <% confirmados = @evento.evento_confirmaciones.confirmados.includes(:user) %>
+        <% rechazados = @evento.evento_confirmaciones.rechazados.includes(:user) %>
+
+        <% if confirmados.any? %>
+          <div class="mb-2">
+            <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i><%= confirmados.count %> confirmados</span>
+            <div class="mt-1">
+              <% confirmados.each do |c| %>
+                <span class="badge bg-light text-dark me-1 mb-1" style="font-size:.7rem;"><%= c.user.nombre_corto %></span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if rechazados.any? %>
+          <div>
+            <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill me-1"></i><%= rechazados.count %> no asisten</span>
+            <div class="mt-1">
+              <% rechazados.each do |c| %>
+                <span class="badge bg-light text-dark me-1 mb-1" style="font-size:.7rem;"><%= c.user.nombre_corto %></span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if confirmados.empty? && rechazados.empty? %>
+          <div class="text-muted small">Nadie ha confirmado asistencia aún.</div>
+        <% end %>
       </div>
     </div>
   </div>

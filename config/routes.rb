@@ -103,6 +103,31 @@ Rails.application.routes.draw do
   post   "push_subscriptions", to: "push_subscriptions#create"
   delete "push_subscriptions", to: "push_subscriptions#destroy"
 
+  # ── Directorio ──────────────────────────────────────────────
+  resources :directorio, only: [:index, :show, :edit, :update]
+
+  # ── Muro / Feed ──────────────────────────────────────────
+  resources :publicaciones, only: [:index, :create, :destroy] do
+    member do
+      post :toggle_like
+      post :comentar
+      post :toggle_pin
+    end
+  end
+
+  # ── Encuestas ──────────────────────────────────────────────
+  resources :encuestas, only: [:index, :show, :new, :create] do
+    member do
+      post :votar
+      post :cerrar
+    end
+  end
+
+  # ── RSVP Eventos ───────────────────────────────────────────
+  resources :calendario, only: [] do
+    resources :evento_confirmaciones, only: [:create]
+  end
+
   # ── Red Social ────────────────────────────────────────────
   get  "chat",               to: "chat#index",        as: :chat
   post "chat",               to: "chat#create"

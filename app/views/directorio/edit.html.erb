@@ -1,0 +1,54 @@
+<% content_for(:title, "Editar perfil") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="mb-3">
+      <%= link_to directorio_path(@miembro), class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Volver al perfil
+      <% end %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-vcard me-2" style="color:#c5a24d;"></i>Editar perfil</h5>
+
+        <%= form_with model: @miembro, url: directorio_path(@miembro), method: :patch, local: true do |f| %>
+          <% if @miembro.errors.any? %>
+            <div class="alert alert-danger"><%= @miembro.errors.full_messages.join(", ") %></div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :profesion, "Profesión", class: "form-label" %>
+            <%= f.text_field :profesion, class: "form-control", placeholder: "Ej: Ingeniero de Software" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :empresa, class: "form-label" %>
+            <%= f.text_field :empresa, class: "form-control", placeholder: "Ej: Google Colombia" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :telefono, "Teléfono", class: "form-label" %>
+            <%= f.text_field :telefono, class: "form-control", placeholder: "Ej: +57 300 123 4567" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :habilidades, class: "form-label" %>
+            <%= f.text_field :habilidades, class: "form-control", placeholder: "Ej: Desarrollo web, Marketing digital" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :fecha_iniciacion, "Fecha de iniciación", class: "form-label" %>
+            <%= f.date_field :fecha_iniciacion, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :bio, "Acerca de mí", class: "form-label" %>
+            <%= f.text_area :bio, class: "form-control", rows: 3, placeholder: "Cuéntanos sobre ti..." %>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Foto de perfil</label>
+            <%= file_field_tag "miembro[avatar]", accept: "image/*", class: "form-control" %>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

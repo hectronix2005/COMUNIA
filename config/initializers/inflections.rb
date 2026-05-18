@@ -24,4 +24,11 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "negocio_favorito", "negocio_favoritos"
   inflect.irregular "notificacion", "notificaciones"
   inflect.irregular "push_subscription", "push_subscriptions"
+  inflect.irregular "evento_confirmacion", "evento_confirmaciones"
+  inflect.irregular "encuesta", "encuestas"
+  inflect.irregular "encuesta_opcion", "encuesta_opciones"
+  inflect.irregular "encuesta_voto", "encuesta_votos"
+  inflect.irregular "publicacion", "publicaciones"
+  inflect.irregular "publicacion_comentario", "publicacion_comentarios"
+  inflect.irregular "publicacion_like", "publicacion_likes"
 end

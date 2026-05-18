@@ -1,0 +1,59 @@
+<% content_for(:title, "Encuestas") %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2" style="color:#c5a24d;"></i>Encuestas</h4>
+  <%= link_to new_encuesta_path, class: "btn btn-sm btn-primary" do %>
+    <i class="bi bi-plus-lg me-1"></i>Nueva encuesta
+  <% end %>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <% @encuestas.each do |enc| %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6 class="fw-bold mb-0"><%= enc.titulo %></h6>
+              <div class="text-muted" style="font-size:.75rem;">
+                <%= enc.user.nombre_corto %> · <%= time_ago_in_words(enc.created_at) %>
+                <% if enc.cerrada_o_expirada? %>
+                  <span class="badge bg-secondary ms-1">Cerrada</span>
+                <% else %>
+                  <span class="badge bg-success ms-1">Activa</span>
+                <% end %>
+                <% if enc.anonima? %><span class="badge bg-light text-dark ms-1"><i class="bi bi-incognito me-1"></i>Anónima</span><% end %>
+                <% if enc.multiple? %><span class="badge bg-light text-dark ms-1">Opción múltiple</span><% end %>
+              </div>
+            </div>
+            <span class="text-muted" style="font-size:.8rem;"><%= enc.total_votos %> votos</span>
+          </div>
+
+          <% total = enc.total_votos %>
+          <% enc.encuesta_opciones.includes(:encuesta_votos).each do |op| %>
+            <div class="mb-1 position-relative" style="background:#f1f5f9;border-radius:8px;overflow:hidden;height:32px;">
+              <div style="background:linear-gradient(90deg,#dbeafe,#bfdbfe);height:100%;width:<%= op.porcentaje(total) %>%;border-radius:8px;transition:width .3s;"></div>
+              <div class="position-absolute top-0 start-0 w-100 d-flex justify-content-between align-items-center px-3" style="height:32px;font-size:.82rem;">
+                <span><%= op.texto %></span>
+                <span class="fw-bold"><%= op.porcentaje(total) %>%</span>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="mt-2">
+            <%= link_to "Ver detalle", encuesta_path(enc), class: "btn btn-sm btn-outline-primary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @encuestas.empty? %>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-bar-chart fs-1 d-block mb-2 opacity-25"></i>
+        <p>No hay encuestas aún.</p>
+      </div>
+    <% end %>
+
+    <div class="mt-3"><%= paginate @encuestas %></div>
+  </div>
+</div>

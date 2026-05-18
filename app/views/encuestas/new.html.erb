@@ -1,0 +1,85 @@
+<% content_for(:title, "Nueva encuesta") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="mb-3">
+      <%= link_to encuestas_path, class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Encuestas
+      <% end %>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2" style="color:#c5a24d;"></i>Nueva encuesta</h5>
+
+        <%= form_with model: @encuesta, url: encuestas_path, local: true do |f| %>
+          <% if @encuesta.errors.any? %>
+            <div class="alert alert-danger"><%= @encuesta.errors.full_messages.join(", ") %></div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :titulo, "Pregunta", class: "form-label" %>
+            <%= f.text_field :titulo, class: "form-control", placeholder: "¿Cuál es tu opinión sobre...?" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :descripcion, "Descripción (opcional)", class: "form-label" %>
+            <%= f.text_area :descripcion, class: "form-control", rows: 2, placeholder: "Contexto adicional..." %>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Opciones de respuesta</label>
+            <div id="opciones-container">
+              <% @encuesta.encuesta_opciones.each_with_index do |op, i| %>
+                <div class="input-group mb-2">
+                  <%= f.fields_for :encuesta_opciones, op, child_index: i do |of| %>
+                    <%= of.hidden_field :posicion, value: i %>
+                    <%= of.text_field :texto, class: "form-control", placeholder: "Opción #{i + 1}" %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addOption()">
+              <i class="bi bi-plus me-1"></i>Agregar opción
+            </button>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <div class="form-check">
+                <%= f.check_box :anonima, class: "form-check-input" %>
+                <%= f.label :anonima, "Anónima", class: "form-check-label" %>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-check">
+                <%= f.check_box :multiple, class: "form-check-input" %>
+                <%= f.label :multiple, "Opción múltiple", class: "form-check-label" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :cierre_en, "Cierre automático (opcional)", class: "form-label" %>
+            <%= f.datetime_local_field :cierre_en, class: "form-control" %>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg me-1"></i>Crear encuesta</button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var optIndex = <%= @encuesta.encuesta_opciones.size %>;
+function addOption() {
+  var container = document.getElementById('opciones-container');
+  var html = '<div class="input-group mb-2">' +
+    '<input type="hidden" name="encuesta[encuesta_opciones_attributes][' + optIndex + '][posicion]" value="' + optIndex + '">' +
+    '<input type="text" name="encuesta[encuesta_opciones_attributes][' + optIndex + '][texto]" class="form-control" placeholder="Opción ' + (optIndex + 1) + '">' +
+    '</div>';
+  container.insertAdjacentHTML('beforeend', html);
+  optIndex++;
+}
+</script>

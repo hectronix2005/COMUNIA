@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_18_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -198,6 +198,52 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
     t.index ["logia_id"], name: "index_corte_conciliaciones_on_logia_id"
   end
 
+  create_table "encuesta_opciones", force: :cascade do |t|
+    t.bigint "encuesta_id", null: false
+    t.string "texto", null: false
+    t.integer "posicion", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encuesta_id"], name: "index_encuesta_opciones_on_encuesta_id"
+  end
+
+  create_table "encuesta_votos", force: :cascade do |t|
+    t.bigint "encuesta_opcion_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encuesta_opcion_id", "user_id"], name: "idx_encuesta_voto_opcion_user", unique: true
+    t.index ["encuesta_opcion_id"], name: "index_encuesta_votos_on_encuesta_opcion_id"
+    t.index ["user_id"], name: "index_encuesta_votos_on_user_id"
+  end
+
+  create_table "encuestas", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "logia_id", null: false
+    t.string "titulo", null: false
+    t.text "descripcion"
+    t.boolean "anonima", default: false, null: false
+    t.boolean "multiple", default: false, null: false
+    t.integer "estado", default: 0, null: false
+    t.datetime "cierre_en"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["logia_id"], name: "index_encuestas_on_logia_id"
+    t.index ["user_id"], name: "index_encuestas_on_user_id"
+  end
+
+  create_table "evento_confirmaciones", force: :cascade do |t|
+    t.bigint "calendario_evento_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "estado", default: 0, null: false
+    t.text "nota"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calendario_evento_id", "user_id"], name: "idx_evento_conf_evento_user", unique: true
+    t.index ["calendario_evento_id"], name: "index_evento_confirmaciones_on_calendario_evento_id"
+    t.index ["user_id"], name: "index_evento_confirmaciones_on_user_id"
+  end
+
   create_table "hospitalia_gastos", force: :cascade do |t|
     t.string "concepto", null: false
     t.decimal "monto", precision: 12, scale: 2, null: false
@@ -296,6 +342,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
     t.string "estado_motivo"
     t.date "fecha_ingreso"
     t.jsonb "aliases", default: [], null: false
+    t.string "profesion"
+    t.string "empresa"
+    t.string "telefono"
+    t.text "habilidades"
+    t.date "fecha_iniciacion"
+    t.text "bio"
     t.index ["cedula"], name: "index_miembros_on_cedula", unique: true
     t.index ["estado"], name: "index_miembros_on_estado"
     t.index ["logia_id"], name: "index_miembros_on_logia_id"
@@ -434,6 +486,40 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
     t.index ["recurso", "accion"], name: "index_permisos_on_recurso_and_accion", unique: true
   end
 
+  create_table "publicacion_comentarios", force: :cascade do |t|
+    t.bigint "publicacion_id", null: false
+    t.bigint "user_id", null: false
+    t.text "contenido", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["publicacion_id"], name: "index_publicacion_comentarios_on_publicacion_id"
+    t.index ["user_id"], name: "index_publicacion_comentarios_on_user_id"
+  end
+
+  create_table "publicacion_likes", force: :cascade do |t|
+    t.bigint "publicacion_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["publicacion_id", "user_id"], name: "idx_pub_like_pub_user", unique: true
+    t.index ["publicacion_id"], name: "index_publicacion_likes_on_publicacion_id"
+    t.index ["user_id"], name: "index_publicacion_likes_on_user_id"
+  end
+
+  create_table "publicaciones", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "logia_id", null: false
+    t.text "contenido", null: false
+    t.boolean "fijada", default: false, null: false
+    t.integer "likes_count", default: 0, null: false
+    t.integer "comentarios_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["logia_id", "created_at"], name: "index_publicaciones_on_logia_id_and_created_at", order: { created_at: :desc }
+    t.index ["logia_id"], name: "index_publicaciones_on_logia_id"
+    t.index ["user_id"], name: "index_publicaciones_on_user_id"
+  end
+
   create_table "push_subscriptions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "endpoint", null: false
@@ -521,6 +607,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
   add_foreign_key "conceptos_cobros", "logias"
   add_foreign_key "corte_conciliaciones", "logias"
   add_foreign_key "corte_conciliaciones", "users", column: "creado_por_id"
+  add_foreign_key "encuesta_opciones", "encuestas"
+  add_foreign_key "encuesta_votos", "encuesta_opciones"
+  add_foreign_key "encuesta_votos", "users"
+  add_foreign_key "encuestas", "logias"
+  add_foreign_key "encuestas", "users"
+  add_foreign_key "evento_confirmaciones", "calendario_eventos"
+  add_foreign_key "evento_confirmaciones", "users"
   add_foreign_key "logias", "logias", column: "tenant_id"
   add_foreign_key "miembro_cargos", "cargos"
   add_foreign_key "miembro_cargos", "miembros"
@@ -541,6 +634,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_14_100000) do
   add_foreign_key "pagos", "cobros"
   add_foreign_key "pagos", "users", column: "validado_por_id"
   add_foreign_key "periodo_cobros", "users", column: "creado_por_id"
+  add_foreign_key "publicacion_comentarios", "publicaciones"
+  add_foreign_key "publicacion_comentarios", "users"
+  add_foreign_key "publicacion_likes", "publicaciones"
+  add_foreign_key "publicacion_likes", "users"
+  add_foreign_key "publicaciones", "logias"
+  add_foreign_key "publicaciones", "users"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"

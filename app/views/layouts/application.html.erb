@@ -141,17 +141,34 @@
                   </li>
                 <% end %>
 
-                <%# ── Red Social ── %>
+                <%# ── Comunidad ── %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-people-fill"></i> Red Social
+                    <i class="bi bi-people-fill"></i> Comunidad
                   </a>
                   <ul class="dropdown-menu">
-                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">COMUNICACIÓN</h6></li>
+                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">SOCIAL</h6></li>
+                    <li>
+                      <%= link_to publicaciones_path, class: "dropdown-item #{'active' if request.path.start_with?('/publicaciones')}" do %>
+                        <i class="bi bi-newspaper me-2"></i>Muro
+                      <% end %>
+                    </li>
                     <li>
                       <%= link_to chat_path, class: "dropdown-item #{'active' if request.path.start_with?('/chat')}" do %>
                         <i class="bi bi-chat-dots me-2"></i>Chat
+                      <% end %>
+                    </li>
+                    <li>
+                      <%= link_to encuestas_path, class: "dropdown-item #{'active' if request.path.start_with?('/encuestas')}" do %>
+                        <i class="bi bi-bar-chart me-2"></i>Encuestas
+                      <% end %>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">MIEMBROS</h6></li>
+                    <li>
+                      <%= link_to directorio_index_path, class: "dropdown-item #{'active' if request.path.start_with?('/directorio')}" do %>
+                        <i class="bi bi-person-vcard me-2"></i>Directorio
                       <% end %>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>

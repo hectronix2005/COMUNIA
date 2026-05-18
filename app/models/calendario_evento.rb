@@ -26,6 +26,7 @@ class CalendarioEvento < ApplicationRecord
   belongs_to :user
   belongs_to :serie,    class_name: "CalendarioEvento", optional: true,
                         foreign_key: :serie_id
+  has_many   :evento_confirmaciones, dependent: :destroy
   has_many   :instancias, class_name: "CalendarioEvento", foreign_key: :serie_id,
                           dependent: :delete_all
 
