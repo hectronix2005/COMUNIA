@@ -263,39 +263,106 @@
   </script>
 
   <%# ====================================================== %>
-  <%# ---- MÓDULO RED SOCIAL ------------------------------ %>
+  <%# ---- MÓDULO COMUNIDAD ------------------------------- %>
   <%# ====================================================== %>
   <div class="card border-0 shadow-sm mt-4">
     <div class="card-header d-flex align-items-center gap-2 py-3"
          style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
-         data-bs-toggle="collapse" data-bs-target="#redSocialBody" aria-expanded="false">
+         data-bs-toggle="collapse" data-bs-target="#comunidadBody" aria-expanded="true">
       <i class="bi bi-people-fill fs-4"></i>
       <div class="flex-grow-1">
-        <h5 class="mb-0 fw-bold text-white">Red Social</h5>
-        <small class="opacity-75">Chat · Calendario · Comunicaci&oacute;n entre miembros</small>
+        <h5 class="mb-0 fw-bold text-white">Comunidad</h5>
+        <small class="opacity-75">Muro · Chat · Encuestas · Directorio · Calendario</small>
       </div>
-      <i class="bi bi-chevron-down" id="redSocialChevron" style="transition:transform .25s"></i>
+      <i class="bi bi-chevron-down" id="comunidadChevron" style="transition:transform .25s;transform:rotate(180deg)"></i>
     </div>
 
-    <div class="collapse" id="redSocialBody">
+    <div class="collapse show" id="comunidadBody">
       <div class="card-body p-4" style="background:#031a10;color:#fff">
-        <div class="mb-4 d-flex gap-2 flex-wrap">
-          <%= link_to chat_path, class: "btn btn-outline-light d-inline-flex align-items-center gap-2" do %>
-            <i class="bi bi-chat-dots-fill fs-5"></i>
-            <div class="text-start">
-              <div class="fw-semibold">Abrir Chat</div>
-              <small class="opacity-75">Canal general de <%= current_logia.nombre_display %></small>
-            </div>
-          <% end %>
-          <%= link_to calendario_index_path, class: "btn btn-outline-light d-inline-flex align-items-center gap-2" do %>
-            <i class="bi bi-calendar3 fs-5"></i>
-            <div class="text-start">
-              <div class="fw-semibold">Calendario</div>
-              <small class="opacity-75">Eventos y tenidas</small>
-            </div>
-          <% end %>
+
+        <%# Quick access cards %>
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-xl-4">
+            <%= link_to publicaciones_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#065f46;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-newspaper"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Muro</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;">Publicaciones y noticias</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-4">
+            <%= link_to chat_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#047857;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-chat-dots-fill"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Chat</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;">Mensajes y canales</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-4">
+            <%= link_to encuestas_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#059669;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-bar-chart"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Encuestas</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;">Votaciones y opiniones</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-4">
+            <%= link_to directorio_index_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#0d9488;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-person-vcard"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Directorio</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;">Perfiles de miembros</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-4">
+            <%= link_to calendario_index_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#0f766e;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-calendar3"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Calendario</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;">Eventos con RSVP</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-6 col-xl-4">
+            <%= link_to hospitalia_cumpleanos_path, class: "text-decoration-none" do %>
+              <div class="card h-100" style="background:#78350f;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+                <div class="card-body d-flex align-items-center py-3">
+                  <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-balloon-heart"></i></div>
+                  <div class="ms-3">
+                    <div class="fw-bold" style="color:#fff;font-size:1rem;">Cumpleaños</div>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;"><%= @hospitalia_cumpleanos || 0 %> próximos</span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
         </div>
 
+        <%# Recent chat messages %>
         <% ultimos = ChatMensaje.where(logia: current_logia).includes(:user).order(created_at: :desc).limit(3).reverse %>
         <% if ultimos.any? %>
           <h6 class="text-uppercase fw-semibold mb-2" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
@@ -319,11 +386,6 @@
               <%= link_to "Ver chat completo →", chat_path, class: "small fw-semibold text-decoration-none", style: "color:#6ee7b7" %>
             </div>
           </div>
-        <% else %>
-          <div class="text-center py-3" style="color:rgba(255,255,255,.6)">
-            <i class="bi bi-chat-square-text fs-3 d-block mb-2"></i>
-            <small>Sin mensajes aún. <%= link_to "Inicia la conversación", chat_path, style: "color:#6ee7b7;font-weight:600" %></small>
-          </div>
         <% end %>
       </div>
     </div>
@@ -331,8 +393,8 @@
 
   <script>
     (function() {
-      var rs = document.getElementById('redSocialBody');
-      var ch = document.getElementById('redSocialChevron');
+      var rs = document.getElementById('comunidadBody');
+      var ch = document.getElementById('comunidadChevron');
       if (rs && ch) {
         rs.addEventListener('show.bs.collapse', function() { ch.style.transform = 'rotate(180deg)'; });
         rs.addEventListener('hide.bs.collapse', function() { ch.style.transform = 'rotate(0deg)'; });

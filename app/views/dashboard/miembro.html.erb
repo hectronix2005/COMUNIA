@@ -80,27 +80,51 @@
     </div>
   </div>
 
-    <%# ---- Módulo Red Social ---- %>
+    <%# ---- Módulo Comunidad ---- %>
   <div class="card mb-4 border-0 shadow-sm">
     <div class="card-header d-flex align-items-center gap-2 py-3"
          style="background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);color:#fff;border-radius:.5rem .5rem 0 0;cursor:pointer;"
-         data-bs-toggle="collapse" data-bs-target="#miembroRedSocialBody" aria-expanded="false">
+         data-bs-toggle="collapse" data-bs-target="#miembroComunidadBody" aria-expanded="true">
       <i class="bi bi-people-fill fs-4"></i>
       <div class="flex-grow-1">
-        <h5 class="mb-0 fw-bold">Red Social</h5>
-        <small class="opacity-75">Chat · Calendario</small>
+        <h5 class="mb-0 fw-bold">Comunidad</h5>
+        <small class="opacity-75">Muro · Chat · Encuestas · Directorio · Calendario</small>
       </div>
-      <i class="bi bi-chevron-down ms-auto" id="miembroRedSocialChevron" style="transition:transform .25s"></i>
+      <i class="bi bi-chevron-down ms-auto" id="miembroComunidadChevron" style="transition:transform .25s;transform:rotate(180deg)"></i>
     </div>
-    <div class="collapse" id="miembroRedSocialBody">
+    <div class="collapse show" id="miembroComunidadBody">
       <div class="card-body p-4" style="background:#031a10;color:#fff">
-        <div class="d-flex gap-2 flex-wrap">
-          <%= link_to chat_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-chat-dots me-1"></i>Chat
-          <% end %>
-          <%= link_to calendario_index_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-calendar3 me-1"></i>Calendario
-          <% end %>
+        <div class="row g-2">
+          <div class="col-6 col-md-4">
+            <%= link_to publicaciones_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-newspaper"></i><span>Muro</span>
+            <% end %>
+          </div>
+          <div class="col-6 col-md-4">
+            <%= link_to chat_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-chat-dots"></i><span>Chat</span>
+            <% end %>
+          </div>
+          <div class="col-6 col-md-4">
+            <%= link_to encuestas_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-bar-chart"></i><span>Encuestas</span>
+            <% end %>
+          </div>
+          <div class="col-6 col-md-4">
+            <%= link_to directorio_index_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-person-vcard"></i><span>Directorio</span>
+            <% end %>
+          </div>
+          <div class="col-6 col-md-4">
+            <%= link_to calendario_index_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-calendar3"></i><span>Calendario</span>
+            <% end %>
+          </div>
+          <div class="col-6 col-md-4">
+            <%= link_to hospitalia_cumpleanos_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-balloon-heart"></i><span>Cumpleaños</span>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
@@ -192,7 +216,7 @@
   <script>
     (function() {
       [
-        ['miembroRedSocialBody',   'miembroRedSocialChevron'],
+        ['miembroComunidadBody',   'miembroComunidadChevron'],
         ['miembroBibliotecaBody',  'miembroBibliotecaChevron'],
         ['miembroHospitaliaBody',  'miembroHospitaliaChevron'],
         ['miembroNegociosBody',    'miembroNegociosChevron']
