@@ -45,7 +45,7 @@
           <%= link_to root_path, class: "navbar-brand fw-bold" do %>
             <% if _logia %>
               <% if _logia.logo.attached? %>
-                <%= image_tag _logia.logo, height: 28, class: "me-2", alt: _logia.nombre_display %>
+                <%= image_tag _logia.logo, height: 28, class: "me-1", alt: _logia.nombre_display, style: "max-height:28px;max-width:70px;object-fit:contain;" %>
               <% else %>
                 <%= _logia.icono_display %>
               <% end %>
