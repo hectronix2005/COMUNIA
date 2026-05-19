@@ -1,12 +1,27 @@
 <% content_for(:title, "Chat — #{current_logia.nombre_display}") %>
 <% content_for :head do %>
+  <meta name="view-transition" content="same-origin">
   <style>
     :root { --wa-teal:#008069; --wa-teal-dark:#005c4b; --wa-green-bubble:#d9fdd3; --wa-bg:#efeae2; --wa-sidebar:#fff; --wa-panel-header:#f0f2f5; --wa-border:#e9edef; --wa-unread:#25d366; --wa-blue-check:#53bdeb; --wa-text:#111b21; --wa-text-secondary:#667781; --wa-hover:#f5f6f6; }
 
+    /* Disable global page animation inside chat to prevent flash */
+    main, .main-content, .content-animate { animation:none !important; }
+
+    /* Hide Turbo progress bar in chat (transitions handle it) */
+    .turbo-progress-bar { display:none !important; }
+
     /* ── Layout ── */
     .chat-layout { display:flex; height:calc(100dvh - 140px); overflow:hidden; background:#fff; box-shadow:0 1px 1px rgba(0,0,0,.06),0 2px 5px rgba(0,0,0,.06); }
-    .chat-sidebar { width:340px; min-width:280px; border-right:1px solid var(--wa-border); display:flex; flex-direction:column; background:var(--wa-sidebar); }
-    .chat-main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+    .chat-sidebar { width:340px; min-width:280px; border-right:1px solid var(--wa-border); display:flex; flex-direction:column; background:var(--wa-sidebar); view-transition-name:chat-sidebar; }
+    .chat-main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; view-transition-name:chat-main; }
+
+    /* Sidebar stays in place, only main panel cross-fades */
+    ::view-transition-old(chat-sidebar) { animation:none; }
+    ::view-transition-new(chat-sidebar) { animation:none; }
+    ::view-transition-old(chat-main) { animation:chatSwapOut .12s ease-in forwards; }
+    ::view-transition-new(chat-main) { animation:chatSwapIn .12s ease-out forwards; }
+    @keyframes chatSwapOut { to { opacity:0; transform:translateY(4px); } }
+    @keyframes chatSwapIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 
     /* ── Sidebar Header ── */
     .chat-sidebar-header { padding:10px 16px; background:var(--wa-panel-header); display:flex; align-items:center; justify-content:space-between; min-height:56px; flex-shrink:0; }
