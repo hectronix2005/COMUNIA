@@ -30,15 +30,30 @@
       </div>
     <% end %>
 
-    <%# Content + inline time (WhatsApp style) %>
+    <%# Content + inline time + status checks (WhatsApp style) %>
     <span class="msg-content"><%= mensaje.contenido %></span>
     <span class="msg-meta-inline" id="msg-meta-<%= mensaje.id %>">
       <span class="msg-time"><%= mensaje.created_at.strftime("%H:%M") %></span>
-      <% if propio && mensaje.dm? %>
-        <% if mensaje.leido? %>
-          <i class="bi bi-check2-all msg-check msg-check--read"></i>
+      <% if propio %>
+        <%# WhatsApp check states:
+            ✓  (single gray)  = sent to server
+            ✓✓ (double gray)  = delivered (recipient online/connected)
+            ✓✓ (double blue)  = read by recipient
+        %>
+        <% if mensaje.dm? %>
+          <% if mensaje.leido? %>
+            <%# READ: double blue checks %>
+            <i class="bi bi-check2-all msg-check msg-check--read"></i>
+          <% elsif mensaje.destinatario&.online? %>
+            <%# DELIVERED: double gray checks (recipient is online) %>
+            <i class="bi bi-check2-all msg-check msg-check--delivered"></i>
+          <% else %>
+            <%# SENT: single gray check %>
+            <i class="bi bi-check2 msg-check msg-check--sent"></i>
+          <% end %>
         <% else %>
-          <i class="bi bi-check2-all msg-check msg-check--sent"></i>
+          <%# Channel messages: single check (sent) always %>
+          <i class="bi bi-check2 msg-check msg-check--sent"></i>
         <% end %>
       <% end %>
     </span>

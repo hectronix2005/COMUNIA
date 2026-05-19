@@ -32,7 +32,13 @@
       <div class="text-truncate" style="font-size:.8rem;color:var(--wa-text-secondary);">
         <% if ultimo_msg %>
           <% if ultimo_msg.user_id == (defined?(current_user) ? current_user&.id : nil) %>
-            <i class="bi bi-check2-all me-1" style="font-size:.72rem;color:<%= ultimo_msg.leido? ? 'var(--wa-blue-check)' : 'var(--wa-text-secondary)' %>;"></i>
+            <% if ultimo_msg.leido? %>
+              <i class="bi bi-check2-all me-1" style="font-size:.72rem;color:var(--wa-blue-check);"></i>
+            <% elsif ultimo_msg.destinatario&.online? %>
+              <i class="bi bi-check2-all me-1" style="font-size:.72rem;color:var(--wa-text-secondary);"></i>
+            <% else %>
+              <i class="bi bi-check2 me-1" style="font-size:.72rem;color:var(--wa-text-secondary);"></i>
+            <% end %>
           <% end %>
           <%= ultimo_msg.contenido.truncate(38) %>
         <% else %>

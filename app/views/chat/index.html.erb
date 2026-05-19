@@ -76,9 +76,10 @@
     }
     .msg-time { font-size:.67rem; color:var(--wa-text-secondary); white-space:nowrap; }
     .msg-bubble--own .msg-time { color:rgba(0,0,0,.4); }
-    .msg-check { font-size:.78rem; }
+    .msg-check { font-size:.78rem; line-height:1; }
     .msg-check--read { color:var(--wa-blue-check); }
-    .msg-check--sent { color:rgba(0,0,0,.3); }
+    .msg-check--delivered { color:rgba(0,0,0,.35); }
+    .msg-check--sent { color:rgba(0,0,0,.35); }
 
     /* ── Tail hides on continuation ── */
     .msg-row:not(.msg-row--group-start) .msg-bubble::before { display:none; }
