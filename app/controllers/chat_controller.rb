@@ -84,6 +84,26 @@ class ChatController < ApplicationController
     end
 
     mensaje.save!
+
+    # When sending a DM, auto-mark the other person's unread messages as read
+    # (if you're replying, you obviously read their messages)
+    if con_id
+      unread = ChatMensaje.unread_dm_for(current_user.id).where(user_id: con_id)
+      ids_to_mark = unread.pluck(:id)
+      if ids_to_mark.any?
+        unread.update_all(leido_at: Time.current)
+        stream = "chat_dm_#{[current_user.id, con_id].sort.join('_')}"
+        ids_to_mark.each do |mid|
+          m = ChatMensaje.find(mid)
+          m.broadcast_replace_to(
+            stream,
+            target: "msg-meta-#{mid}",
+            html: "<span class='msg-meta-inline' id='msg-meta-#{mid}'><span class='msg-time'>#{m.created_at.strftime('%H:%M')}</span><i class='bi bi-check2-all msg-check msg-check--read'></i></span>".html_safe
+          )
+        end
+      end
+    end
+
     head :ok
   rescue ActiveRecord::RecordInvalid
     head :unprocessable_entity
