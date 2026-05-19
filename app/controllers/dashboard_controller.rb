@@ -1,5 +1,15 @@
 class DashboardController < ApplicationController
   def index
+    # Si el usuario tiene logia y está en la raíz global (sin /t/:slug),
+    # redirigir al contexto de su tenant automáticamente.
+    if request.script_name.blank? && !current_user.rol_ref&.es_super_admin? && !previewing_tenant?
+      logia = current_user.logia
+      if logia
+        tenant_slug = logia.tenant_id.nil? ? logia.slug : Logia.find(logia.tenant_id).slug
+        return redirect_to "/t/#{tenant_slug}/dashboard" if tenant_slug.present?
+      end
+    end
+
     if current_user.rol_ref&.es_super_admin?
       if platform_admin_context?
         # Sin subdominio y sin preview → panel de plataforma COMUNIA
