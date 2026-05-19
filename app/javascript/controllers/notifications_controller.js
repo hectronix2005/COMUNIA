@@ -5,10 +5,8 @@ export default class extends Controller {
 
   connect() {
     this.open = false
-    this.requestPermission()
-    this.subscribeToPush()
+    this.initPush()
 
-    // Close panel on outside click
     this._outsideClick = (e) => {
       if (this.open && !this.element.contains(e.target)) this.closePanel()
     }
@@ -26,7 +24,6 @@ export default class extends Controller {
     if (this.hasPanelTarget) {
       this.panelTarget.classList.toggle("show", this.open)
     }
-    // Load notifications when opening
     if (this.open && this.hasFrameTarget) {
       this.frameTarget.src = "/notificaciones"
     }
@@ -47,18 +44,29 @@ export default class extends Controller {
     })
   }
 
-  async requestPermission() {
-    if (!("Notification" in window)) return
-    if (Notification.permission === "default") {
-      // Wait a few seconds before prompting
-      setTimeout(() => { Notification.requestPermission() }, 3000)
+  async initPush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return
+
+    if (Notification.permission === "granted") {
+      // Already granted — subscribe silently on every page load
+      await this.subscribeToPush()
+    } else if (Notification.permission === "default") {
+      // Only prompt once per browser session to avoid annoying the user
+      if (sessionStorage.getItem("push_prompted")) return
+      sessionStorage.setItem("push_prompted", "1")
+
+      // Wait a moment then prompt
+      setTimeout(async () => {
+        const result = await Notification.requestPermission()
+        if (result === "granted") {
+          await this.subscribeToPush()
+        }
+      }, 2000)
     }
+    // If "denied" — do nothing, respect the user's choice
   }
 
   async subscribeToPush() {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return
-    if (Notification.permission !== "granted") return
-
     try {
       const reg = await navigator.serviceWorker.ready
       let sub = await reg.pushManager.getSubscription()
@@ -73,6 +81,7 @@ export default class extends Controller {
         })
       }
 
+      // Always POST (upsert) — ensures the server has the latest subscription
       const json = sub.toJSON()
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 
