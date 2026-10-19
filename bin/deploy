@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Despliega main en asus: actualiza el checkout, reconstruye la imagen y reinicia web.
 # Las migraciones corren al arrancar (bin/docker-entrypoint → db:prepare).
+# Sirve lanzado desde el Air o desde la propia asus.
 set -euo pipefail
 
-ssh asus 'set -euo pipefail
+STEPS='set -euo pipefail
   cd ~/services/comunia
   git fetch --quiet origin main
   git reset --hard origin/main
@@ -11,4 +12,23 @@ ssh asus 'set -euo pipefail
   docker compose -f config/deploy/asus/compose.yml up -d --build
   docker image prune -f >/dev/null'
 
-curl -fsS -o /dev/null -w "up: %{http_code}\n" https://comunia.tail0be41e.ts.net/up
+# ControlPath=none: una conexión multiplexada abierta antes de entrar en el grupo
+# docker no lo tiene. Desde asus, si este shell tampoco lo tiene (tmux arrancado
+# antes), se entra por el Air, porque asus no se acepta ssh a sí misma.
+if [ -d ~/services/comunia/.git ]; then
+  if docker ps -q >/dev/null 2>&1; then
+    bash -c "$STEPS"
+  else
+    ssh air ssh -o ControlPath=none asus bash -s <<<"$STEPS"
+  fi
+else
+  ssh -o ControlPath=none asus bash -s <<<"$STEPS"
+fi
+
+for i in 1 2 3 4 5 6; do
+  code=$(curl -sS -m 15 -o /dev/null -w "%{http_code}" https://comunia.tail0be41e.ts.net/up || true)
+  [ "$code" = 200 ] && break
+  sleep 10
+done
+echo "up: $code"
+[ "$code" = 200 ]
