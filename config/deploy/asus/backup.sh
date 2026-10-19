@@ -6,8 +6,9 @@
 #  1. pg_dump -Fc desde el contenedor db a un archivo temporal en ~/backups/comunia.
 #  2. Prueba: pg_restore --list sobre la copia; si falla, no se sube nada.
 #  3. Cifrado gpg (AES-256, clave en ~/.config/comunia-backup/passphrase; Héctor
-#     guarda otra copia fuera de asus) y subida a Google Drive (remote rclone
-#     "gdrive", scope drive.file, carpeta COMUNIA-backups); allí se guardan 30 días.
+#     guarda otra copia fuera de asus; también en el Llavero del Air) y subida al
+#     Google Drive de hectorn.personal@gmail.com (remote rclone "gdrive-personal",
+#     el mismo de Prestandonos; carpeta COMUNIA-backups); allí se guardan 30 días.
 #  4. Si la subida va bien, no queda nada en asus. Si falla, la copia se queda en
 #     ~/backups/comunia para no perderla.
 # Restaurar (con web parada):
@@ -19,7 +20,7 @@ export PATH="$HOME/.local/bin:/usr/bin:/bin"
 
 DIR="$HOME/backups/comunia"
 PASS="$HOME/.config/comunia-backup/passphrase"
-REMOTE="gdrive:COMUNIA-backups"
+REMOTE="gdrive-personal:COMUNIA-backups"  # Drive de hectorn.personal@gmail.com (antes gdrive = Drive de Picap)
 LOG="$HOME/services/comunia-backup.log"
 # «<epoch> OK|ERROR …» de la última pasada; lo lee vigila-flota (Tmux, en el Air).
 ESTADO="$HOME/services/comunia-backup.estado"
