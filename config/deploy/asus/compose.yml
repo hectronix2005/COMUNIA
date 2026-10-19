@@ -1,0 +1,46 @@
+# Producción de COMUNIA en asus (WSL). Lo lanza bin/deploy desde el Air.
+# Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600).
+# URL pública: https://comunia.tail0be41e.ts.net (Funnel del nodo "comunia", sin depender del Air).
+name: comunia
+
+services:
+  db:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    env_file: ${SECRETS_DIR}/db.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      retries: 10
+
+  web:
+    build: ../../..
+    image: comunia-web
+    restart: unless-stopped
+    env_file: ${SECRETS_DIR}/app.env
+    environment:
+      HTTP_PORT: "80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ts:
+    image: tailscale/tailscale:v1.104.1
+    hostname: comunia
+    restart: unless-stopped
+    env_file: ${SECRETS_DIR}/ts.env
+    environment:
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "true"
+      TS_SERVE_CONFIG: /config/serve.json
+    volumes:
+      - tsstate:/var/lib/tailscale
+      - ./serve.json:/config/serve.json:ro
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  tsstate:

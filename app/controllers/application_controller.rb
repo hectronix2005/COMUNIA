@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
 
   # Extrae el subdominio directamente del host (evita bugs de request.subdomain con .localhost).
   # "freemasons.localhost" → "freemasons" | "localhost" → nil
-  # Si el host no tiene subdominio (p. ej. *.herokuapp.com), cae a session[:tenant_slug].
+  # Si el host no tiene subdominio de logia (p. ej. comunia.tail0be41e.ts.net), cae a session[:tenant_slug].
   def tenant_subdomain
     parts = request.host.split(".")
     host_sub = parts.length > 1 ? parts.first : nil

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Despliega main en asus: actualiza el checkout, reconstruye la imagen y reinicia web.
+# Las migraciones corren al arrancar (bin/docker-entrypoint → db:prepare).
+set -euo pipefail
+
+ssh asus 'set -euo pipefail
+  cd ~/services/comunia
+  git fetch --quiet origin main
+  git reset --hard origin/main
+  export SECRETS_DIR=~/services/comunia-secrets
+  docker compose -f config/deploy/asus/compose.yml up -d --build
+  docker image prune -f >/dev/null'
+
+curl -fsS -o /dev/null -w "up: %{http_code}\n" https://comunia.tail0be41e.ts.net/up

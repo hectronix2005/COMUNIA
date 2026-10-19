@@ -4,7 +4,7 @@
 
 class Rack::Attack
   ### Allow ###
-  # Allowlist health checks (Heroku) y assets.
+  # Allowlist health checks y assets.
   Rack::Attack.safelist("allow-health") do |req|
     req.path.start_with?("/up", "/assets/")
   end
