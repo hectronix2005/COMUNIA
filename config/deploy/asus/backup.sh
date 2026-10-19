@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Copia diaria de la base de COMUNIA en asus (timer comunia-backup.timer).
+# Copia diaria de la base de COMUNIA en asus (crontab de asus_2025, 3:30).
+# Por cron y no por systemd --user: este arrancó antes de entrar en el grupo docker
+# y asus no trae sg/newgrp; cron abre cada tarea con los grupos actuales.
 #  1. pg_dump -Fc desde el contenedor db a ~/backups/comunia (se guardan 7).
 #  2. Prueba: pg_restore --list sobre la copia; si falla, no se envía nada.
 #  3. Envío a ubuntu (~/backups/comunia, por Tailscale SSH); allí se guardan 30 días.
@@ -7,11 +9,6 @@
 #   docker exec -i comunia-db-1 pg_restore --clean --if-exists --no-owner --no-acl \
 #     -U comunia -d comunia_production < comunia-AAAAMMDD-HHMM.dump
 set -euo pipefail
-
-# El systemd --user de asus arrancó antes de entrar en el grupo docker: relanzar con sg.
-if ! id -nG | grep -qw docker; then
-  exec sg docker -c "$(printf '%q' "$0")"
-fi
 
 DIR="$HOME/backups/comunia"
 DEST_HOST="alejandro@100.89.116.66"

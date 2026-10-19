@@ -1,6 +1,0 @@
-[Unit]
-Description=Copia diaria de la base de COMUNIA (a ubuntu)
-
-[Service]
-Type=oneshot
-ExecStart=%h/services/comunia/config/deploy/asus/backup.sh
