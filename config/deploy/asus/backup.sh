@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copia diaria de la base de COMUNIA en asus (crontab de asus_2025, 3:30).
+# Copia diaria de la base de COMUNIA en asus (crontab de asus_2025, 3:45; Rival sube a las 3:30 al mismo remoto).
 # Por cron y no por systemd --user: este arrancó antes de entrar en el grupo docker
 # y asus no trae sg/newgrp; cron abre cada tarea con los grupos actuales.
 # Único destino: Google Drive (decisión de Héctor, 18-oct-2026).
