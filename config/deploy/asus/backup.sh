@@ -21,9 +21,13 @@ DIR="$HOME/backups/comunia"
 PASS="$HOME/.config/comunia-backup/passphrase"
 REMOTE="gdrive:COMUNIA-backups"
 LOG="$HOME/services/comunia-backup.log"
+# «<epoch> OK|ERROR …» de la última pasada; lo lee vigila-flota (Tmux, en el Air).
+ESTADO="$HOME/services/comunia-backup.estado"
 DB=(docker exec comunia-db-1)
 
 log() { echo "$(date '+%F %T') $*" | tee -a "$LOG"; }
+estado() { echo "$(date +%s) $*" > "$ESTADO"; }
+trap '[ $? -ne 0 ] && estado "ERROR: la copia falló (ver $LOG)"' EXIT
 
 umask 077
 mkdir -p "$DIR"
@@ -43,6 +47,7 @@ if rclone copy "$F.gpg" "$REMOTE" --quiet; then
   rclone delete "$REMOTE" --min-age 30d --quiet || true
   rm -f "$F" "$F.gpg"
   log "subida a Drive: $REMOTE/$(basename "$F.gpg") usuarios=$USERS"
+  estado "OK $(basename "$F.gpg") usuarios=$USERS"
 else
   rm -f "$F.gpg"
   log "ERROR: no se pudo subir a Drive; la copia queda en $F"
