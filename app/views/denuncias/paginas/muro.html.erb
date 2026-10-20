@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>DENUNCIAPP · Bogotá</title>
+  <%= csrf_meta_tags %>
+  <link rel="stylesheet" href="/estaticos/estilo.css">
+</head>
+<body>
+  <header class="barra">
+    <a class="marca" href="/">DENUNCIAPP</a>
+    <nav><a id="enlace-cuenta" href="/entrar" hidden>Entrar</a> <a class="boton" href="/nuevo">Denunciar</a></nav>
+  </header>
+
+  <main>
+    <p class="aviso">Piloto. Lo que ves aquí lo publicaron ciudadanos y <strong>no ha sido verificado</strong>.
+      En una emergencia llama al <strong>123</strong>; por extorsión o secuestro, al GAULA <strong>165</strong>.</p>
+
+    <section id="recompensas" hidden>
+      <h2>Recompensas oficiales</h2>
+      <div id="lista-recompensas" class="rejilla"></div>
+    </section>
+
+    <section>
+      <h2>Denuncias recientes</h2>
+      <div id="muro"></div>
+      <button id="mas" class="secundario" hidden>Ver más</button>
+    </section>
+
+    <section class="caja">
+      <h2>Seguimiento</h2>
+      <form id="form-seguimiento">
+        <label>Tu código de seguimiento <input name="codigo" autocomplete="off" required></label>
+        <button>Consultar</button>
+        <button type="button" id="retirar-propio" class="secundario">Retirar mi publicación</button>
+      </form>
+      <p id="resultado-seguimiento" role="status"></p>
+    </section>
+  </main>
+
+  <dialog id="dialogo-retiro">
+    <form id="form-retiro" method="dialog">
+      <h2>Solicitar retiro</h2>
+      <p>Si esta publicación te afecta o es falsa, cuéntanos por qué. El operador la revisa.</p>
+      <label>Motivo <textarea name="motivo" minlength="10" maxlength="2000" required></textarea></label>
+      <label>Contacto (opcional, se guarda cifrado) <input name="contacto" maxlength="200"></label>
+      <div class="captcha"></div>
+      <p class="error" role="alert"></p>
+      <button value="enviar">Enviar</button>
+      <button value="cancelar" formnovalidate class="secundario">Cancelar</button>
+    </form>
+  </dialog>
+
+  <footer><a href="/terminos">Términos y tratamiento de datos</a></footer>
+  <script type="module" src="/estaticos/muro.js"></script>
+</body>
+</html>

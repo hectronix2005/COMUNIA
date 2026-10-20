@@ -1,0 +1,21 @@
+<% content_for :title, "Custodia · DENUNCIAPP" %>
+<div class="container py-4">
+  <p><%= link_to "← Panel", denuncias_admin_path %></p>
+  <h1 class="h4"><%= @reporte.titulo %></h1>
+  <p class="<%= @verificacion[:valida] ? 'text-success' : 'text-danger' %> fw-bold">
+    <%= @verificacion[:valida] ? "Cadena verificada: #{@verificacion[:eventos]} eventos." : "La cadena NO verifica (se rompe en el evento #{@verificacion[:roto_en] + 1})." %>
+  </p>
+  <h2 class="h6">Evidencias</h2>
+  <ul>
+    <% @reporte.evidencias.each do |e| %>
+      <li><code><%= e.sha256_original %></code> · <%= e.mime %> · <%= e.bytes %> bytes
+        <%= button_to "Descargar original (queda en la custodia)", denuncias_admin_original_path(e.id), class: "btn btn-sm btn-outline-secondary d-inline", data: { turbo: false } %></li>
+    <% end %>
+  </ul>
+  <h2 class="h6">Eventos</h2>
+  <table class="table table-sm small">
+    <% @eventos.each_with_index do |ev, i| %>
+      <tr><td><%= i + 1 %></td><td><%= ev.creado_en %></td><td><%= ev.tipo %></td><td><code><%= ev.detalle_json %></code></td><td><code><%= ev.hash_evento.first(16) %>…</code></td></tr>
+    <% end %>
+  </table>
+</div>

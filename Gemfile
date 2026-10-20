@@ -53,6 +53,8 @@ gem "web-push", "~> 3.0"
 
 # Authentication
 gem "devise", "~> 5.0", ">= 5.0.4"
+# Cuentas con alias de DENUNCIAPP: enlace mágico por correo (sin contraseñas)
+gem "devise-passwordless", "~> 1.1"
 
 # Authorization
 gem "pundit", "~> 2.4"
@@ -73,6 +75,9 @@ gem "rtesseract", "~> 3.1"
 
 # Extraccion de texto nativo de PDF (sin OCR)
 gem "pdf-reader", "~> 2.12"
+
+# Paquete PDF de remisión de DENUNCIAPP
+gem "prawn", "~> 2.5"
 
 # Lectura de archivos Excel/CSV para conciliacion de cortes
 gem "roo", "~> 3.0"

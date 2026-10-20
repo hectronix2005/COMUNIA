@@ -1,0 +1,50 @@
+<% content_for :title, "DENUNCIAPP · operador" %>
+<div class="container py-4">
+  <h1 class="h3 mb-1"><i class="bi bi-shield-exclamation"></i> DENUNCIAPP · panel del operador</h1>
+  <p class="text-muted small">Solo el superadmin. Todo lo que manda el ciudadano se muestra escapado.</p>
+
+  <h2 class="h5 mt-4">Solicitudes de retiro pendientes (<%= @pendientes.size %>)</h2>
+  <table class="table table-sm align-top">
+    <thead><tr><th>Publicación</th><th>Motivo</th><th>Contacto</th><th></th></tr></thead>
+    <tbody>
+    <% @pendientes.each do |s| %>
+      <tr>
+        <td><%= s.reporte&.titulo || s.reporte_id %></td>
+        <td><%= s.motivo %></td>
+        <td><%= s.contacto_cif ? Denuncias::Cripto.descifrar_b64(s.contacto_cif) : "—" %></td>
+        <td class="text-nowrap">
+          <%= button_to "Retirar publicación", denuncias_admin_retiro_path(s.id, "aceptar"), class: "btn btn-sm btn-danger d-inline" %>
+          <%= button_to "Mantener", denuncias_admin_retiro_path(s.id, "rechazar"), class: "btn btn-sm btn-outline-secondary d-inline" %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+
+  <h2 class="h5 mt-4">Ocultas por solicitudes de retiro (<%= @ocultos.size %>)</h2>
+  <p class="small text-muted">Se ocultan solas con <%= Denuncias::Retiro::UMBRAL_OCULTAR %> solicitudes pendientes. Restaurar las vuelve a publicar y rechaza las pendientes.</p>
+  <%= render "tabla", reportes: @ocultos, restaurar: true %>
+
+  <h2 class="h5 mt-4">Publicadas recientes</h2>
+  <%= render "tabla", reportes: @recientes, restaurar: false %>
+
+  <h2 class="h5 mt-4">Recompensas oficiales</h2>
+  <table class="table table-sm">
+    <% @recompensas.each do |r| %>
+      <tr>
+        <td><%= r.titulo %></td><td><%= r.entidad %></td><td><%= r.monto_texto %></td>
+        <td><%= link_to "fuente", r.fuente_url, rel: "noopener noreferrer", target: "_blank" %></td>
+        <td><%= r.estado %></td>
+        <td><%= button_to "Vencer", denuncias_admin_vencer_path(r.id), class: "btn btn-sm btn-outline-secondary" if r.estado == "publicada" %></td>
+      </tr>
+    <% end %>
+  </table>
+  <%= form_with url: denuncias_admin_recompensas_path, class: "row g-2" do |f| %>
+    <div class="col-md-6"><%= f.text_field :titulo, placeholder: "Título", required: true, maxlength: 200, class: "form-control" %></div>
+    <div class="col-md-6"><%= f.text_field :entidad, placeholder: "Entidad (Policía, Fiscalía…)", required: true, maxlength: 120, class: "form-control" %></div>
+    <div class="col-md-4"><%= f.text_field :monto_texto, placeholder: "Monto (texto de la fuente)", required: true, maxlength: 120, class: "form-control" %></div>
+    <div class="col-md-5"><%= f.url_field :fuente_url, placeholder: "URL oficial (https)", required: true, class: "form-control" %></div>
+    <div class="col-md-3"><%= f.date_field :vigente_hasta, class: "form-control" %></div>
+    <div class="col-12"><%= f.submit "Publicar recompensa", class: "btn btn-primary" %></div>
+  <% end %>
+</div>

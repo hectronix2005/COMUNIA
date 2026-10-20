@@ -1,0 +1,23 @@
+<table class="table table-sm align-top">
+  <thead><tr><th>Título</th><th>Categoría</th><th>Localidad</th><th>Hora (UTC, redondeada)</th><th>Sello</th><th></th></tr></thead>
+  <tbody>
+  <% reportes.each do |r| %>
+    <tr>
+      <td><%= r.titulo %></td>
+      <td><%= Denuncias::Catalogo::CATEGORIAS.fetch(r.categoria, r.categoria) %></td>
+      <td><%= r.localidad %></td>
+      <td><%= r.creado_en.utc.strftime("%Y-%m-%d %H:00") %></td>
+      <td><%= r.verificada ? (r.sello_publico ? "sí, público" : "sí, solo PDF") : "—" %></td>
+      <td>
+        <%= link_to "custodia", denuncias_admin_custodia_path(r.id), class: "btn btn-sm btn-link" %>
+        <%= button_to "Restaurar", denuncias_admin_restaurar_path(r.id), class: "btn btn-sm btn-success" if restaurar %>
+        <%= button_to "Retirar", denuncias_admin_retirar_path(r.id), class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "¿Retirar esta publicación?" } %>
+        <%= form_with url: denuncias_admin_paquete_path(r.id), class: "d-flex gap-1 mt-1", data: { turbo: false } do |f| %>
+          <%= f.text_field :entidad, placeholder: "Entidad destino", required: true, minlength: 3, maxlength: 120, class: "form-control form-control-sm" %>
+          <%= f.submit "Paquete PDF", class: "btn btn-sm btn-outline-primary" %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

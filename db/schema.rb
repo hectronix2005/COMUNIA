@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_19_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -196,6 +196,92 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_19_220000) do
     t.index ["creado_por_id"], name: "index_corte_conciliaciones_on_creado_por_id"
     t.index ["logia_id", "fecha_corte"], name: "index_corte_conciliaciones_on_logia_id_and_fecha_corte", unique: true
     t.index ["logia_id"], name: "index_corte_conciliaciones_on_logia_id"
+  end
+
+  create_table "denuncias_cuentas", id: :string, force: :cascade do |t|
+    t.string "alias"
+    t.string "email_hash", null: false
+    t.text "email_cif", null: false
+    t.datetime "email_verificado"
+    t.datetime "current_sign_in_at"
+    t.datetime "creado_en", null: false
+    t.index ["alias"], name: "index_denuncias_cuentas_on_alias", unique: true
+    t.index ["email_hash"], name: "index_denuncias_cuentas_on_email_hash", unique: true
+  end
+
+  create_table "denuncias_eventos_custodia", primary_key: "n", force: :cascade do |t|
+    t.string "reporte_id", null: false
+    t.string "evidencia_id"
+    t.string "tipo", null: false
+    t.text "detalle_json", null: false
+    t.string "hash_prev", null: false
+    t.string "hash_evento", null: false
+    t.string "creado_en", null: false
+    t.index ["reporte_id", "n"], name: "index_denuncias_eventos_custodia_on_reporte_id_and_n"
+  end
+
+  create_table "denuncias_evidencias", id: :string, force: :cascade do |t|
+    t.string "reporte_id", null: false
+    t.integer "orden", null: false
+    t.string "sha256_original", null: false
+    t.string "mime", null: false
+    t.integer "bytes", null: false
+    t.string "clave_original", null: false
+    t.string "clave_publica"
+    t.text "metadatos_cif"
+    t.datetime "creado_en", null: false
+    t.index ["reporte_id"], name: "index_denuncias_evidencias_on_reporte_id"
+  end
+
+  create_table "denuncias_pases_usados", primary_key: "sha256", id: :string, force: :cascade do |t|
+  end
+
+  create_table "denuncias_recompensas", id: :string, force: :cascade do |t|
+    t.string "titulo", null: false
+    t.string "entidad", null: false
+    t.string "monto_texto", null: false
+    t.string "fuente_url", null: false
+    t.date "vigente_hasta"
+    t.string "estado", null: false
+    t.datetime "creado_en", null: false
+  end
+
+  create_table "denuncias_remisiones", id: :string, force: :cascade do |t|
+    t.string "reporte_id", null: false
+    t.string "entidad", null: false
+    t.string "paquete_sha256", null: false
+    t.datetime "creado_en", null: false
+    t.index ["reporte_id"], name: "index_denuncias_remisiones_on_reporte_id"
+  end
+
+  create_table "denuncias_reportes", id: :string, force: :cascade do |t|
+    t.bigserial "n", null: false
+    t.string "categoria", null: false
+    t.string "estado", null: false
+    t.string "titulo", null: false
+    t.text "descripcion", null: false
+    t.string "localidad", null: false
+    t.string "lugar", null: false
+    t.string "recompensa_id"
+    t.string "cuenta_id"
+    t.string "codigo_hash", null: false
+    t.text "texto_original_cif"
+    t.boolean "verificada", default: false, null: false
+    t.boolean "sello_publico", default: false, null: false
+    t.datetime "creado_en", null: false
+    t.index ["codigo_hash"], name: "index_denuncias_reportes_on_codigo_hash", unique: true
+    t.index ["cuenta_id"], name: "index_denuncias_reportes_on_cuenta_id"
+    t.index ["estado", "n"], name: "index_denuncias_reportes_on_estado_and_n"
+    t.index ["n"], name: "index_denuncias_reportes_on_n", unique: true
+  end
+
+  create_table "denuncias_solicitudes_retiro", id: :string, force: :cascade do |t|
+    t.string "reporte_id", null: false
+    t.text "motivo", null: false
+    t.text "contacto_cif"
+    t.string "estado", null: false
+    t.datetime "creado_en", null: false
+    t.index ["reporte_id"], name: "index_denuncias_solicitudes_retiro_on_reporte_id"
   end
 
   create_table "encuesta_opciones", force: :cascade do |t|

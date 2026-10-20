@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Entrar · DENUNCIAPP</title>
+  <%= csrf_meta_tags %>
+  <link rel="stylesheet" href="/estaticos/estilo.css">
+</head>
+<body>
+  <header class="barra"><a class="marca" href="/">DENUNCIAPP</a></header>
+  <main>
+    <h1>Entrar con tu correo</h1>
+    <p>Para publicar con un alias y ver tus denuncias sin código. No hace falta contraseña: te enviamos un
+      enlace que vence en 15 minutos. Tu correo se guarda cifrado y <strong>nunca se muestra</strong>; en el muro
+      solo aparece tu alias. Si prefieres no dejar ningún dato, denuncia como anónimo sin entrar.</p>
+    <p class="aviso" id="enviado" hidden>Listo: revisa tu correo y abre el enlace.</p>
+    <p class="error" id="fallo" role="alert"></p>
+
+    <form id="form-entrar" method="post" action="/api/cuenta/enlace">
+      <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+      <input type="hidden" name="cf-turnstile-response">
+      <label>Correo <input type="email" name="email" required maxlength="200" autocomplete="email"></label>
+      <div class="captcha"></div>
+      <button>Enviarme el enlace</button>
+    </form>
+  </main>
+  <script type="module" src="/estaticos/entrar.js"></script>
+</body>
+</html>

@@ -1,4 +1,36 @@
 Rails.application.routes.draw do
+  # ── DENUNCIAPP: solo existe en su propio host (DENUNCIAPP_URL) ──────────────
+  # La frontera (app/middleware/denuncias_frontera.rb) da 404 en ese host a todo lo demás.
+  constraints(->(req) { Denuncias.host?(req) }) do
+    scope module: :denuncias, as: :denuncias do
+      get  "/",        to: "paginas#muro", as: :muro
+      get  "nuevo",    to: "paginas#nuevo"
+      get  "cuenta",   to: "paginas#cuenta"
+      get  "entrar",   to: "paginas#entrar"
+      get  "terminos", to: "paginas#terminos"
+      get  "estaticos/:archivo", to: "paginas#estatico", constraints: { archivo: /[a-z]+\.(js|css)/ }, format: false
+
+      get  "api/config",                to: "api#config_publica"
+      get  "api/reportes",              to: "api#reportes"
+      post "api/reportes",              to: "api#crear_reporte"
+      get  "api/recompensas",           to: "api#recompensas"
+      post "api/seguimiento",           to: "api#seguimiento"
+      post "api/reportes/:id/retiro",   to: "api#solicitar_retiro"
+      get  "media/publicas/:archivo",   to: "api#media", constraints: { archivo: /[0-9a-f-]+\.(jpg|png)/ }, format: false
+
+      get  "api/cuenta",                     to: "cuentas#estado"
+      post "api/cuenta/enlace",              to: "cuentas#pedir_enlace"
+      post "api/cuenta/alias",               to: "cuentas#elegir_alias"
+      get  "api/cuenta/reportes",            to: "cuentas#mis_reportes"
+      post "api/cuenta/reportes/:id/retirar", to: "cuentas#retirar"
+      post "api/cuenta/salir",               to: "cuentas#salir"
+    end
+    devise_for :cuentas, class_name: "Denuncias::Cuenta", path: "cuenta/auth", skip: [:sessions],
+                         controllers: { magic_links: "denuncias/magic_links" }
+    # Adonde Devise manda un enlace vencido o inválido.
+    get "cuenta/auth/fallo", to: redirect("/entrar?error=1"), as: :new_cuenta_session
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # ── PWA ──────────────────────────────────────────────────────
@@ -24,6 +56,19 @@ Rails.application.routes.draw do
   }
 
   get "dashboard", to: "dashboard#index", as: :dashboard
+
+  # ── Panel del operador de DENUNCIAPP (host de COMUNIA, solo superadmin) ──
+  scope "denuncias/admin", module: :denuncias, controller: :admin do
+    get  "/",                          action: :index,             as: :denuncias_admin
+    post "retiros/:id/:decision",      action: :resolver_retiro,   as: :denuncias_admin_retiro, constraints: { decision: /aceptar|rechazar/ }
+    post "reportes/:id/retirar",       action: :retirar,           as: :denuncias_admin_retirar
+    post "reportes/:id/restaurar",     action: :restaurar,         as: :denuncias_admin_restaurar
+    get  "reportes/:id/custodia",      action: :custodia,          as: :denuncias_admin_custodia
+    post "reportes/:id/paquete",       action: :paquete,           as: :denuncias_admin_paquete
+    post "evidencias/:id/original",    action: :original,          as: :denuncias_admin_original
+    post "recompensas",                action: :crear_recompensa,  as: :denuncias_admin_recompensas
+    post "recompensas/:id/vencer",     action: :vencer_recompensa, as: :denuncias_admin_vencer
+  end
 
   # ── Plataforma COMUNIA (sin subdominio, super admin) ──────────
   resources :users, only: [:edit, :update]

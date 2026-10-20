@@ -1,6 +1,8 @@
 # Producción de COMUNIA en asus (WSL). Lo lanza bin/deploy desde el Air.
 # Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600) y las claves de los
-# pases en $PASES_DIR (~/.config/comunia-pases, 700).
+# pases en $PASES_DIR (~/.config/comunia-pases, 700). Las evidencias de DENUNCIAPP, en
+# $DENUNCIAS_DIR (~/services/denuncias-evidencia, 700): los originales van cifrados con
+# DENUNCIAS_CLAVE (app.env), que no está en git ni en Drive.
 # URL pública: https://comunia.tail0be41e.ts.net (Funnel del nodo "comunia", sin depender del Air).
 name: comunia
 
@@ -24,9 +26,14 @@ services:
     environment:
       HTTP_PORT: "80"
       PASES_DIR: /pases
+      DENUNCIAS_DIR: /denuncias
+      # Thruster anota la IP y la hora de cada petición; en el host de DENUNCIAPP no puede
+      # quedar ninguna. Las de COMUNIA siguen en el log de Rails.
+      THRUSTER_LOG_REQUESTS: "false"
     volumes:
       # Claves de los pases de DENUNCIAPP; las genera config/deploy/asus/pases-claves.sh (cron).
       - ${PASES_DIR}:/pases:ro
+      - ${DENUNCIAS_DIR}:/denuncias
     depends_on:
       db:
         condition: service_healthy
