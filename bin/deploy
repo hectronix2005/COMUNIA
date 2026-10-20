@@ -9,6 +9,8 @@ STEPS='set -euo pipefail
   git fetch --quiet origin main
   git reset --hard origin/main
   export SECRETS_DIR=~/services/comunia-secrets
+  export PASES_DIR=~/.config/comunia-pases
+  bash config/deploy/asus/pases-claves.sh
   docker compose -f config/deploy/asus/compose.yml up -d --build
   docker image prune -f >/dev/null'
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_18_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_19_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -464,6 +464,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_000001) do
     t.index ["validado_por_id"], name: "index_pagos_on_validado_por_id"
   end
 
+  create_table "pases_semanales", force: :cascade do |t|
+    t.bigint "miembro_id", null: false
+    t.date "semana", null: false
+    t.integer "cantidad", default: 0, null: false
+    t.index ["miembro_id", "semana"], name: "index_pases_semanales_on_miembro_id_and_semana", unique: true
+  end
+
   create_table "periodo_cobros", force: :cascade do |t|
     t.string "nombre", null: false
     t.integer "anio", null: false
@@ -633,6 +640,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_18_000001) do
   add_foreign_key "notificaciones", "users"
   add_foreign_key "pagos", "cobros"
   add_foreign_key "pagos", "users", column: "validado_por_id"
+  add_foreign_key "pases_semanales", "miembros", on_delete: :cascade
   add_foreign_key "periodo_cobros", "users", column: "creado_por_id"
   add_foreign_key "publicacion_comentarios", "publicaciones"
   add_foreign_key "publicacion_comentarios", "users"

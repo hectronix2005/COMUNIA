@@ -1,5 +1,6 @@
 # Producción de COMUNIA en asus (WSL). Lo lanza bin/deploy desde el Air.
-# Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600).
+# Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600) y las claves de los
+# pases en $PASES_DIR (~/.config/comunia-pases, 700).
 # URL pública: https://comunia.tail0be41e.ts.net (Funnel del nodo "comunia", sin depender del Air).
 name: comunia
 
@@ -22,6 +23,10 @@ services:
     env_file: ${SECRETS_DIR}/app.env
     environment:
       HTTP_PORT: "80"
+      PASES_DIR: /pases
+    volumes:
+      # Claves de los pases de DENUNCIAPP; las genera config/deploy/asus/pases-claves.sh (cron).
+      - ${PASES_DIR}:/pases:ro
     depends_on:
       db:
         condition: service_healthy

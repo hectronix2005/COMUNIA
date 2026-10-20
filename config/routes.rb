@@ -7,6 +7,10 @@ Rails.application.routes.draw do
 
   root "dashboard#index"
 
+  # ── Pases anónimos de DENUNCIAPP (firmas ciegas, RFC 9474) ───
+  get  "pases/claves", to: "pases#claves", as: :pases_claves, defaults: { format: "json" }
+  post "pases/firmar", to: "pases#firmar", as: :pases_firmar
+
   # Entrada/salida de contexto de tenant. El middleware TenantPathPrefix
   # reescribe /t/:slug/<resto> → /<resto> con SCRIPT_NAME=/t/:slug, por lo
   # que todas las rutas siguen siendo no-prefijadas aquí y Rails inyecta
