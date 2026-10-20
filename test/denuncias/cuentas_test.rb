@@ -64,6 +64,14 @@ class Denuncias::CuentasTest < ActionDispatch::IntegrationTest
     assert_equal "/cuenta/auth/fallo", URI(s.response.location).path
   end
 
+  test "13c. la hora exacta del acceso se borra cuando ya no queda ningún enlace vivo" do
+    vieja = Denuncias::Cuenta.buscar_o_crear("vieja@correo.co")
+    vieja.update_columns(current_sign_in_at: 16.minutes.ago)
+    entrar("nueva@correo.co")
+    assert_nil vieja.reload.current_sign_in_at
+    assert Denuncias::Cuenta.find_for_authentication(email: "nueva@correo.co").current_sign_in_at
+  end
+
   test "14. sin sesión no se puede publicar con alias ni retirar lo ajeno" do
     ajena = otra_sesion
     ajena.post "/api/reportes", params: formulario({ publicar_como: "alias" })

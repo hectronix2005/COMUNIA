@@ -30,6 +30,7 @@ module Denuncias
 
     # Primer acceso: la cuenta se crea al pedir el enlace (como hacía Auth.js).
     def self.buscar_o_crear(email)
+      olvidar_accesos!
       email = normalizar(email)
       return nil unless email.match?(URI::MailTo::EMAIL_REGEXP) && email.size <= 254
       find_for_authentication(email: email) ||
@@ -42,6 +43,13 @@ module Denuncias
     # Al entrar con el enlace: correo verificado, y los enlaces anteriores dejan de servir.
     def after_magic_link_authentication
       update_columns(email_verificado: email_verificado || Cripto.hora_redondeada, current_sign_in_at: Time.current)
+      self.class.olvidar_accesos!
+    end
+
+    # current_sign_in_at es la hora exacta del último acceso: solo hace falta mientras pueda quedar
+    # vivo un enlace anterior (15 min). Pasado eso se borra, para no guardar un «visto por última vez».
+    def self.olvidar_accesos!
+      where(current_sign_in_at: ...passwordless_login_within.ago).update_all(current_sign_in_at: nil)
     end
 
     # El alias solo se asigna si aún no tiene uno (UPDATE condicionado: no se puede cambiar).
