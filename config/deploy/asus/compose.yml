@@ -53,6 +53,27 @@ services:
     depends_on:
       - web
 
+  # Nodo propio de DENUNCIAPP (https://denunciapp.tail0be41e.ts.net) hacia la misma web; el host
+  # separa el módulo. Solo arranca con el perfil «denunciapp», que bin/deploy activa si existe
+  # $SECRETS_DIR/ts-denunciapp.env (TS_AUTHKEY). Sin subida de logs a Tailscale.
+  ts-denunciapp:
+    image: tailscale/tailscale:v1.104.1
+    hostname: denunciapp
+    restart: unless-stopped
+    profiles: [denunciapp]
+    env_file: ${SECRETS_DIR}/ts-denunciapp.env
+    environment:
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "true"
+      TS_SERVE_CONFIG: /config/serve.json
+      TS_TAILSCALED_EXTRA_ARGS: --no-logs-no-support
+    volumes:
+      - tsdenunciapp:/var/lib/tailscale
+      - ./serve.json:/config/serve.json:ro
+    depends_on:
+      - web
+
 volumes:
   pgdata:
   tsstate:
+  tsdenunciapp:

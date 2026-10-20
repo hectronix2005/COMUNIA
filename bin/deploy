@@ -12,6 +12,7 @@ STEPS='set -euo pipefail
   export PASES_DIR=~/.config/comunia-pases
   export DENUNCIAS_DIR=~/services/denuncias-evidencia
   mkdir -p -m 700 "$DENUNCIAS_DIR"
+  if [ -f "$SECRETS_DIR/ts-denunciapp.env" ]; then export COMPOSE_PROFILES=denunciapp; fi
   bash config/deploy/asus/pases-claves.sh
   docker compose -f config/deploy/asus/compose.yml up -d --build
   docker image prune -f >/dev/null'
