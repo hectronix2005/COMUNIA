@@ -75,7 +75,7 @@ gem "rtesseract", "~> 3.1"
 gem "pdf-reader", "~> 2.12"
 
 # Lectura de archivos Excel/CSV para conciliacion de cortes
-gem "roo", "~> 2.10"
+gem "roo", "~> 3.0"
 gem "csv", "~> 3.3"   # Ruby 3.4: csv ya no es default gem, requerido por roo
 
 group :development, :test do
