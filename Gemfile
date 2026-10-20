@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.4"
+gem "rails", "~> 8.1.4"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
@@ -52,7 +52,7 @@ gem "rack-attack", "~> 6.7"
 gem "web-push", "~> 3.0"
 
 # Authentication
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0", ">= 5.0.4"
 
 # Authorization
 gem "pundit", "~> 2.4"
@@ -75,7 +75,7 @@ gem "rtesseract", "~> 3.1"
 gem "pdf-reader", "~> 2.12"
 
 # Lectura de archivos Excel/CSV para conciliacion de cortes
-gem "roo", "~> 2.10"
+gem "roo", "~> 3.0"
 gem "csv", "~> 3.3"   # Ruby 3.4: csv ya no es default gem, requerido por roo
 
 group :development, :test do

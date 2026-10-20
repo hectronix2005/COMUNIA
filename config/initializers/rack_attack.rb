@@ -46,8 +46,9 @@ class Rack::Attack
   end
 
   ### Response personalizada ###
-  self.throttled_responder = lambda do |env|
-    match_data = env["rack.attack.match_data"] || {}
+  # Recibe un Rack::Attack::Request, no el env: con `env[...]` el 429 salía como 500.
+  self.throttled_responder = lambda do |request|
+    match_data = request.env["rack.attack.match_data"] || {}
     retry_after = (match_data[:period] || 60).to_i
     [
       429,

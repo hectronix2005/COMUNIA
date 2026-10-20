@@ -140,6 +140,12 @@ class HospitaliaController < ApplicationController
 
   private
 
+  # Lo usan las vistas de recaudos y gastos para mostrar los formularios; misma
+  # regla que require_hospitalario! (sin él las dos páginas daban 500).
+  def puede_gestionar?
+    current_user.tiene_cargo?("Hospitalario")
+  end
+
 
   def logia_ids_visibles
     ids = [current_logia.id]
