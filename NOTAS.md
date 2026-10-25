@@ -208,6 +208,19 @@ No hecho o no comprobado:
   es el mismo salvo la notación de algunos colores. Desplegado.
 - Análisis: brakeman, bundle-audit, importmap audit, yarn audit y rubocop sin avisos.
 
+## Monitor de disponibilidad y errores (25-oct, rama `monitor`, SIN desplegar)
+
+- 🔄 `/salud`: como `/up`, pero además pregunta a la base; si no llega, 503 sin detalle.
+- 🔄 `.github/workflows/disponibilidad.yml`: cada 15 min, desde GitHub (fuera de asus), tres intentos
+  a `/salud`. Si falla, la ejecución sale en rojo y GitHub avisa al dueño del repo. Solo corre
+  desde `main`. GitHub apaga las programaciones tras 60 días sin actividad en el repo.
+- 🔄 Errores 500 de peticiones y trabajos en `errores_app`, agrupados por huella, sin parámetros ni
+  ruta. Página `/errores` en el panel de plataforma (con contador en el menú). La primera vez de cada
+  huella, o si vuelve tras «Resuelto», notificación a los superadmins. De DENUNCIAPP no se guarda
+  el mensaje.
+- ⏳ Los dos superadmins de producción tienen 0 suscripciones push: el aviso solo se ve al entrar,
+  hasta que activen las notificaciones en el móvil.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
