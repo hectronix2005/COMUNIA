@@ -134,8 +134,26 @@ No hecho o no comprobado:
   anterior al arranque del contenedor para saber si alguien las usó.
 - ✅ **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c,
   desplegado). Ahora da 404.
-- ⏳ Quedan unos 40 `find(params[:id])` sin acotar a la logia en otros controladores (biblioteca,
-  usuarios, cargos, cobros, hospitalía, publicaciones, calendario, chat…). Sin revisar uno a uno.
+- 🔄 **Revisión de los 40 controladores** (rama `alcance-logias`, 445c0ab..1a31f08, SIN desplegar):
+  - Cambiar `/t/<slug>` en la URL enseñaba el directorio, el chat y el calendario de otra
+    organización. Ahora lleva al dashboard propio.
+  - Un miembro abría o tocaba por id las publicaciones, encuestas, fichas del directorio, eventos,
+    anuncios, libros, mensajes y familiares de otra organización. Ahora da 404, igual que lo
+    inexistente.
+  - Un admin_logia abría cobros, recibos, conceptos, tarifas, cortes, cargos, cambios de estado y
+    roles de otras logias, y podía poner un `logia_id` ajeno al crear usuarios o roles. Arreglado.
+  - La moderación (borrar, fijar, cerrar) miraba el enum `rol` y valía en cualquier logia; ahora
+    mira `rol_ref` y solo vale en las logias que el admin gestiona.
+  - Los familiares de un miembro solo los ve él o el hospitalario. El indicador de «escribiendo»
+    solo va a canales propios.
+  - La confirmación de asistencia daba siempre 404 (leía un parámetro que no llega). Arreglada.
+  - Prueba nueva `test/integration/alcance_tenants_test.rb` (falla sin el arreglo). 190 pruebas en
+    verde; brakeman y bundle-audit sin avisos.
+  - Sin cambiar, a decidir: los periodos de cobro son globales (`generar_cobros!` crea cobros en
+    todas las logias; solo el superadmin tiene ese permiso); el enum `rol` no coincide con
+    `rol_ref` en 4 usuarios de producción; hospitalía acepta un `miembro_id` o `beneficiario_id` de
+    otra logia al crear un recaudo o un gasto (no enseña nada, pero ensucia los datos); el admin
+    de la raíz no ve los cobros de las logias hijas.
 - ✅ **Invitaciones por enlace** (c80f1f4, desplegado el 25-oct con su migración; en producción
   cargan la ficha y la lista, y las rutas de la gema dan 404):
   - El admin pulsa «Invitar» en la ficha. Sale un enlace de un solo uso que caduca a los 7 días,
