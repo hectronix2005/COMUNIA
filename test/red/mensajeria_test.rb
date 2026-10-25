@@ -211,6 +211,46 @@ class Red::MensajeriaTest < ActionDispatch::IntegrationTest
     assert_not_includes Red::Reporte.last.huella, "127.0.0.1"
   end
 
+  test "moderación: descartar devuelve la publicación, sancionar la retira y aprobar avisa; solo moderadores" do
+    mod = red_moderador
+    reportar = lambda do |pub, n|
+      Array.new(n) { |i| red_usuario("Rep #{i}") }.each do |r|
+        sign_in r
+        post "/red/reportar", params: { tipo: "publicacion", token: pub.token, motivo: "estafa" }
+      end
+    end
+    reportar.(@pub, 3)
+    assert_equal "en_revision", @pub.reload.estado
+    reporte = Red::Reporte.pendientes.first
+
+    sign_in @beto
+    post "/red/moderacion/reportes/#{reporte.id}/sancionar"
+    assert_response :not_found, "para quien no modera, la moderación no existe"
+    assert_equal "en_revision", @pub.reload.estado
+
+    sign_in mod
+    get "/red/moderacion"
+    assert_response :success
+    post "/red/moderacion/reportes/#{reporte.id}/descartar"
+    assert_redirected_to "/red/moderacion"
+    assert_equal "activa", @pub.reload.estado
+    assert_equal 0, Red::Reporte.pendientes.count, "se resuelven todos los reportes de lo mismo"
+
+    otra = red_publicacion(@ana, titulo: "Préstamos sin papeles")
+    reportar.(otra, 1)
+    sign_in mod
+    post "/red/moderacion/reportes/#{Red::Reporte.pendientes.last.id}/sancionar"
+    assert_equal "retirada", otra.reload.estado
+    assert_equal 1, @ana.red_perfil.reload.sanciones
+
+    retenida = red_publicacion(@ana, titulo: "Clases de guitarra", estado: "en_revision")
+    post "/red/moderacion/publicaciones/#{retenida.token}/aprobar"
+    assert_equal "activa", retenida.reload.estado
+    assert @ana.notificaciones.where(tipo: "red_moderacion", titulo: "Tu publicación ya está visible").exists?
+    post "/red/moderacion/publicaciones/#{retenida.token}/aprobar"
+    assert_response :not_found, "solo se aprueba lo que está en revisión"
+  end
+
   test "solo se reporta un mensaje de una conversación propia" do
     sign_in @beto
     escribir_a(@ana.red_perfil, "Mensaje ofensivo")
