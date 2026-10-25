@@ -19,7 +19,7 @@ class CobrosController < ApplicationController
     @cobros = @cobros.order(orden_sql).page(params[:page])
 
     @logias = current_user.tiene_permiso?("logias", "index") ? Logia.ordenadas : []
-    logia_scope = current_user.scope_propia_logia? ? current_user.logia_id : nil
+    logia_scope = current_user.logia_ids_accesibles
     @periodos = PeriodoCobro.recientes
     @miembros = Miembro.includes(:user)
                        .then { |q| logia_scope ? q.where(logia_id: logia_scope) : q }

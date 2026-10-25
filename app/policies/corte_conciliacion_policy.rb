@@ -7,7 +7,8 @@ class CorteConciliacionPolicy < ApplicationPolicy
   class Scope < ApplicationPolicy::Scope
     def resolve
       return scope.none unless user.tiene_permiso?("miembros", "index")
-      user.scope_propia_logia? ? scope.where(logia_id: user.logia_id) : scope.all
+      ids = user.logia_ids_accesibles
+      ids.nil? ? scope.all : scope.where(logia_id: ids)
     end
   end
 end

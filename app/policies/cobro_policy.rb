@@ -42,11 +42,9 @@ class CobroPolicy < ApplicationPolicy
   class Scope < ApplicationPolicy::Scope
     def resolve
       if user.tiene_permiso?("cobros", "index")
-        if user.scope_propia_logia?
-          scope.por_logia(user.logia_id)
-        else
-          scope.all
-        end
+        # Como en miembros: el admin de la raíz ve también los cobros de sus logias hijas.
+        ids = user.logia_ids_accesibles
+        ids.nil? ? scope.all : scope.por_logia(ids)
       else
         scope.where(miembro_id: user.miembro&.id)
       end

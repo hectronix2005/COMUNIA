@@ -25,8 +25,8 @@ class ReportesController < ApplicationController
       @pagos = @pagos.joins(cobro: :miembro).where(miembros: { logia_id: params[:logia_id] })
     end
 
-    if current_user.scope_propia_logia?
-      @pagos = @pagos.joins(cobro: :miembro).where(miembros: { logia_id: current_user.logia_id })
+    if (ids = current_user.logia_ids_accesibles)
+      @pagos = @pagos.joins(cobro: :miembro).where(miembros: { logia_id: ids })
     end
 
     @total = @pagos.sum(:monto_pagado)
@@ -61,11 +61,8 @@ class ReportesController < ApplicationController
   end
 
   def cobros_scope
-    if current_user.scope_propia_logia?
-      Cobro.por_logia(current_user.logia_id)
-    else
-      Cobro.all
-    end
+    ids = current_user.logia_ids_accesibles
+    ids.nil? ? Cobro.all : Cobro.por_logia(ids)
   end
 
   def logias_para_filtro
