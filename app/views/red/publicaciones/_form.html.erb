@@ -1,0 +1,42 @@
+<%= form_with url: url, method: metodo do %>
+  <fieldset class="mb-2">
+    <legend class="form-label fs-6 fw-semibold mb-1">¿Qué publicas?</legend>
+    <div class="btn-group" role="group">
+      <% Red::Publicacion::INTENCIONES.each do |valor, etiqueta| %>
+        <input type="radio" class="btn-check" name="intencion" id="pub-<%= valor %>" value="<%= valor %>" <%= "checked" if @publicacion.intencion == valor %>>
+        <label class="btn btn-outline-primary" for="pub-<%= valor %>"><%= etiqueta %></label>
+      <% end %>
+    </div>
+  </fieldset>
+  <div class="row g-2">
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="pub-cat">Categoría</label>
+      <select class="form-select" id="pub-cat" name="categoria" required><%= options_for_select(Red::Publicacion::CATEGORIAS.invert, @publicacion.categoria) %></select>
+    </div>
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="pub-mod">Modalidad</label>
+      <select class="form-select" id="pub-mod" name="modalidad"><%= options_for_select(Red::Publicacion::MODALIDADES.invert, @publicacion.modalidad) %></select>
+    </div>
+  </div>
+  <div class="mb-2">
+    <label class="form-label" for="pub-titulo">Título</label>
+    <input class="form-control" id="pub-titulo" name="titulo" required minlength="5" maxlength="100" value="<%= @publicacion.titulo %>">
+  </div>
+  <div class="mb-2">
+    <label class="form-label" for="pub-desc">Descripción</label>
+    <textarea class="form-control" id="pub-desc" name="descripcion" rows="5" required minlength="10" maxlength="3000"><%= @publicacion.descripcion %></textarea>
+    <p class="small text-muted mt-1 mb-0">No pongas tu teléfono ni tu correo: te escriben por aquí y tú decides si los compartes.</p>
+  </div>
+  <div class="row g-2">
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="pub-ciudad">Ciudad (opcional)</label>
+      <input class="form-control" id="pub-ciudad" name="ciudad" maxlength="60" value="<%= @publicacion.ciudad %>">
+    </div>
+    <div class="col-sm-6 mb-3">
+      <label class="form-label" for="pub-precio">Precio o presupuesto (opcional)</label>
+      <input class="form-control" id="pub-precio" name="precio_texto" maxlength="60" value="<%= @publicacion.precio_texto %>" placeholder="A convenir · $50.000 la hora…">
+    </div>
+  </div>
+  <%= render "red/shared/alcance", objeto: @publicacion %>
+  <button class="btn btn-primary" type="submit"><%= boton %></button>
+<% end %>

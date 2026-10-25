@@ -1,0 +1,44 @@
+<% content_for :title, "Mi perfil" %>
+<% ficha = Red::Ficha.new(@perfil) %>
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+  <h1 class="h5 mb-0">Mi perfil</h1>
+  <%= link_to "Ver como lo ven los demás", red_perfil_path(@perfil), class: "btn btn-outline-secondary btn-sm" %>
+</div>
+<div class="card red-tarjeta mb-3"><div class="card-body small">
+  <%= render "red/shared/nivel", ficha: ficha %> <span class="text-muted ms-1"><%= ficha.certificacion_texto %></span>
+  <% if @perfil.en_cuarentena? %>
+    <p class="mb-0 mt-2 text-muted">Cuenta nueva: hasta el <%= l(@perfil.cuarentena_hasta, format: :short) %> tus publicaciones públicas solo las ven tus comunidades.</p>
+  <% end %>
+  <p class="mb-0 mt-2"><%= link_to "Mis comunidades", red_mis_comunidades_path %> · <%= link_to "Mis publicaciones", red_mis_publicaciones_path %></p>
+</div></div>
+
+<%= form_with url: red_mi_perfil_path, method: :patch, multipart: true do %>
+  <%= render "campos" %>
+  <div class="mb-3">
+    <label class="form-label" for="p-cv">Hoja de vida (PDF, máximo 5 MB, opcional)</label>
+    <% if @perfil.hoja_de_vida.attached? %>
+      <p class="small mb-1">Tienes subida: <%= @perfil.hoja_de_vida.filename %> ·
+        <label><input type="checkbox" name="quitar_hoja_de_vida" value="1"> quitarla</label></p>
+    <% end %>
+    <input class="form-control" id="p-cv" name="hoja_de_vida" type="file" accept="application/pdf">
+    <p class="small text-muted mt-1 mb-0">La ve quien puede ver tu perfil.</p>
+  </div>
+  <button class="btn btn-primary" type="submit">Guardar</button>
+<% end %>
+
+<hr class="my-4">
+<h2 class="h6">Mis datos (Ley 1581)</h2>
+<p class="small text-muted">Aceptaste la política <%= @perfil.politica_version %> el <%= l(@perfil.acepto_tratamiento_at.to_date) %>.</p>
+<%= link_to red_mis_datos_path, class: "btn btn-outline-secondary btn-sm mb-3" do %>
+  <i class="bi bi-download" aria-hidden="true"></i> Descargar todos mis datos
+<% end %>
+<details class="mb-3">
+  <summary class="text-danger small">Borrar mis datos de la red</summary>
+  <%= form_with url: red_mi_perfil_path, method: :delete, class: "mt-2", data: { turbo: false } do %>
+    <p class="small">Se borran tu perfil, tus publicaciones, tus membresías, tus conversaciones y tus reseñas. No se puede deshacer.
+      <% if current_user.solo_red? %>También se borra tu cuenta.<% end %></p>
+    <label class="form-label small" for="p-borrar">Escribe BORRAR para confirmar</label>
+    <input class="form-control form-control-sm mb-2" id="p-borrar" name="confirmacion" autocomplete="off" style="max-width: 12rem;">
+    <button class="btn btn-danger btn-sm" type="submit">Borrar definitivamente</button>
+  <% end %>
+</details>

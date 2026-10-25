@@ -1,0 +1,18 @@
+<% content_for :title, "Bienvenida" %>
+<h1 class="h5">Crea tu perfil</h1>
+<ol class="small text-muted ps-3">
+  <li>Cuéntanos quién eres y qué sabes hacer.</li>
+  <li>Únete a tus comunidades (tu club, tu universidad, tu barrio, tu empresa…) y que te verifiquen.</li>
+  <li>Publica lo que necesitas u ofreces. Cuantas más comunidades te avalen, más confianza das.</li>
+</ol>
+<%= form_with url: red_bienvenida_path, method: :post do %>
+  <%= render "campos" %>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="acepto" id="p-acepto" value="1" required>
+    <label class="form-check-label small" for="p-acepto">
+      Autorizo el tratamiento de mis datos para esta red según la <%= link_to "política de tratamiento de datos", red_privacidad_path, target: "_blank" %>
+      (Ley 1581 de 2012): mostrar mi perfil a quien yo elija y comprobar mis comunidades. Puedo exportar o borrar mis datos cuando quiera.
+    </label>
+  </div>
+  <button class="btn btn-primary" type="submit">Crear perfil</button>
+<% end %>

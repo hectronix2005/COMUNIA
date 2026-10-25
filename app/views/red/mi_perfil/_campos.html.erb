@@ -1,0 +1,39 @@
+<div class="mb-2">
+  <label class="form-label" for="p-nombre">Nombre que verán los demás</label>
+  <input class="form-control" id="p-nombre" name="nombre_publico" required minlength="2" maxlength="60" value="<%= @perfil.nombre_publico %>" autocomplete="name">
+</div>
+<div class="mb-2">
+  <label class="form-label" for="p-titular">Titular (opcional)</label>
+  <input class="form-control" id="p-titular" name="titular" maxlength="120" value="<%= @perfil.titular %>" placeholder="Electricista certificado · Contadora con 10 años…">
+</div>
+<div class="mb-2">
+  <label class="form-label" for="p-ciudad">Ciudad (opcional)</label>
+  <input class="form-control" id="p-ciudad" name="ciudad" maxlength="60" value="<%= @perfil.ciudad %>" autocomplete="address-level2">
+</div>
+<div class="mb-2">
+  <label class="form-label" for="p-bio">Sobre mí (opcional)</label>
+  <textarea class="form-control" id="p-bio" name="bio" rows="3" maxlength="2000"><%= @perfil.bio %></textarea>
+</div>
+<div class="mb-3">
+  <label class="form-label" for="p-hab">Lo que sé hacer (opcional, separado por comas)</label>
+  <input class="form-control" id="p-hab" name="habilidades" maxlength="500" value="<%= @perfil.habilidades %>">
+</div>
+<fieldset class="mb-3">
+  <legend class="form-label fs-6 fw-semibold mb-1">Datos de contacto (opcional)</legend>
+  <p class="small text-muted mb-2">No se enseñan nunca. Solo los compartes tú, con un botón, dentro de una conversación.</p>
+  <div class="row g-2">
+    <div class="col-sm-6">
+      <label class="form-label small" for="p-tel">Teléfono</label>
+      <input class="form-control" id="p-tel" name="contacto_telefono" maxlength="20" inputmode="tel" value="<%= @perfil.contacto_telefono %>" autocomplete="tel">
+    </div>
+    <div class="col-sm-6">
+      <label class="form-label small" for="p-correo">Correo</label>
+      <input class="form-control" id="p-correo" name="contacto_correo" type="email" maxlength="120" value="<%= @perfil.contacto_correo %>" autocomplete="email">
+    </div>
+  </div>
+</fieldset>
+<%= render "red/shared/alcance", objeto: @perfil %>
+<div class="form-check mb-3">
+  <input class="form-check-input" type="checkbox" name="visible_publico" id="p-publico" value="1" <%= "checked" if @perfil.visible_publico %>>
+  <label class="form-check-label" for="p-publico">Aparecer en la búsqueda pública (sin cuenta). Solo funciona con «Todas las comunidades».</label>
+</div>

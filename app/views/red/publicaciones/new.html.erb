@@ -1,0 +1,9 @@
+<% content_for :title, "Publicar" %>
+<h1 class="h5">Publicar</h1>
+<% if @bloqueo %>
+  <div class="alert alert-info"><%= @bloqueo %>
+    <% if mis_comunidad_ids.empty? %><%= link_to "Busca tu comunidad", red_comunidades_path, class: "alert-link" %>.<% end %>
+  </div>
+<% else %>
+  <%= render "form", url: red_publicaciones_path, metodo: :post, boton: "Publicar" %>
+<% end %>

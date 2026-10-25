@@ -1,0 +1,54 @@
+<% content_for :title, @publicacion.titulo %>
+<article class="card red-tarjeta mb-3"><div class="card-body">
+  <div class="d-flex flex-wrap gap-1 align-items-center mb-2">
+    <span class="red-chip <%= @publicacion.intencion %>"><%= @publicacion.intencion_texto %></span>
+    <span class="small text-muted"><%= @publicacion.categoria_texto %> · <%= @publicacion.modalidad_texto %></span>
+    <% if @publicacion.ciudad.present? %><span class="small text-muted">· <%= @publicacion.ciudad %></span><% end %>
+  </div>
+  <h1 class="h5"><%= @publicacion.titulo %></h1>
+  <% if @publicacion.precio_texto.present? %><p class="fw-semibold mb-2"><%= @publicacion.precio_texto %></p><% end %>
+  <div class="mb-3" style="white-space: pre-line;"><%= @publicacion.descripcion %></div>
+  <p class="small text-muted mb-0">Publicada el <%= l(@publicacion.created_at.to_date) %> · vigente hasta el <%= l(@publicacion.vence_el) %></p>
+</div></article>
+
+<% if @propia %>
+  <div class="card red-tarjeta mb-3"><div class="card-body small">
+    <p class="mb-2">Estado: <strong><%= @publicacion.estado.humanize %></strong> · <%= @publicacion.alcance_texto %>
+      <% if @publicacion.motivo_revision.present? && @publicacion.estado == "en_revision" %><br><span class="text-muted"><%= @publicacion.motivo_revision %></span><% end %></p>
+    <div class="d-flex flex-wrap gap-2">
+      <%= link_to "Editar", edit_red_publicacion_path(@publicacion), class: "btn btn-outline-primary btn-sm" %>
+      <% Red::PublicacionesController::TRANSICIONES.fetch(@publicacion.estado, []).each do |nuevo| %>
+        <%= button_to({ "activa" => "Reactivar", "pausada" => "Pausar", "cerrada" => "Cerrar" }.fetch(nuevo), estado_red_publicacion_path(@publicacion),
+                      params: { estado: nuevo }, class: "btn btn-outline-secondary btn-sm") %>
+      <% end %>
+      <% unless %w[en_revision retirada].include?(@publicacion.estado) %>
+        <%= button_to "Renovar 30 días", renovar_red_publicacion_path(@publicacion), class: "btn btn-outline-secondary btn-sm" %>
+      <% end %>
+    </div>
+  </div></div>
+<% else %>
+  <div class="card red-tarjeta mb-3"><div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <% if @perfil_visible %>
+        <%= link_to @ficha.nombre_publico, red_perfil_path(@autor), class: "fw-semibold" %>
+      <% else %>
+        <span class="fw-semibold"><%= @ficha.nombre_publico %></span>
+      <% end %>
+      <%= render "red/shared/nivel", ficha: @ficha %>
+    </div>
+    <p class="small text-muted mb-2"><%= @ficha.certificacion_texto %>
+      <% if @ficha.resenas.positive? %> · <i class="bi bi-star-fill text-warning" aria-hidden="true"></i> <%= @ficha.promedio %> (<%= @ficha.resenas %> reseñas)<% end %></p>
+    <% if user_signed_in? %>
+      <%= form_with url: red_escribir_path(@autor), method: :post do %>
+        <input type="hidden" name="publicacion" value="<%= @publicacion.token %>">
+        <label class="form-label small" for="msg">Escríbele (no verá tu teléfono ni tu correo)</label>
+        <textarea class="form-control mb-2" id="msg" name="cuerpo" rows="3" required maxlength="2000"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send" aria-hidden="true"></i> Enviar mensaje</button>
+      <% end %>
+    <% else %>
+      <%= link_to contactar_red_publicacion_path(@publicacion), class: "btn btn-primary btn-sm" do %><i class="bi bi-send" aria-hidden="true"></i> Contactar sin cuenta<% end %>
+      <span class="small text-muted ms-1">o <%= link_to "entra", red_entrar_path %> para conversar.</span>
+    <% end %>
+  </div></div>
+  <%= render "red/shared/reportar", tipo: "publicacion", token: @publicacion.token %>
+<% end %>

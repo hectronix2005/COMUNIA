@@ -1,0 +1,16 @@
+<%# Reportar `objeto` (publicación, perfil o mensaje). Sin cuenta, cuenta un voto por IP. %>
+<details class="mt-3">
+  <summary class="small text-muted"><i class="bi bi-flag" aria-hidden="true"></i> Reportar</summary>
+  <%= form_with url: red_reportar_path, method: :post, class: "mt-2", data: { turbo: false } do %>
+    <input type="hidden" name="tipo" value="<%= tipo %>">
+    <input type="hidden" name="token" value="<%= token %>">
+    <label class="form-label small" for="rep-motivo-<%= token %>">Motivo</label>
+    <select class="form-select form-select-sm mb-2" id="rep-motivo-<%= token %>" name="motivo" required>
+      <%= options_for_select(Red::Reporte::MOTIVOS.invert) %>
+    </select>
+    <label class="form-label small" for="rep-detalle-<%= token %>">Detalle (opcional)</label>
+    <textarea class="form-control form-control-sm mb-2" id="rep-detalle-<%= token %>" name="detalle" rows="2" maxlength="1000"></textarea>
+    <% unless user_signed_in? %><%= render "red/shared/captcha" %><% end %>
+    <button class="btn btn-outline-danger btn-sm" type="submit">Enviar reporte</button>
+  <% end %>
+</details>

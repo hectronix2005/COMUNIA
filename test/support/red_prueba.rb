@@ -46,6 +46,11 @@ module RedPrueba
     sign_in user
   end
 
+  # Quita lo que cambia en cada respuesta (nonce de CSP y token CSRF) para comparar dos cuerpos.
+  def sin_aleatorios(html)
+    html.gsub(/nonce="[^"]+"/, 'nonce=""').gsub(/(name="csrf-token" content=|name="csp-nonce" content=|name="authenticity_token" value=)"[^"]+"/, '\\1""')
+  end
+
   # Cuenta las consultas SQL de un bloque (para comprobar que lo oculto y lo inexistente cuestan igual).
   def consultas_sql
     n = 0

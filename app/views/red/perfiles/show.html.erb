@@ -1,0 +1,52 @@
+<% content_for :title, @ficha.nombre_publico %>
+<section class="card red-tarjeta mb-3"><div class="card-body">
+  <h1 class="h5 mb-1"><%= @ficha.nombre_publico %></h1>
+  <% if @ficha.titular.present? %><p class="mb-1"><%= @ficha.titular %></p><% end %>
+  <p class="small text-muted mb-2"><%= [@ficha.ciudad, "en la red desde #{@ficha.miembro_desde}"].compact_blank.join(" · ") %></p>
+  <p class="mb-2"><%= render "red/shared/nivel", ficha: @ficha %> <span class="small text-muted ms-1"><%= @ficha.certificacion_texto %></span></p>
+  <% if @ficha.resenas.positive? %>
+    <p class="small mb-2"><i class="bi bi-star-fill text-warning" aria-hidden="true"></i> <%= @ficha.promedio %> de 5 · <%= @ficha.resenas %> reseñas verificadas</p>
+  <% end %>
+  <% if @ficha.bio.present? %><div class="mb-2" style="white-space: pre-line;"><%= @ficha.bio %></div><% end %>
+  <% if @ficha.habilidades.present? %>
+    <div class="d-flex flex-wrap gap-1 mb-2">
+      <% @ficha.habilidades.split(",").map(&:strip).compact_blank.first(15).each do |h| %><span class="red-chip"><%= h %></span><% end %>
+    </div>
+  <% end %>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <% if @perfil.hoja_de_vida.attached? %>
+      <%= link_to red_hoja_de_vida_path(@perfil), class: "btn btn-outline-secondary btn-sm", target: "_blank", rel: "noopener" do %><i class="bi bi-file-earmark-person" aria-hidden="true"></i> Hoja de vida<% end %>
+    <% end %>
+    <% if @propio %>
+      <%= link_to "Editar mi perfil", red_mi_perfil_path, class: "btn btn-outline-primary btn-sm" %>
+    <% elsif user_signed_in? && mi_perfil %>
+      <%= form_with url: red_escribir_path(@perfil), method: :post, class: "d-flex gap-2 flex-grow-1" do %>
+        <label class="visually-hidden" for="msg-perfil">Mensaje</label>
+        <input class="form-control form-control-sm" id="msg-perfil" name="cuerpo" required maxlength="2000" placeholder="Escríbele un mensaje">
+        <button class="btn btn-primary btn-sm" type="submit">Enviar</button>
+      <% end %>
+    <% end %>
+  </div>
+</div></section>
+
+<h2 class="h6">Publicaciones</h2>
+<% if @publicaciones.empty? %>
+  <p class="small text-muted">No hay publicaciones que puedas ver.</p>
+<% else %>
+  <% @publicaciones.each do |p| %><%= render "red/shared/publicacion", publicacion: p, ficha: nil %><% end %>
+<% end %>
+
+<h2 class="h6 mt-3">Reseñas</h2>
+<% if @resenas.empty? %>
+  <p class="small text-muted">Aún no tiene reseñas. Solo se pueden dejar tras una conversación real en la red.</p>
+<% else %>
+  <% @resenas.each do |r| %>
+    <div class="card red-tarjeta mb-2"><div class="card-body small">
+      <div class="text-warning" aria-label="<%= r.puntaje %> de 5"><%= "★" * r.puntaje %><span class="text-muted"><%= "★" * (5 - r.puntaje) %></span></div>
+      <% if r.comentario.present? %><p class="mb-1"><%= r.comentario %></p><% end %>
+      <% if r.respuesta.present? %><p class="mb-1 text-muted"><strong>Respuesta:</strong> <%= r.respuesta %></p><% end %>
+      <span class="text-muted"><%= l(r.created_at.to_date) %></span>
+    </div></div>
+  <% end %>
+<% end %>
+<% unless @propio %><%= render "red/shared/reportar", tipo: "perfil", token: @perfil.token %><% end %>

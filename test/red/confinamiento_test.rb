@@ -51,4 +51,17 @@ class Red::ConfinamientoTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_select "h1", "Tablón"
   end
+
+  test "si la sesión caduca dentro de la red, se vuelve al login de la red" do
+    sign_in red_usuario("Ana")
+    get "/red/mi-perfil"
+    assert_response :success
+    travel 5.hours do
+      get "/red/mi-perfil" # Devise vuelve a pedir la misma página, ya sin sesión
+      follow_redirect!
+      assert_redirected_to "/red/entrar"
+      post "/red/mi-perfil", params: { _method: "patch", nombre_publico: "X" }
+      assert_redirected_to "http://www.example.com/red/entrar"
+    end
+  end
 end

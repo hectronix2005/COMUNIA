@@ -1,0 +1,21 @@
+<% content_for :title, "Mis publicaciones" %>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h5 mb-0">Mis publicaciones</h1>
+  <%= link_to "Publicar", new_red_publicacion_path, class: "btn btn-primary btn-sm" %>
+</div>
+<% if @publicaciones.empty? %>
+  <p class="text-muted">Aún no has publicado nada.</p>
+<% else %>
+  <ul class="list-group mb-3">
+    <% @publicaciones.each do |p| %>
+      <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+        <div>
+          <%= link_to p.titulo, red_publicacion_path(p), class: "fw-semibold" %>
+          <div class="small text-muted"><%= p.intencion_texto %> · <%= p.alcance_texto %> · vence el <%= l(p.vence_el) %></div>
+        </div>
+        <span class="badge text-bg-<%= p.vigente? ? 'success' : 'secondary' %>"><%= p.vigente? ? "Activa" : p.estado.humanize %></span>
+      </li>
+    <% end %>
+  </ul>
+  <%= paginate @publicaciones %>
+<% end %>
