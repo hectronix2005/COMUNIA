@@ -1,0 +1,4 @@
+<%# Insignia de confianza: solo nivel y su texto (nunca nombres de comunidades). %>
+<span class="red-nivel" data-nivel="<%= ficha.nivel %>" title="<%= ficha.certificacion_texto %>">
+  <i class="bi bi-shield<%= ficha.nivel >= 2 ? '-fill-check' : '' %>" aria-hidden="true"></i><%= ficha.nivel_texto %>
+</span>

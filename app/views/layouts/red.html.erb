@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title><%= content_for?(:title) ? "#{yield(:title)} · Red COMUNIA" : "Red COMUNIA · comunidades certificadas" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#1B2A4A">
+    <meta name="description" content="Encuentra trabajo, servicios y productos de personas avaladas por comunidades certificadas.">
+    <meta name="referrer" content="same-origin">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <style>
+      :root { --red-primario: #1B2A4A; --red-acento: #0d6efd; }
+      body.red { background: #f5f6f8; padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+      @media (min-width: 992px) { body.red { padding-bottom: 0; } }
+      .red-barra { background: var(--red-primario); }
+      .red-barra .navbar-brand, .red-barra .nav-link { color: #fff; }
+      .red-barra .nav-link:hover, .red-barra .nav-link:focus { color: rgba(255,255,255,.85); }
+      .red-saltar { position: absolute; left: -999px; top: 0; z-index: 2000; }
+      .red-saltar:focus { left: 1rem; top: .5rem; background: #fff; padding: .5rem 1rem; border-radius: .5rem; }
+      .red-inferior { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff;
+                      border-top: 1px solid #dee2e6; padding-bottom: env(safe-area-inset-bottom); }
+      .red-inferior a { flex: 1; text-align: center; padding: .45rem 0 .35rem; color: #495057; text-decoration: none;
+                        font-size: .72rem; min-height: 48px; }
+      .red-inferior a i { display: block; font-size: 1.25rem; line-height: 1.2; }
+      .red-inferior a[aria-current="page"] { color: var(--red-acento); font-weight: 600; }
+      .red-nivel { display: inline-flex; align-items: center; gap: .25rem; font-size: .8rem; border-radius: 1rem;
+                   padding: .1rem .55rem; background: #e9ecef; color: #212529; }
+      .red-nivel[data-nivel="2"] { background: #d1e7dd; color: #0a3622; }
+      .red-nivel[data-nivel="3"] { background: #b6dfc9; color: #0a3622; }
+      .red-nivel[data-nivel="4"] { background: #0f5132; color: #fff; }
+      .red-tarjeta { border: 0; border-radius: .9rem; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+      .red-chip { font-size: .75rem; border-radius: 1rem; padding: .1rem .55rem; background: #eef2ff; color: #3730a3; }
+      .red-chip.ofrezco { background: #e7f5ee; color: #0f5132; }
+      a.red-tarjeta-enlace { color: inherit; text-decoration: none; }
+      a.red-tarjeta-enlace:focus-visible, .red-inferior a:focus-visible { outline: 3px solid var(--red-acento); outline-offset: 2px; }
+    </style>
+  </head>
+
+  <body class="red d-flex flex-column min-vh-100">
+    <a class="red-saltar" href="#contenido">Saltar al contenido</a>
+    <nav class="navbar navbar-expand-lg red-barra" aria-label="Principal">
+      <div class="container" style="max-width: 960px;">
+        <%= link_to red_inicio_path, class: "navbar-brand fw-bold" do %>
+          <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Red COMUNIA
+        <% end %>
+        <div class="d-none d-lg-flex align-items-center gap-3">
+          <%= link_to "Buscar", red_buscar_path, class: "nav-link" %>
+          <%= link_to "Comunidades", red_comunidades_path, class: "nav-link" %>
+          <%= link_to "Cómo funciona", red_como_funciona_path, class: "nav-link" %>
+          <% if user_signed_in? %>
+            <%= link_to "Mensajes", red_conversaciones_path, class: "nav-link" %>
+            <%= link_to "Mi perfil", red_mi_perfil_path, class: "nav-link" %>
+            <% if moderador? %><%= link_to "Moderación", red_moderacion_path, class: "nav-link" %><% end %>
+            <%= link_to "Publicar", new_red_publicacion_path, class: "btn btn-light btn-sm fw-semibold" %>
+            <%= button_to "Salir", destroy_user_session_path, method: :delete, class: "btn btn-outline-light btn-sm", form: { data: { turbo: false } } %>
+          <% else %>
+            <%= link_to "Entrar", red_entrar_path, class: "nav-link" %>
+            <%= link_to "Crear cuenta", red_registro_path, class: "btn btn-light btn-sm fw-semibold" %>
+          <% end %>
+        </div>
+        <div class="d-lg-none">
+          <% if user_signed_in? %>
+            <%= link_to red_conversaciones_path, class: "nav-link d-inline px-2", aria: { label: "Mensajes" } do %><i class="bi bi-chat-dots fs-5" aria-hidden="true"></i><% end %>
+          <% else %>
+            <%= link_to "Entrar", red_entrar_path, class: "btn btn-outline-light btn-sm" %>
+          <% end %>
+        </div>
+      </div>
+    </nav>
+
+    <main id="contenido" class="flex-grow-1 py-3" tabindex="-1">
+      <div class="container" style="max-width: 960px;">
+        <% flash.each do |tipo, mensaje| %>
+          <div class="alert <%= tipo.to_s == 'alert' ? 'alert-warning' : 'alert-success' %> py-2" role="<%= tipo.to_s == 'alert' ? 'alert' : 'status' %>"><%= mensaje %></div>
+        <% end %>
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="py-4 text-center small text-muted d-none d-lg-block">
+      <%= link_to "Privacidad y datos", red_privacidad_path, class: "text-muted me-3" %>
+      <%= link_to "Cómo funciona la confianza", red_como_funciona_path, class: "text-muted" %>
+    </footer>
+    <div class="d-lg-none text-center small pb-3">
+      <%= link_to "Privacidad", red_privacidad_path, class: "text-muted me-3" %>
+      <%= link_to "Cómo funciona", red_como_funciona_path, class: "text-muted" %>
+    </div>
+
+    <nav class="red-inferior d-flex d-lg-none" aria-label="Navegación inferior">
+      <% [[red_inicio_path, "house", "Inicio"], [red_buscar_path, "search", "Buscar"],
+          [user_signed_in? ? new_red_publicacion_path : red_registro_path, "plus-circle", "Publicar"],
+          [red_comunidades_path, "people", "Comunidades"],
+          [user_signed_in? ? red_mi_perfil_path : red_entrar_path, "person-circle", user_signed_in? ? "Perfil" : "Entrar"]].each do |ruta, icono, rotulo| %>
+        <a href="<%= ruta %>" <%= 'aria-current="page"'.html_safe if current_page?(ruta) %>><i class="bi bi-<%= icono %>" aria-hidden="true"></i><%= rotulo %></a>
+      <% end %>
+    </nav>
+  </body>
+</html>

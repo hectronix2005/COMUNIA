@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :capture_tenant_slug_from_script_name
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
+  before_action :confinar_cuenta_red
   before_action :configure_permitted_parameters, if: :devise_controller?
   after_action  :track_last_seen
 
@@ -101,6 +102,16 @@ class ApplicationController < ActionController::Base
       session.delete(:tenant_slug)
       redirect_to "/", alert: "Tenant no encontrado."
     end
+  end
+
+  # Las cuentas que solo usan la red no tienen logia: el resto de COMUNIA (que cae a la primera logia
+  # cuando falta la del usuario) les queda cerrado. Solo /red, su sesión, notificaciones y la PWA.
+  CONTROLADORES_PARA_CUENTAS_RED = %w[notificaciones push_subscriptions pwa].freeze
+
+  def confinar_cuenta_red
+    return unless current_user&.solo_red?
+    return if devise_controller? || controller_path.start_with?("red/") || controller_path.in?(CONTROLADORES_PARA_CUENTAS_RED)
+    redirect_to red_inicio_path
   end
 
   def user_not_authorized

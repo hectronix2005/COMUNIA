@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -625,6 +625,201 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_130000) do
     t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
+  create_table "red_alcances", force: :cascade do |t|
+    t.string "objeto_type", null: false
+    t.bigint "objeto_id", null: false
+    t.bigint "comunidad_id", null: false
+    t.index ["comunidad_id"], name: "index_red_alcances_on_comunidad_id"
+    t.index ["objeto_type", "objeto_id", "comunidad_id"], name: "index_red_alcances_unicos", unique: true
+    t.index ["objeto_type", "objeto_id"], name: "index_red_alcances_on_objeto"
+  end
+
+  create_table "red_bloqueos", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "bloqueado_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bloqueado_id"], name: "index_red_bloqueos_on_bloqueado_id"
+    t.index ["user_id", "bloqueado_id"], name: "index_red_bloqueos_on_user_id_and_bloqueado_id", unique: true
+    t.index ["user_id"], name: "index_red_bloqueos_on_user_id"
+  end
+
+  create_table "red_busquedas_diarias", force: :cascade do |t|
+    t.date "fecha", null: false
+    t.integer "con_cuenta", default: 0, null: false
+    t.integer "sin_cuenta", default: 0, null: false
+    t.index ["fecha"], name: "index_red_busquedas_diarias_on_fecha", unique: true
+  end
+
+  create_table "red_comunidades", force: :cascade do |t|
+    t.string "token", null: false
+    t.string "nombre", null: false
+    t.string "tipo_vinculo", null: false
+    t.text "criterio", null: false
+    t.text "descripcion"
+    t.string "ciudad"
+    t.text "evidencia"
+    t.string "metodo_verificacion", default: "documento", null: false
+    t.string "dominio_correo"
+    t.string "estado", default: "solicitada", null: false
+    t.text "motivo_estado"
+    t.datetime "certificada_at"
+    t.bigint "solicitada_por_id"
+    t.bigint "revisada_por_id"
+    t.bigint "logia_id"
+    t.integer "miembros_count", default: 0, null: false
+    t.integer "tamano_publico", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["estado"], name: "index_red_comunidades_on_estado"
+    t.index ["logia_id"], name: "index_red_comunidades_on_logia_id", unique: true
+    t.index ["revisada_por_id"], name: "index_red_comunidades_on_revisada_por_id"
+    t.index ["solicitada_por_id"], name: "index_red_comunidades_on_solicitada_por_id"
+    t.index ["token"], name: "index_red_comunidades_on_token", unique: true
+  end
+
+  create_table "red_confianzas", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.decimal "puntaje", precision: 8, scale: 4, default: "0.0", null: false
+    t.integer "nivel", default: 0, null: false
+    t.integer "comunidades", default: 0, null: false
+    t.string "banda_miembros", default: "ninguno", null: false
+    t.datetime "calculada_at", null: false
+    t.index ["user_id"], name: "index_red_confianzas_on_user_id", unique: true
+  end
+
+  create_table "red_conversaciones", force: :cascade do |t|
+    t.string "token", null: false
+    t.bigint "publicacion_id"
+    t.bigint "iniciador_id"
+    t.bigint "destinatario_id", null: false
+    t.string "nombre_externo"
+    t.text "contacto_externo_cif"
+    t.string "estado", default: "abierta", null: false
+    t.datetime "ultimo_mensaje_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["destinatario_id"], name: "index_red_conversaciones_on_destinatario_id"
+    t.index ["iniciador_id", "destinatario_id", "publicacion_id"], name: "index_red_conversaciones_unicas", unique: true
+    t.index ["iniciador_id"], name: "index_red_conversaciones_on_iniciador_id"
+    t.index ["publicacion_id"], name: "index_red_conversaciones_on_publicacion_id"
+    t.index ["token"], name: "index_red_conversaciones_on_token", unique: true
+  end
+
+  create_table "red_membresias", force: :cascade do |t|
+    t.bigint "comunidad_id", null: false
+    t.bigint "user_id", null: false
+    t.string "estado", default: "solicitada", null: false
+    t.string "rol", default: "miembro", null: false
+    t.text "evidencia"
+    t.bigint "verificada_por_id"
+    t.datetime "verificada_at"
+    t.date "vence_el"
+    t.text "motivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comunidad_id", "estado"], name: "index_red_membresias_on_comunidad_id_and_estado"
+    t.index ["comunidad_id", "user_id"], name: "index_red_membresias_on_comunidad_id_and_user_id", unique: true
+    t.index ["comunidad_id"], name: "index_red_membresias_on_comunidad_id"
+    t.index ["user_id", "estado"], name: "index_red_membresias_on_user_id_and_estado"
+    t.index ["user_id"], name: "index_red_membresias_on_user_id"
+    t.index ["verificada_por_id"], name: "index_red_membresias_on_verificada_por_id"
+  end
+
+  create_table "red_mensajes", force: :cascade do |t|
+    t.bigint "conversacion_id", null: false
+    t.bigint "user_id"
+    t.string "tipo", default: "texto", null: false
+    t.text "cuerpo", null: false
+    t.datetime "leido_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversacion_id"], name: "index_red_mensajes_on_conversacion_id"
+    t.index ["user_id"], name: "index_red_mensajes_on_user_id"
+  end
+
+  create_table "red_perfiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.string "nombre_publico", null: false
+    t.string "titular"
+    t.text "bio"
+    t.string "ciudad"
+    t.text "habilidades"
+    t.string "alcance", default: "mis_comunidades", null: false
+    t.boolean "visible_publico", default: false, null: false
+    t.string "contacto_telefono"
+    t.string "contacto_correo"
+    t.datetime "acepto_tratamiento_at", null: false
+    t.string "politica_version", null: false
+    t.datetime "cuarentena_hasta", null: false
+    t.integer "sanciones", default: 0, null: false
+    t.datetime "suspendido_at"
+    t.datetime "onboarding_completado_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_red_perfiles_on_token", unique: true
+    t.index ["user_id"], name: "index_red_perfiles_on_user_id", unique: true
+  end
+
+  create_table "red_publicaciones", force: :cascade do |t|
+    t.string "token", null: false
+    t.bigint "user_id", null: false
+    t.string "intencion", null: false
+    t.string "categoria", null: false
+    t.string "titulo", null: false
+    t.text "descripcion", null: false
+    t.string "ciudad"
+    t.string "modalidad", default: "presencial", null: false
+    t.string "precio_texto"
+    t.string "estado", default: "activa", null: false
+    t.string "motivo_revision"
+    t.string "alcance", default: "mis_comunidades", null: false
+    t.datetime "publica_desde", null: false
+    t.date "vence_el", null: false
+    t.integer "reportes_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["estado", "alcance", "created_at"], name: "index_red_publicaciones_on_estado_and_alcance_and_created_at"
+    t.index ["token"], name: "index_red_publicaciones_on_token", unique: true
+    t.index ["user_id", "estado"], name: "index_red_publicaciones_on_user_id_and_estado"
+    t.index ["user_id"], name: "index_red_publicaciones_on_user_id"
+  end
+
+  create_table "red_reportes", force: :cascade do |t|
+    t.string "objeto_type", null: false
+    t.bigint "objeto_id", null: false
+    t.bigint "reportante_id"
+    t.string "huella", null: false
+    t.string "motivo", null: false
+    t.text "detalle"
+    t.string "estado", default: "pendiente", null: false
+    t.bigint "resuelto_por_id"
+    t.datetime "resuelto_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["estado"], name: "index_red_reportes_on_estado"
+    t.index ["objeto_type", "objeto_id", "huella"], name: "index_red_reportes_un_voto", unique: true
+    t.index ["objeto_type", "objeto_id"], name: "index_red_reportes_on_objeto"
+    t.index ["reportante_id"], name: "index_red_reportes_on_reportante_id"
+    t.index ["resuelto_por_id"], name: "index_red_reportes_on_resuelto_por_id"
+  end
+
+  create_table "red_resenas", force: :cascade do |t|
+    t.bigint "conversacion_id", null: false
+    t.bigint "autor_id", null: false
+    t.bigint "sujeto_id", null: false
+    t.integer "puntaje", null: false
+    t.text "comentario"
+    t.text "respuesta"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["autor_id"], name: "index_red_resenas_on_autor_id"
+    t.index ["conversacion_id", "autor_id"], name: "index_red_resenas_on_conversacion_id_and_autor_id", unique: true
+    t.index ["conversacion_id"], name: "index_red_resenas_on_conversacion_id"
+    t.index ["sujeto_id"], name: "index_red_resenas_on_sujeto_id"
+  end
+
   create_table "rol_permisos", force: :cascade do |t|
     t.bigint "rol_id", null: false
     t.bigint "permiso_id", null: false
@@ -676,6 +871,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_130000) do
     t.string "unlock_token"
     t.datetime "locked_at"
     t.datetime "last_seen_at"
+    t.boolean "solo_red", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["logia_id"], name: "index_users_on_logia_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -735,6 +931,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_130000) do
   add_foreign_key "publicaciones", "logias"
   add_foreign_key "publicaciones", "users"
   add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "red_alcances", "red_comunidades", column: "comunidad_id"
+  add_foreign_key "red_bloqueos", "users"
+  add_foreign_key "red_bloqueos", "users", column: "bloqueado_id"
+  add_foreign_key "red_comunidades", "logias"
+  add_foreign_key "red_comunidades", "users", column: "revisada_por_id"
+  add_foreign_key "red_comunidades", "users", column: "solicitada_por_id"
+  add_foreign_key "red_confianzas", "users"
+  add_foreign_key "red_conversaciones", "red_publicaciones", column: "publicacion_id"
+  add_foreign_key "red_conversaciones", "users", column: "destinatario_id"
+  add_foreign_key "red_conversaciones", "users", column: "iniciador_id"
+  add_foreign_key "red_membresias", "red_comunidades", column: "comunidad_id"
+  add_foreign_key "red_membresias", "users"
+  add_foreign_key "red_membresias", "users", column: "verificada_por_id"
+  add_foreign_key "red_mensajes", "red_conversaciones", column: "conversacion_id"
+  add_foreign_key "red_mensajes", "users"
+  add_foreign_key "red_perfiles", "users"
+  add_foreign_key "red_publicaciones", "users"
+  add_foreign_key "red_reportes", "users", column: "reportante_id"
+  add_foreign_key "red_reportes", "users", column: "resuelto_por_id"
+  add_foreign_key "red_resenas", "red_conversaciones", column: "conversacion_id"
+  add_foreign_key "red_resenas", "users", column: "autor_id"
+  add_foreign_key "red_resenas", "users", column: "sujeto_id"
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"
   add_foreign_key "roles", "logias"

@@ -70,6 +70,75 @@ Rails.application.routes.draw do
     post "recompensas/:id/vencer",     action: :vencer_recompensa, as: :denuncias_admin_vencer
   end
 
+  # ── Red de comunidades certificadas (app/models/red.rb) ─────────
+  # Buscar, ver lo público y escribir sin cuenta no exige sesión; lo demás, sí.
+  scope "red", module: :red, as: :red do
+    get  "/",                 to: "inicio#index",     as: :inicio
+    get  "buscar",            to: "busqueda#index",   as: :buscar
+    get  "como-funciona",     to: "paginas#como_funciona", as: :como_funciona
+    get  "privacidad",        to: "paginas#privacidad", as: :privacidad
+    get  "p/:token",          to: "perfiles#show",    as: :perfil
+    get  "p/:token/hoja-de-vida", to: "perfiles#hoja_de_vida", as: :hoja_de_vida
+    get  "registro",          to: "registros#new",    as: :registro
+    post "registro",          to: "registros#create"
+    post "reportar",          to: "reportes#create",  as: :reportar
+
+    resources :publicaciones, only: %i[show new create edit update], param: :token do
+      member do
+        get  :contactar, to: "contactos#new"
+        post :contactar, to: "contactos#create"
+        post :renovar
+        post :estado, action: :cambiar_estado
+      end
+    end
+    get "mis-publicaciones", to: "publicaciones#mias", as: :mis_publicaciones
+
+    resources :comunidades, only: %i[index show new create], param: :token do
+      member do
+        post   :unirse,   to: "membresias#create"
+        delete :salir,    to: "membresias#destroy"
+        get    :miembros, to: "membresias#index"
+        get    :gestion,  to: "gestion#show"
+        patch  :gestion,  to: "gestion#update"
+        get    "gestion/miembros.csv", to: "gestion#exportar", as: :exportar, format: false
+        post   "gestion/:perfil/:accion", to: "gestion#decidir", as: :decidir,
+               constraints: { accion: /aprobar|rechazar|revocar|renovar|hacer_verificador|hacer_miembro/ }
+      end
+    end
+    get "mis-comunidades", to: "membresias#mias", as: :mis_comunidades
+
+    get    "mi-perfil",       to: "mi_perfil#edit",     as: :mi_perfil
+    patch  "mi-perfil",       to: "mi_perfil#update"
+    get    "bienvenida",      to: "mi_perfil#bienvenida", as: :bienvenida
+    post   "bienvenida",      to: "mi_perfil#crear"
+    get    "mi-perfil/datos", to: "mi_perfil#exportar", as: :mis_datos, defaults: { format: :json }
+    delete "mi-perfil",       to: "mi_perfil#destroy"
+
+    resources :conversaciones, only: %i[index show], param: :token do
+      member do
+        post :mensajes,  to: "conversaciones#escribir"
+        post :compartir, to: "conversaciones#compartir_contacto"
+        post :bloquear
+        post :resena
+      end
+    end
+    post "p/:token/escribir", to: "conversaciones#create", as: :escribir
+
+    scope "moderacion", controller: :moderacion, as: :moderacion do
+      get  "/",                          action: :index
+      get  "metricas",                   action: :metricas,   as: :metricas
+      post "comunidades/:token/:accion", action: :comunidad,  as: :comunidad,
+           constraints: { accion: /certificar|rechazar|suspender|revocar/ }
+      post "reportes/:id/:accion",       action: :reporte,    as: :reporte, constraints: { accion: /descartar|sancionar/ }
+      post "publicaciones/:token/aprobar", action: :aprobar,  as: :aprobar
+      post "logias/:id/certificar",      action: :certificar_logia, as: :certificar_logia
+    end
+  end
+  devise_scope :user do
+    get  "red/entrar", to: "red/sesiones#new",    as: :red_entrar
+    post "red/entrar", to: "red/sesiones#create"
+  end
+
   # ── Plataforma COMUNIA (sin subdominio, super admin) ──────────
   resources :users, only: [:edit, :update]
 

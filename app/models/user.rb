@@ -18,8 +18,16 @@ class User < ApplicationRecord
   has_many :negocio_favoritos, dependent: :destroy
   has_many :negocio_anuncios_favoritos, through: :negocio_favoritos, source: :negocio_anuncio
 
+  # Red de comunidades certificadas (app/models/red.rb)
+  has_one :red_perfil, class_name: "Red::Perfil", dependent: :destroy
+  has_one :red_confianza, class_name: "Red::Confianza", dependent: :delete
+  has_many :red_membresias, class_name: "Red::Membresia", dependent: :destroy
+  has_many :red_publicaciones, class_name: "Red::Publicacion", dependent: :destroy
+
   validates :nombre, :apellido, presence: true
-  validates :logia, presence: true, unless: :super_admin?
+  validates :logia, presence: true, unless: -> { super_admin? || solo_red? }
+  # Las cuentas de la red se registran solas: contraseña más larga que las que crea un admin.
+  validates :password, length: { minimum: 10 }, if: -> { solo_red? && password.present? }
   validates :username, presence: true, uniqueness: { case_sensitive: false },
                        format: { with: /\A[a-z0-9]+\z/, message: "solo letras minúsculas y números" },
                        if: -> { username.present? }
@@ -29,6 +37,8 @@ class User < ApplicationRecord
   def self.find_for_database_authentication(warden_conditions)
     login = warden_conditions[:email].to_s.strip
     return nil if login.blank?
+    # Las cuentas de la red entran con su correo; las de las logias, con su usuario.
+    return find_by(email: login.downcase, solo_red: true) if login.include?("@")
     find_by("LOWER(username) = ?", login.downcase)
   end
 

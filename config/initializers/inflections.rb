@@ -31,4 +31,10 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "publicacion", "publicaciones"
   inflect.irregular "publicacion_comentario", "publicacion_comentarios"
   inflect.irregular "publicacion_like", "publicacion_likes"
+  # Red de comunidades certificadas
+  inflect.irregular "comunidad", "comunidades"
+  inflect.irregular "membresia", "membresias"
+  inflect.irregular "perfil", "perfiles"
+  inflect.irregular "conversacion", "conversaciones"
+  inflect.irregular "busqueda_diaria", "busquedas_diarias"
 end

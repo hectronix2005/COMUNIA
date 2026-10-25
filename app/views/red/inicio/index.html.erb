@@ -1,0 +1,18 @@
+<% content_for :title, "Tablón" %>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h5 mb-0">Tablón</h1>
+  <%= link_to new_red_publicacion_path, class: "btn btn-primary btn-sm" do %><i class="bi bi-plus-lg" aria-hidden="true"></i> Publicar<% end %>
+</div>
+<% if mis_comunidad_ids.empty? %>
+  <div class="alert alert-info small">
+    Aún no estás verificado en ninguna comunidad: solo ves lo público.
+    <%= link_to "Únete a tu comunidad", red_comunidades_path, class: "alert-link" %> para ver lo de tu gente y poder publicar.
+  </div>
+<% end %>
+<% if @publicaciones.empty? %>
+  <p class="text-muted">Todavía no hay publicaciones para ti.</p>
+<% else %>
+  <% @publicaciones.each do |p| %>
+    <%= render "red/shared/publicacion", publicacion: p, ficha: @fichas[p.user_id] %>
+  <% end %>
+<% end %>

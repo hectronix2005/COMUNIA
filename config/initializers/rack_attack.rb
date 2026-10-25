@@ -19,14 +19,14 @@ class Rack::Attack
 
   # 1) POST /login (también /t/:slug/login). Máx 8 intentos / 5 min por IP.
   throttle("logins/ip", limit: 8, period: 5.minutes) do |req|
-    if req.post? && req.path =~ %r{(?:^|/)(login|users/sign_in)\z}
+    if req.post? && req.path =~ %r{(?:^|/)(login|users/sign_in|red/entrar)\z}
       req.ip
     end
   end
 
   # 2) POST /login por email — máx 6 intentos por email / 5 min.
   throttle("logins/email", limit: 6, period: 5.minutes) do |req|
-    if req.post? && req.path =~ %r{(?:^|/)(login|users/sign_in)\z}
+    if req.post? && req.path =~ %r{(?:^|/)(login|users/sign_in|red/entrar)\z}
       email = req.params.dig("user", "email").to_s.downcase.strip
       email.presence
     end

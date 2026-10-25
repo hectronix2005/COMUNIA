@@ -1,0 +1,28 @@
+<% content_for :title, "Entrar" %>
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card red-tarjeta"><div class="card-body p-4">
+      <h1 class="h4 mb-3">Entrar a la red</h1>
+      <%= form_for(resource, as: resource_name, url: red_entrar_path) do |f| %>
+        <div class="mb-3">
+          <%= f.label :email, "Correo (o usuario de tu logia)", class: "form-label" %>
+          <%= f.text_field :email, autofocus: true, autocapitalize: "none", autocomplete: "username", required: true, class: "form-control", maxlength: 120 %>
+        </div>
+        <div class="mb-3">
+          <%= f.label :password, "Contraseña", class: "form-label" %>
+          <%= f.password_field :password, autocomplete: "current-password", required: true, class: "form-control", maxlength: 128 %>
+        </div>
+        <div class="form-check mb-3">
+          <%= f.check_box :remember_me, class: "form-check-input" %>
+          <%= f.label :remember_me, "Recordarme en este dispositivo", class: "form-check-label" %>
+        </div>
+        <%= f.submit "Entrar", class: "btn btn-primary w-100" %>
+      <% end %>
+      <p class="small mt-3 mb-0">
+        ¿No tienes cuenta? <%= link_to "Créala aquí", red_registro_path %> ·
+        <%= link_to "Olvidé mi contraseña", new_user_password_path %>
+      </p>
+      <p class="small text-muted mt-2 mb-0">¿Eres miembro de una logia de COMUNIA? Entra con tu usuario y contraseña de siempre.</p>
+    </div></div>
+  </div>
+</div>

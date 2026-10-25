@@ -1,0 +1,28 @@
+<section class="py-4">
+  <h1 class="fw-bold h3">Gente de confianza, avalada por comunidades reales</h1>
+  <p class="lead">Busca trabajo, servicios o productos de personas certificadas por su club, universidad, barrio,
+    empresa o logia. Sin crear cuenta.</p>
+  <%= form_with url: red_buscar_path, method: :get, class: "d-flex gap-2 my-3", role: "search" do %>
+    <label for="q-portada" class="visually-hidden">¿Qué buscas?</label>
+    <input id="q-portada" name="q" type="search" class="form-control form-control-lg" placeholder="Ej.: electricista, clases de inglés, contadora…" maxlength="100">
+    <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Buscar</span></button>
+  <% end %>
+  <div class="row g-3 mt-2">
+    <div class="col-md-4"><div class="card red-tarjeta h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-patch-check text-success me-1" aria-hidden="true"></i>Comunidades certificadas</h2>
+      <p class="small mb-0">Cada comunidad demuestra qué tienen en común sus miembros, y sus verificadores avalan a cada persona.</p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card red-tarjeta h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-shield-check text-success me-1" aria-hidden="true"></i>Confianza que se gana</h2>
+      <p class="small mb-0">Más comunidades, y más grandes y antiguas, dan más confianza. Las infladas o en círculo no cuentan.</p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card red-tarjeta h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-eye-slash text-success me-1" aria-hidden="true"></i>Tu privacidad, primero</h2>
+      <p class="small mb-0">Ninguna comunidad sabe a qué otras perteneces. Hacia fuera solo se ve «certificado en N comunidades».</p>
+    </div></div></div>
+  </div>
+  <div class="d-flex gap-2 mt-4">
+    <%= link_to "Crear mi cuenta", red_registro_path, class: "btn btn-primary" %>
+    <%= link_to "Cómo funciona", red_como_funciona_path, class: "btn btn-outline-secondary" %>
+  </div>
+</section>

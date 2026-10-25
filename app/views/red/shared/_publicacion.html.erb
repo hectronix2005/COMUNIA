@@ -1,0 +1,20 @@
+<%# Tarjeta de una publicación en listas. `ficha` es la del autor (Red::Ficha). %>
+<article class="card red-tarjeta mb-2">
+  <a class="red-tarjeta-enlace card-body d-block" href="<%= red_publicacion_path(publicacion) %>">
+    <div class="d-flex flex-wrap gap-1 align-items-center mb-1">
+      <span class="red-chip <%= publicacion.intencion %>"><%= publicacion.intencion_texto %></span>
+      <span class="small text-muted"><%= publicacion.categoria_texto %></span>
+      <% if publicacion.ciudad.present? %><span class="small text-muted">· <%= publicacion.ciudad %></span><% end %>
+      <span class="small text-muted">· <%= publicacion.modalidad_texto %></span>
+    </div>
+    <h2 class="h6 mb-1"><%= publicacion.titulo %></h2>
+    <p class="small text-muted mb-2"><%= truncate(publicacion.descripcion, length: 140) %></p>
+    <% if ficha %>
+      <div class="d-flex align-items-center gap-2 small">
+        <span class="fw-semibold"><%= ficha.nombre_publico %></span>
+        <%= render "red/shared/nivel", ficha: ficha %>
+        <% if ficha.resenas.positive? %><span class="text-muted"><i class="bi bi-star-fill text-warning" aria-hidden="true"></i> <%= ficha.promedio %> (<%= ficha.resenas %>)</span><% end %>
+      </div>
+    <% end %>
+  </a>
+</article>
