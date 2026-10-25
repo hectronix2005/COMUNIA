@@ -68,7 +68,7 @@ class BibliotecaLibrosController < ApplicationController
   private
 
   def set_libro
-    @libro = BibliotecaLibro.find(params[:id])
+    @libro = BibliotecaLibro.de_logia(current_logia.id).find(params[:id])
   end
 
   def verificar_gestion

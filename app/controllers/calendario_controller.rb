@@ -4,6 +4,7 @@ class CalendarioController < ApplicationController
   before_action :set_evento,      only: [:show, :edit, :update, :destroy]
   before_action :verificar_cargo, only: [:new, :create, :edit, :update, :destroy,
                                          :solicitar_sync, :responder_sync]
+  before_action :verificar_gestion_evento, only: [:edit, :update, :destroy]
 
   # ── Index ─────────────────────────────────────────────────────
   def index
@@ -137,7 +138,8 @@ class CalendarioController < ApplicationController
   end
 
   def solicitar_sync
-    destino = Logia.find_by(id: params[:logia_destino_id])
+    # Solo con logias de la misma organización: sincronizar no puede revelar otras.
+    destino = Logia.where(id: logia_ids_de_la_organizacion).find_by(id: params[:logia_destino_id])
     return redirect_to calendario_sincronizaciones_path, alert: "Logia no encontrada." unless destino
 
     sync = CalendarioSincronizacion.new(
@@ -166,8 +168,15 @@ class CalendarioController < ApplicationController
 
   private
 
+  # Las sincronizaciones solo se hacen dentro de la organización, así que lo que se ve es de ella.
   def set_evento
-    @evento = CalendarioEvento.find(params[:id])
+    @evento = CalendarioEvento.de_logias(logia_ids_de_la_organizacion).find(params[:id])
+  end
+
+  # Editar o borrar: quien lo creó, o quien gestiona la logia del evento.
+  def verificar_gestion_evento
+    return if @evento.user_id == current_user.id || logia_ids_gestionables.include?(@evento.logia_id)
+    redirect_to calendario_path(@evento), alert: "Solo puede cambiarlo quien lo creó o quien gestiona su logia."
   end
 
   def verificar_cargo

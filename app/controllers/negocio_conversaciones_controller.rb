@@ -16,7 +16,7 @@ class NegocioConversacionesController < ApplicationController
   end
 
   def create
-    anuncio = NegocioAnuncio.find_by_slug_or_id(params[:negocio_id] || params[:id])
+    anuncio = NegocioAnuncio.where(logia_id: logia_ids_visibles).find_by_slug_or_id(params[:negocio_id] || params[:id])
     if anuncio.user_id == current_user.id
       redirect_to negocio_path(anuncio), alert: "No puedes iniciar conversación en tu propio anuncio."
       return

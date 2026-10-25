@@ -22,7 +22,7 @@ class DirectorioController < ApplicationController
   end
 
   def show
-    @miembro = Miembro.includes(:user, :logia, :cargos, :miembro_cargos).find(params[:id])
+    @miembro = Miembro.where(logia_id: logia_ids_visibles).includes(:user, :logia, :cargos, :miembro_cargos).find(params[:id])
   end
 
   def edit
@@ -46,13 +46,5 @@ class DirectorioController < ApplicationController
 
   def directorio_params
     params.require(:miembro).permit(:profesion, :empresa, :telefono, :habilidades, :fecha_iniciacion, :bio)
-  end
-
-  def logia_ids_visibles
-    ids = [current_logia.id]
-    if current_logia.tenant_id.nil?
-      ids += current_logia.logias.pluck(:id)
-    end
-    ids
   end
 end

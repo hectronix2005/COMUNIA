@@ -107,26 +107,12 @@ class NegociosController < ApplicationController
   private
 
   def set_anuncio
-    @anuncio = NegocioAnuncio.find_by_slug_or_id(params[:id])
+    @anuncio = NegocioAnuncio.where(logia_id: logia_ids_visibles).find_by_slug_or_id(params[:id])
   end
 
   def verificar_propietario
-    return if current_user.rol_ref&.es_super_admin?
-    return if current_user.rol_ref&.codigo == "admin_logia"
-    return if @anuncio.user_id == current_user.id
+    return if @anuncio.user_id == current_user.id || modera?(@anuncio)
     redirect_to negocios_path, alert: "Sin permiso."
-  end
-
-  def logia_ids_visibles
-    ids = [current_logia.id]
-    if current_logia.tenant_id.nil?
-      ids += current_logia.logias.pluck(:id)
-    else
-      ids += [current_logia.tenant_id]
-      root = Logia.find(current_logia.tenant_id)
-      ids  += root.logias.pluck(:id)
-    end
-    ids.uniq
   end
 
   def anuncio_params

@@ -50,11 +50,11 @@
                 <% end %>
               </div>
             </div>
-            <% if pub.user_id == current_user.id || current_user.admin_logia? || current_user.super_admin? %>
+            <% if pub.user_id == current_user.id || modera?(pub) %>
               <div class="dropdown">
                 <i class="bi bi-three-dots text-muted" data-bs-toggle="dropdown" style="cursor:pointer;"></i>
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <% if current_user.admin_logia? || current_user.super_admin? %>
+                  <% if modera?(pub) %>
                     <li><%= button_to pub.fijada? ? "Desfijar" : "Fijar", toggle_pin_publicacion_path(pub), method: :post, class: "dropdown-item" %></li>
                   <% end %>
                   <li><%= button_to "Eliminar", publicacion_path(pub), method: :delete, class: "dropdown-item text-danger", form: { data: { turbo_confirm: "¿Eliminar publicación?" } } %></li>

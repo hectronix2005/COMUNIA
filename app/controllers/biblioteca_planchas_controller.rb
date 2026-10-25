@@ -56,7 +56,7 @@ class BibliotecaPlanchasController < ApplicationController
   private
 
   def set_plancha
-    @plancha = BibliotecaPlancha.find(params[:id])
+    @plancha = BibliotecaPlancha.de_logia(current_logia.id).find(params[:id])
   end
 
   def verificar_gestion

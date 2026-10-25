@@ -136,7 +136,7 @@
           <%# Acciones %>
           <div class="d-grid gap-2">
             <% es_propietario = @anuncio.user_id == current_user.id %>
-            <% es_admin = current_user.rol_ref&.es_super_admin? || current_user.rol_ref&.codigo == "admin_logia" %>
+            <% es_admin = modera?(@anuncio) %>
 
             <% if !es_propietario %>
               <%= form_with url: negocio_iniciar_conversacion_path(@anuncio), local: true do %>

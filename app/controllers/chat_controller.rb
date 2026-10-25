@@ -110,13 +110,13 @@ class ChatController < ApplicationController
   end
 
   def marcar_leido
-    mensaje = ChatMensaje.find(params[:id])
+    mensaje = mensaje_visible
     mensaje.marcar_leido!(current_user)
     head :ok
   end
 
   def reaccionar
-    mensaje = ChatMensaje.find(params[:id])
+    mensaje = mensaje_visible
     emoji = params[:emoji].to_s
     return head(:unprocessable_entity) unless ChatMensaje::REACCIONES_PERMITIDAS.include?(emoji)
     mensaje.toggle_reaccion!(current_user, emoji)
@@ -142,8 +142,8 @@ class ChatController < ApplicationController
   end
 
   def typing
-    stream = params[:stream]
-    return head(:forbidden) unless stream.present?
+    stream = params[:stream].to_s
+    return head(:forbidden) unless stream_permitido?(stream)
     Turbo::StreamsChannel.broadcast_append_to(
       stream,
       target: "chat-typing",
@@ -163,17 +163,25 @@ class ChatController < ApplicationController
   def tenant_members
     User
       .joins(:miembro)
-      .where(miembros: { logia_id: logia_ids_del_tenant })
+      .where(miembros: { logia_id: logia_ids_visibles })
       .where.not(id: current_user.id)
       .includes(miembro: :logia)
       .order(:apellido, :nombre)
   end
 
-  def logia_ids_del_tenant
-    logia = current_logia
-    ids   = [logia.id]
-    ids  += logia.logias.pluck(:id) if logia.tenant_id.nil?
-    ids
+  # Los mensajes que el usuario puede ver: sus privados y los canales de su organización.
+  def mensaje_visible
+    ChatMensaje.where(canal: "dm").where("user_id = :u OR destinatario_id = :u", u: current_user.id)
+               .or(ChatMensaje.where(canal: %w[logia tenant], logia_id: logia_ids_visibles))
+               .find(params[:id])
+  end
+
+  # «Está escribiendo» solo a los canales que el usuario tiene abiertos en index.
+  def stream_permitido?(stream)
+    return true if stream.in?(["chat_logia_#{current_logia.id}", "chat_tenant_#{tenant_root_id}"])
+    ids = stream.match(/\Achat_dm_(\d+)_(\d+)\z/)&.captures&.map(&:to_i) or return false
+    otro = ids.include?(current_user.id) && (ids - [current_user.id]).first
+    otro.present? && tenant_members.exists?(id: otro)
   end
 
   def dm_recientes_users

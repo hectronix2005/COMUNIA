@@ -1,6 +1,6 @@
 class NegocioReportesController < ApplicationController
   def create
-    anuncio = NegocioAnuncio.find_by_slug_or_id(params[:negocio_id])
+    anuncio = NegocioAnuncio.where(logia_id: logia_ids_visibles).find_by_slug_or_id(params[:negocio_id])
     reporte = anuncio.reportes.new(
       user:        current_user,
       motivo:      params.dig(:negocio_reporte, :motivo),

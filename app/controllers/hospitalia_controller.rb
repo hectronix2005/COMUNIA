@@ -35,7 +35,7 @@ class HospitaliaController < ApplicationController
   end
 
   def destroy_recaudo
-    @recaudo = HospitaliaRecaudo.find(params[:id])
+    @recaudo = HospitaliaRecaudo.de_logia(current_logia.id).find(params[:id])
     @recaudo.destroy
     redirect_to hospitalia_recaudos_path, notice: "Recaudo eliminado."
   end
@@ -62,7 +62,7 @@ class HospitaliaController < ApplicationController
   end
 
   def destroy_gasto
-    @gasto = HospitaliaGasto.find(params[:id])
+    @gasto = HospitaliaGasto.de_logia(current_logia.id).find(params[:id])
     @gasto.destroy
     redirect_to hospitalia_gastos_path, notice: "Gasto eliminado."
   end
@@ -98,7 +98,7 @@ class HospitaliaController < ApplicationController
   end
 
   def enviar_felicitacion
-    miembro = Miembro.find(params[:miembro_id])
+    miembro = Miembro.where(logia_id: logia_ids_visibles).find(params[:miembro_id])
     texto   = params[:texto].presence || "Querido H∴ #{miembro.user.nombre_completo}, en nombre de la Logia te enviamos nuestros más sinceros deseos en este día tan especial. ¡Feliz cumpleaños!"
 
     ChatMensaje.create!(
@@ -114,13 +114,13 @@ class HospitaliaController < ApplicationController
 
   # ── Familiares ────────────────────────────────────────────────
   def familiares
-    @miembro  = Miembro.find(params[:miembro_id])
+    @miembro  = miembro_con_familia
     @familiares = @miembro.familiares.order(:nombre_completo)
     @familiar   = MiembroFamiliar.new
   end
 
   def create_familiar
-    @miembro = Miembro.find(params[:miembro_id])
+    @miembro = miembro_con_familia
     @familiar = @miembro.familiares.build(familiar_params)
 
     if @familiar.save
@@ -132,7 +132,7 @@ class HospitaliaController < ApplicationController
   end
 
   def destroy_familiar
-    @familiar = MiembroFamiliar.find(params[:id])
+    @familiar = MiembroFamiliar.where(miembro: miembros_con_familia).find(params[:id])
     miembro_id = @familiar.miembro_id
     @familiar.destroy
     redirect_to hospitalia_familiares_path(miembro_id: miembro_id), notice: "Familiar eliminado."
@@ -146,17 +146,15 @@ class HospitaliaController < ApplicationController
     current_user.tiene_cargo?("Hospitalario")
   end
 
+  # La familia de un miembro la ve y la cambia él mismo, y el hospitalario de su logia.
+  def miembros_con_familia
+    propio = Miembro.where(user_id: current_user.id)
+    return propio unless current_user.tiene_cargo?("Hospitalario")
+    propio.or(Miembro.where(logia_id: logia_ids_gestionables))
+  end
 
-  def logia_ids_visibles
-    ids = [current_logia.id]
-    if current_logia.tenant_id.nil?
-      ids += current_logia.logias.pluck(:id)
-    else
-      ids += [current_logia.tenant_id]
-      root = Logia.find_by(id: current_logia.tenant_id)
-      ids += root.logias.pluck(:id) if root
-    end
-    ids.uniq
+  def miembro_con_familia
+    miembros_con_familia.find(params[:miembro_id])
   end
 
   def recaudo_params

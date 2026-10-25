@@ -1,13 +1,13 @@
 class EncuestasController < ApplicationController
   def index
-    @encuestas = Encuesta.where(logia_id: logia_ids_visibles)
+    @encuestas = encuestas
                          .includes(:user, :logia, :encuesta_opciones)
                          .order(created_at: :desc)
                          .page(params[:page]).per(15)
   end
 
   def show
-    @encuesta = Encuesta.includes(encuesta_opciones: :encuesta_votos).find(params[:id])
+    @encuesta = encuestas.includes(encuesta_opciones: :encuesta_votos).find(params[:id])
     @total_votos = @encuesta.total_votos
     @ya_voto = @encuesta.usuario_voto?(current_user)
   end
@@ -30,7 +30,7 @@ class EncuestasController < ApplicationController
   end
 
   def votar
-    @encuesta = Encuesta.find(params[:id])
+    @encuesta = encuestas.find(params[:id])
     return redirect_to encuesta_path(@encuesta), alert: "Encuesta cerrada." if @encuesta.cerrada_o_expirada?
     return redirect_to encuesta_path(@encuesta), alert: "Ya votaste." if @encuesta.usuario_voto?(current_user)
 
@@ -46,8 +46,8 @@ class EncuestasController < ApplicationController
   end
 
   def cerrar
-    @encuesta = Encuesta.find(params[:id])
-    return head(:forbidden) unless @encuesta.user_id == current_user.id || current_user.admin_logia? || current_user.super_admin?
+    @encuesta = encuestas.find(params[:id])
+    return head(:forbidden) unless @encuesta.user_id == current_user.id || modera?(@encuesta)
     @encuesta.cerrada!
     redirect_to encuesta_path(@encuesta), notice: "Encuesta cerrada."
   end
@@ -61,9 +61,7 @@ class EncuestasController < ApplicationController
     )
   end
 
-  def logia_ids_visibles
-    ids = [current_logia.id]
-    ids += current_logia.logias.pluck(:id) if current_logia.tenant_id.nil?
-    ids
+  def encuestas
+    Encuesta.where(logia_id: logia_ids_visibles)
   end
 end

@@ -23,14 +23,14 @@ class PublicacionesController < ApplicationController
   end
 
   def destroy
-    @pub = Publicacion.find(params[:id])
-    return head(:forbidden) unless @pub.user_id == current_user.id || current_user.admin_logia? || current_user.super_admin?
+    @pub = publicacion
+    return head(:forbidden) unless @pub.user_id == current_user.id || modera?(@pub)
     @pub.destroy
     redirect_to publicaciones_path, notice: "Publicación eliminada."
   end
 
   def toggle_like
-    @pub = Publicacion.find(params[:id])
+    @pub = publicacion
     like = @pub.publicacion_likes.find_by(user: current_user)
     if like
       like.destroy
@@ -41,14 +41,14 @@ class PublicacionesController < ApplicationController
   end
 
   def comentar
-    @pub = Publicacion.find(params[:id])
+    @pub = publicacion
     @pub.publicacion_comentarios.create!(user: current_user, contenido: params[:contenido])
     redirect_back fallback_location: publicaciones_path
   end
 
   def toggle_pin
-    @pub = Publicacion.find(params[:id])
-    return head(:forbidden) unless current_user.admin_logia? || current_user.super_admin?
+    @pub = publicacion
+    return head(:forbidden) unless modera?(@pub)
     @pub.update!(fijada: !@pub.fijada)
     redirect_back fallback_location: publicaciones_path
   end
@@ -59,9 +59,7 @@ class PublicacionesController < ApplicationController
     params.require(:publicacion).permit(:contenido, imagenes: [])
   end
 
-  def logia_ids_visibles
-    ids = [current_logia.id]
-    ids += current_logia.logias.pluck(:id) if current_logia.tenant_id.nil?
-    ids
+  def publicacion
+    Publicacion.de_logias(logia_ids_visibles).find(params[:id])
   end
 end
