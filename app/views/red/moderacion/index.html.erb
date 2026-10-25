@@ -12,6 +12,7 @@
 <% end %>
 
 <h2 class="h6 mt-3">Comunidades por certificar (<%= @comunidades.size %>)</h2>
+<% if @comunidades.empty? %><p class="small text-muted">Nada pendiente.</p><% end %>
 <% @comunidades.each do |c| %>
   <div class="card red-tarjeta mb-2"><div class="card-body small">
     <div class="fw-semibold"><%= link_to c.nombre, red_comunidad_path(c) %> · <%= c.tipo_texto %></div>
@@ -20,7 +21,8 @@
     <div><strong>Método:</strong> <%= c.metodo_texto %><%= " @#{c.dominio_correo}" if c.dominio_correo.present? %></div>
     <div class="mb-2"><strong>Evidencia:</strong> <%= c.evidencia.presence || "—" %></div>
     <div class="d-flex flex-wrap gap-2">
-      <%= button_to "Certificar", red_moderacion_comunidad_path(token: c.token, accion: "certificar"), class: "btn btn-success btn-sm" %>
+      <%= button_to "Certificar", red_moderacion_comunidad_path(token: c.token, accion: "certificar"), class: "btn btn-success btn-sm",
+                    form: { data: { turbo_confirm: "#{c.nombre} quedará certificada y sus verificadores podrán aceptar miembros. ¿Seguro?" } } %>
       <%= form_with url: red_moderacion_comunidad_path(token: c.token, accion: "rechazar"), method: :post, class: "d-flex gap-1" do %>
         <label class="visually-hidden" for="cm-<%= c.id %>">Motivo</label>
         <input id="cm-<%= c.id %>" name="motivo" class="form-control form-control-sm" placeholder="Motivo del rechazo" required maxlength="500">
@@ -31,15 +33,24 @@
 <% end %>
 
 <h2 class="h6 mt-4">Reportes pendientes (<%= @reportes.size %>)</h2>
+<% if @reportes.empty? %><p class="small text-muted">Nada pendiente.</p><% end %>
 <% @reportes.group_by(&:objeto).each do |objeto, reportes| %>
   <div class="card red-tarjeta mb-2"><div class="card-body small">
     <div class="fw-semibold">
-      <% if objeto.is_a?(Red::Publicacion) %>Publicación: <%= link_to objeto.titulo, red_publicacion_path(objeto) %> (<%= objeto.estado %>)
+      <% if objeto.is_a?(Red::Publicacion) %>Publicación: <%= link_to objeto.titulo, red_publicacion_path(objeto) %> (<%= objeto.estado_texto.downcase %>)
       <% elsif objeto.is_a?(Red::Perfil) %>Perfil: <%= link_to objeto.nombre_publico, red_perfil_path(objeto) %>
       <% elsif objeto.is_a?(Red::Mensaje) %>Mensaje: «<%= truncate(objeto.cuerpo, length: 160) %>»
       <% end %>
     </div>
-    <ul class="mb-2"><% reportes.each do |r| %><li><%= r.motivo_texto %><%= ": #{r.detalle}" if r.detalle.present? %></li><% end %></ul>
+    <%# Un mismo motivo repetido sale una vez con su cuenta; los detalles escritos, uno a uno. %>
+    <ul class="mb-2">
+      <% reportes.group_by(&:motivo_texto).each do |motivo, del_motivo| %>
+        <li><%= motivo %><%= " (#{del_motivo.size})" if del_motivo.size > 1 %>
+          <% detalles = del_motivo.filter_map { _1.detalle.presence } %>
+          <% if detalles.any? %><ul><% detalles.each do |d| %><li>«<%= d %>»</li><% end %></ul><% end %>
+        </li>
+      <% end %>
+    </ul>
     <div class="d-flex gap-2">
       <%= button_to "Sancionar y retirar", red_moderacion_reporte_path(id: reportes.first.id, accion: "sancionar"), class: "btn btn-danger btn-sm", form: { data: { turbo_confirm: "Se retira y suma una sanción al autor. ¿Seguro?" } } %>
       <%= button_to "Descartar", red_moderacion_reporte_path(id: reportes.first.id, accion: "descartar"), class: "btn btn-outline-secondary btn-sm" %>
@@ -48,6 +59,7 @@
 <% end %>
 
 <h2 class="h6 mt-4">Publicaciones retenidas (<%= @retenidas.size %>)</h2>
+<% if @retenidas.empty? %><p class="small text-muted">Nada pendiente.</p><% end %>
 <% @retenidas.each do |p| %>
   <div class="card red-tarjeta mb-2"><div class="card-body small">
     <div class="fw-semibold"><%= link_to p.titulo, red_publicacion_path(p) %> — <%= p.user.red_perfil&.nombre_publico %></div>
@@ -62,6 +74,7 @@
 <% @logias.each do |l| %>
   <div class="d-flex justify-content-between align-items-center border-bottom py-1 small">
     <span><%= l.nombre %></span>
-    <%= button_to "Certificar", red_moderacion_certificar_logia_path(id: l.id), class: "btn btn-outline-success btn-sm" %>
+    <%= button_to "Certificar", red_moderacion_certificar_logia_path(id: l.id), class: "btn btn-outline-success btn-sm",
+                  form: { data: { turbo_confirm: "Todos los miembros activos de #{l.nombre} quedarán verificados en la red. ¿Seguro?" } } %>
   </div>
 <% end %>

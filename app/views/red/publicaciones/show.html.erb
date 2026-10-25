@@ -13,7 +13,7 @@
 
 <% if @propia %>
   <div class="card red-tarjeta mb-3"><div class="card-body small">
-    <p class="mb-2">Estado: <strong><%= @publicacion.estado.humanize %></strong> · <%= @publicacion.alcance_texto %>
+    <p class="mb-2">Estado: <strong><%= @publicacion.estado_texto %></strong> · <%= @publicacion.alcance_texto %>
       <% if @publicacion.motivo_revision.present? && @publicacion.estado == "en_revision" %><br><span class="text-muted"><%= @publicacion.motivo_revision %></span><% end %></p>
     <div class="d-flex flex-wrap gap-2">
       <%= link_to "Editar", edit_red_publicacion_path(@publicacion), class: "btn btn-outline-primary btn-sm" %>

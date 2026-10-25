@@ -11,7 +11,8 @@ module Red
       "otro" => "Otro"
     }.freeze
     MODALIDADES = { "presencial" => "Presencial", "remoto" => "Remoto", "mixto" => "Mixto" }.freeze
-    ESTADOS = %w[activa en_revision pausada cerrada retirada].freeze
+    ESTADOS = { "activa" => "Activa", "en_revision" => "En revisión", "pausada" => "Pausada", "cerrada" => "Cerrada",
+                "retirada" => "Retirada" }.freeze
     VIGENCIA = 30.days
 
     has_secure_token :token, length: 24
@@ -25,7 +26,7 @@ module Red
     validates :intencion, inclusion: { in: INTENCIONES.keys }
     validates :categoria, inclusion: { in: CATEGORIAS.keys }
     validates :modalidad, inclusion: { in: MODALIDADES.keys }
-    validates :estado, inclusion: { in: ESTADOS }
+    validates :estado, inclusion: { in: ESTADOS.keys }
     validates :titulo, presence: true, length: { in: 5..100 }
     validates :descripcion, presence: true, length: { in: 10..3000 }
     validates :ciudad, length: { maximum: 60 }
@@ -59,6 +60,8 @@ module Red
     def categoria_texto = CATEGORIAS.fetch(categoria)
 
     def modalidad_texto = MODALIDADES.fetch(modalidad)
+
+    def estado_texto = ESTADOS.fetch(estado)
 
     def vigente? = estado == "activa" && vence_el >= Date.current
 

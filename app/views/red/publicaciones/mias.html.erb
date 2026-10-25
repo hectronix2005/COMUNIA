@@ -13,7 +13,7 @@
           <%= link_to p.titulo, red_publicacion_path(p), class: "fw-semibold" %>
           <div class="small text-muted"><%= p.intencion_texto %> · <%= p.alcance_texto %> · vence el <%= l(p.vence_el) %></div>
         </div>
-        <span class="badge text-bg-<%= p.vigente? ? 'success' : 'secondary' %>"><%= p.vigente? ? "Activa" : p.estado.humanize %></span>
+        <span class="badge text-bg-<%= p.vigente? ? 'success' : 'secondary' %>"><%= p.vigente? ? "Activa" : p.estado_texto %></span>
       </li>
     <% end %>
   </ul>

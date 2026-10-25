@@ -177,6 +177,8 @@ class Red::ComunidadesTest < ActionDispatch::IntegrationTest
     c = red_comunidad("Pendiente", estado: "solicitada", solicitada_por: red_usuario("Pide"))
     pub = red_publicacion(red_usuario("Autor"), estado: "en_revision", motivo_revision: "Palabras de estafa")
     Red::Reporte.create!(objeto: pub, huella: "h1", motivo: "estafa")
+    Red::Reporte.create!(objeto: pub, huella: "h2", motivo: "estafa")
+    Logia.create!(nombre: "Logia Sin Red", slug: "sin-red-#{SecureRandom.hex(3)}", codigo: "SR#{rand(10_000)}")
     sign_in red_usuario("Curioso")
     get "/red/moderacion"
     assert_response :not_found
@@ -185,6 +187,10 @@ class Red::ComunidadesTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_includes response.body, c.nombre
     assert_includes response.body, pub.titulo
+    assert_includes response.body, "(en revisión)"
+    assert_select "li", text: /Posible estafa o fraude \(2\)/, count: 1 # un motivo repetido sale una vez
+    assert_select "form[data-turbo-confirm*='#{c.nombre}']" # certificar pide confirmación
+    assert_select "form[data-turbo-confirm*='quedarán verificados']" # y certificar una logia, también
     get "/red/moderacion/metricas"
     assert_response :ok
   end
