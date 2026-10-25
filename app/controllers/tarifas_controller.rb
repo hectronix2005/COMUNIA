@@ -59,7 +59,7 @@ class TarifasController < ApplicationController
   private
 
   def set_logia
-    @logia = Logia.find(params[:logia_id])
+    @logia = logias_administrables.find(params[:logia_id])
   end
 
   def set_tarifa

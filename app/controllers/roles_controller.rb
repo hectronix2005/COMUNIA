@@ -56,10 +56,13 @@ class RolesController < ApplicationController
   private
 
   def set_rol
-    @rol = Rol.find(params[:id])
+    @rol = policy_scope(Rol).find(params[:id])
   end
 
+  # Solo el superadmin elige la logia del rol; el de un tenant crea roles de la suya.
   def rol_params
-    params.require(:rol).permit(:nombre, :codigo, :descripcion, :logia_id)
+    permitidos = params.require(:rol).permit(:nombre, :codigo, :descripcion, :logia_id)
+    return permitidos if current_user.rol_ref&.es_super_admin?
+    permitidos.except(:logia_id).merge(logia_id: current_user.logia_id)
   end
 end

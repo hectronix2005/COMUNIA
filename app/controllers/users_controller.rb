@@ -21,7 +21,9 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
   end
 
+  # Mover a alguien de logia es cosa del superadmin (el selector solo se le muestra a él).
   def user_params
-    params.require(:user).permit(:nombre, :apellido, :email, :username, :logia_id)
+    permitidos = params.require(:user).permit(:nombre, :apellido, :email, :username, :logia_id)
+    current_user.rol_ref&.es_super_admin? ? permitidos : permitidos.except(:logia_id)
   end
 end

@@ -33,7 +33,7 @@ class MiembroCargosController < ApplicationController
   private
 
   def set_miembro
-    @miembro = Miembro.find(params[:miembro_id])
+    @miembro = policy_scope(Miembro).find(params[:miembro_id])
     authorize @miembro, :update?
   end
 

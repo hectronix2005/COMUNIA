@@ -12,16 +12,25 @@ class RolPolicy < ApplicationPolicy
   end
 
   def update?
-    tiene_permiso?("roles", "update")
+    tiene_permiso?("roles", "update") && del_usuario?
   end
 
   def destroy?
-    tiene_permiso?("roles", "destroy") && !record.es_sistema?
+    tiene_permiso?("roles", "destroy") && !record.es_sistema? && del_usuario?
   end
 
   def gestionar_permisos?
-    tiene_permiso?("roles", "gestionar_permisos")
+    tiene_permiso?("roles", "gestionar_permisos") && del_usuario?
   end
+
+  private
+
+  # Los roles compartidos (sin logia) valen para todas las organizaciones: solo los cambia el superadmin.
+  def del_usuario?
+    user.rol_ref&.es_super_admin? || (record.logia_id.present? && record.logia_id == user.logia_id)
+  end
+
+  public
 
   class Scope < ApplicationPolicy::Scope
     def resolve

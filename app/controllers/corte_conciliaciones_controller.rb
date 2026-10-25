@@ -55,7 +55,7 @@ class CorteConciliacionesController < ApplicationController
 
   def set_logia
     logia_id = params[:logia_id].presence || current_user.logia_id
-    @logia   = logia_id ? Logia.find_by(id: logia_id) : Logia.ordenadas.first
+    @logia   = logia_id ? logias_administrables.find_by(id: logia_id) : logias_administrables.ordenadas.first
     redirect_to root_path, alert: "No hay logias disponibles." unless @logia
   end
 

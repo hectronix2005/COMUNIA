@@ -207,7 +207,7 @@ class CobrosController < ApplicationController
 
     # Modo 2: cobro_id para analizar soporte ya guardado
     if params[:cobro_id].present?
-      cobro = Cobro.find(params[:cobro_id])
+      cobro = policy_scope(Cobro).find(params[:cobro_id])
       pago = cobro.pago
       if pago.nil? || !pago.soportes.attached?
         render json: { error: "No hay soporte adjunto para este cobro" }, status: :bad_request
@@ -344,7 +344,7 @@ class CobrosController < ApplicationController
   private
 
   def set_cobro
-    @cobro = Cobro.find(params[:id])
+    @cobro = policy_scope(Cobro).find(params[:id])
   end
 
   def pago_params

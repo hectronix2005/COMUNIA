@@ -40,7 +40,7 @@ class LogiasController < ApplicationController
   private
 
   def set_logia
-    @logia = Logia.find(params[:id])
+    @logia = logias_administrables.find(params[:id])
   end
 
   def logia_params

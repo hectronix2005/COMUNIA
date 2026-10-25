@@ -38,6 +38,6 @@ class RolPermisosController < ApplicationController
   private
 
   def set_rol
-    @rol = Rol.find(params[:role_id])
+    @rol = policy_scope(Rol).find(params[:role_id])
   end
 end

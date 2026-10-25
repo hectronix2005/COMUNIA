@@ -51,7 +51,7 @@ class ReportesController < ApplicationController
   end
 
   def recibo
-    @pago = Pago.find(params[:pago_id])
+    @pago = Pago.where(cobro_id: cobros_scope.select(:id)).find(params[:pago_id])
   end
 
   private

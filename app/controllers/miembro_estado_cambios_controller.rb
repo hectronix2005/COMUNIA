@@ -16,7 +16,7 @@ class MiembroEstadoCambiosController < ApplicationController
   private
 
   def set_miembro
-    @miembro = Miembro.find(params[:miembro_id])
+    @miembro = policy_scope(Miembro).find(params[:miembro_id])
   end
 
   def set_cambio
