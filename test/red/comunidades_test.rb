@@ -166,6 +166,11 @@ class Red::ComunidadesTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Ana"
     assert_not_includes response.body, "Secreta"
     assert_not_includes response.body, "@"
+
+    ana.red_perfil.update_column(:nombre_publico, "=HYPERLINK(\"http://x.co\")")
+    get "/red/comunidades/#{c.token}/gestion/miembros.csv"
+    nombres = CSV.parse(response.body, headers: true).map { _1["Nombre en la red"] }
+    assert nombres.all? { _1.start_with?("'") || _1.match?(/\A[[:alnum:]]/) }, "una fórmula sale como texto"
   end
 
   test "las pantallas de moderación abren para la plataforma y no existen para los demás" do

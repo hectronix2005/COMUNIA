@@ -100,8 +100,9 @@ module Red
       Rails.logger.warn("[red] aviso de membresía: #{e.class}")
     end
 
-    # Evita que una hoja de cálculo ejecute una fórmula escrita como nombre.
-    def seguro_csv(v) = v.to_s.start_with?("=", "+", "-", "@") ? "'#{v}" : v.to_s
+    # Evita que una hoja de cálculo ejecute una fórmula escrita como nombre (caracteres de OWASP; el
+    # tabulador y el retorno ya los quita la normalización del nombre, pero no se confía en ello).
+    def seguro_csv(v) = v.to_s.start_with?("=", "+", "-", "@", "\t", "\r") ? "'#{v}" : v.to_s
 
     def metricas
       ms = @comunidad.membresias
