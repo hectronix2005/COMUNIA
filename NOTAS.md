@@ -74,17 +74,27 @@ Hecho y verificado:
 
 No hecho o no comprobado:
 
-- Nada desplegado ni subido: 8 commits locales en `main` sin push (desde 503a388 hasta el último).
 - La pantalla de moderación no se recorrió en navegador; la cubren las pruebas.
 - Turnstile real y el envío de correo no se pudieron probar: no hay claves ni servicio.
 - Las notificaciones push de la red usan el sistema de COMUNIA y no se probaron en un móvil real.
+
+## Despliegue (24-oct, 22:55, por decisión de Héctor)
+
+- Copia previa en Drive: `comunia-20261024-2245.dump.gpg` (49 usuarios).
+- `git push` de los 8 commits y `bin/deploy`: imagen nueva, migración 20261024220000 aplicada, tarea
+  `red_mantenimiento` (4 a. m.) registrada en Solid Queue. `/up` responde 200.
+- Comprobado en https://comunia.tail0be41e.ts.net: `/login`, `/red`, búsqueda (HTML y JSON),
+  cómo funciona, privacidad, comunidades, entrar y registro dan 200; lo privado redirige a
+  `/red/entrar`. Sin Turnstile, el registro se ve pero no crea cuentas («Hoy no podemos crear
+  cuentas nuevas»), y el contacto sin cuenta tampoco funciona. La red está vacía: 0 comunidades y
+  0 cuentas de la red.
 
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
 
-- **Desplegar la red social en producción** (asus): migraciones y `bin/deploy`. El piloto solo
-  comitea en local.
+- **Primera comunidad**: certificar una logia desde `/red/moderacion` (con un superadmin) o pedir
+  una comunidad nueva, para que la red tenga contenido.
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
   cuentas de la red.
 - **Turnstile**: claves en una cuenta de Cloudflare suya, nunca de Picap. Sin ellas, en producción
