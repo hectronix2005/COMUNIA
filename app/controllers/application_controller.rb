@@ -56,13 +56,56 @@ class ApplicationController < ActionController::Base
     if session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?
       return Logia.find_by(id: session[:preview_logia_id]) || Logia.ordenadas.first
     end
-    if (sub = tenant_subdomain) && (logia = Logia.find_by(slug: sub))
+    if (sub = tenant_subdomain) && (logia = Logia.find_by(slug: sub)) && tenant_permitido?(logia)
       return logia
     end
     current_user&.logia || Logia.ordenadas.first
   end
 
-  helper_method :previewing_tenant?, :platform_admin_context?
+  # El tenant de la URL o de la sesión solo cuenta si es el del usuario: sin esto, cambiar /t/<slug>
+  # bastaba para ver el directorio, el chat o el calendario de otra organización.
+  def tenant_permitido?(logia)
+    return true if current_user.nil? || current_user.rol_ref&.es_super_admin?
+    propia = current_user.logia or return false
+    (propia.tenant_id || propia.id) == (logia.tenant_id || logia.id)
+  end
+
+  # Logias de la organización actual: la raíz y sus hijas. Lo que un miembro abre por id (una ficha, una
+  # publicación, un evento) se busca dentro de estas; lo de otra organización da el mismo 404 que lo que no
+  # existe.
+  def logia_ids_de_la_organizacion
+    @logia_ids_de_la_organizacion ||= begin
+      raiz = current_logia.tenant || current_logia
+      [raiz.id, *raiz.logias.ids]
+    end
+  end
+
+  def logia_ids_visibles
+    logia_ids_de_la_organizacion
+  end
+
+  # Logias en las que el usuario gestiona lo de otros (borrar, fijar, cerrar): la suya, también las hijas si
+  # es de la raíz, y todas las de la organización para el superadmin.
+  def logia_ids_gestionables
+    return logia_ids_de_la_organizacion if current_user.rol_ref&.es_super_admin?
+    Array(current_user.logia_ids_accesibles) & logia_ids_de_la_organizacion
+  end
+
+  # Un admin modera (borra, fija, cierra) lo publicado en las logias que gestiona, no en las demás. El rol
+  # es el de rol_ref, como los permisos: el enum rol de users no siempre coincide con él.
+  def modera?(registro)
+    return true if current_user.rol_ref&.es_super_admin?
+    current_user.rol_ref&.codigo == "admin_logia" && logia_ids_gestionables.include?(registro.logia_id)
+  end
+
+  # Logias que el usuario administra (cuotas, conceptos, cortes, tarifas): todas para el superadmin; para
+  # los demás, las de logia_ids_accesibles. Lo de otra logia da 404.
+  def logias_administrables
+    return Logia.all if current_user.rol_ref&.es_super_admin?
+    Logia.where(id: Array(current_user.logia_ids_accesibles))
+  end
+
+  helper_method :previewing_tenant?, :platform_admin_context?, :modera?
 
   def previewing_tenant?
     session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?
@@ -96,7 +139,12 @@ class ApplicationController < ActionController::Base
     m = request.script_name.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)\z})
     return unless m
     slug = m[1]
-    if Logia.tenants_raiz.exists?(slug: slug)
+    if (logia = Logia.tenants_raiz.find_by(slug: slug))
+      unless tenant_permitido?(logia)
+        session.delete(:tenant_slug)
+        # Ruta sin prefijo: el dashboard lleva al usuario a su propio tenant.
+        return redirect_to("/dashboard", alert: "No tienes acceso a ese tenant.")
+      end
       session[:tenant_slug] = slug
     else
       session.delete(:tenant_slug)
