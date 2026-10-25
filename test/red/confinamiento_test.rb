@@ -18,7 +18,9 @@ class Red::ConfinamientoTest < ActionDispatch::IntegrationTest
       controlador = r.defaults[:controller].to_s
       next if controlador.blank? || controlador.start_with?("red/", "denuncias/", "rails/", "active_storage", "action_mailbox", "devise")
       next if controlador.in?(ApplicationController::CONTROLADORES_PARA_CUENTAS_RED)
-      next unless "#{controlador.camelize}Controller".safe_constantize&.<=(ApplicationController)
+      clase = "#{controlador.camelize}Controller".safe_constantize
+      next unless clase&.<=(ApplicationController)
+      next if clase <= DeviseController # sesión e invitaciones: sin datos de ninguna logia
       next if r.path.spec.to_s.include?("*")
       ruta.gsub(/\(.*?\)/, "").gsub(/:[a-z_]+/, "1")
     end.uniq
