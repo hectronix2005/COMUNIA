@@ -9,6 +9,9 @@ class User < ApplicationRecord
   end
 
   enum :rol, { miembro: 0, admin_logia: 1, super_admin: 2 }
+  # El rol que cuenta es rol_ref: de él salen los permisos y es el que cambia la ficha del miembro. El enum
+  # se copia de él para que no se desincronicen (en producción llegaron a no coincidir en 5 usuarios).
+  ROL_POR_CODIGO = { "super_admin" => "super_admin", "admin_logia" => "admin_logia" }.freeze
 
   belongs_to :logia, optional: true
   belongs_to :rol_ref, class_name: "Rol", optional: true
@@ -40,6 +43,7 @@ class User < ApplicationRecord
                        if: -> { username.present? }
 
   before_validation :generate_username, on: :create, if: -> { username.blank? }
+  before_validation -> { self.rol = ROL_POR_CODIGO.fetch(rol_ref.codigo, "miembro") }, if: :rol_ref
 
   def self.find_for_database_authentication(warden_conditions)
     login = warden_conditions[:email].to_s.strip
