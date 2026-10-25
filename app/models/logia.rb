@@ -13,6 +13,13 @@ class Logia < ApplicationRecord
   validates_attachment :logo, types: :image, max: 5.megabytes
 
   validates :nombre, presence: true
+  # Dos niveles, organización y logias: el alcance (logia_ids_accesibles, la organización de la URL) no
+  # ve más abajo. Solo al cambiar el padre, para que lo ya guardado se pueda seguir editando.
+  validate if: :will_save_change_to_tenant_id? do
+    errors.add(:tenant, "debe ser una organización, no otra logia") if tenant&.tenant_id
+    errors.add(:tenant, "no se puede asignar: esta logia ya tiene logias propias") if tenant && logias.exists?
+    errors.add(:tenant, "no puede ser la propia logia") if tenant_id && tenant_id == id
+  end
   validates :codigo, presence: true,
             uniqueness: { scope: :tenant_id, message: "ya existe en este tenant" },
             format: { with: /\A[A-Z0-9]+\z/, message: "solo letras mayusculas y numeros" }
