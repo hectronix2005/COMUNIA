@@ -258,6 +258,13 @@
                 <% end %>
               <% end %>
 
+              <%# ── Red de comunidades certificadas ── %>
+              <li class="nav-item">
+                <%= link_to "/red", class: "nav-link", data: { turbo: false } do %>
+                  <i class="bi bi-patch-check"></i> Red
+                <% end %>
+              </li>
+
               <%# ── Denuncias (DENUNCIAPP): la ven todos; los miembros activos llegan con pase.
                    Sin parámetros ni Referer: no puede delatar la logia ni al usuario. ── %>
               <% if url_denunciapp %>

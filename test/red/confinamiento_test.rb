@@ -52,6 +52,33 @@ class Red::ConfinamientoTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Tablón"
   end
 
+  test "quien es de una logia llega a la red desde el menú y puede volver; la cuenta de la red no ve la vuelta" do
+    get "/red"
+    assert_not_includes response.body, "Volver a COMUNIA"
+
+    de_logia = User.create!(nombre: "L", apellido: "M", email: "l_#{SecureRandom.hex(3)}@x.co", password: "password123", logia: @logia)
+    sign_in de_logia
+    get "/dashboard"
+    follow_redirect! if response.redirect? # al de su logia: /t/<slug>/dashboard
+    assert_response :ok
+    assert_select "a.nav-link[href='/red']" # sin /t/<slug>: un enlace copiado no delata la organización
+    get "/red/bienvenida"
+    assert_response :ok
+    assert_select "a[href='/']", "Volver a COMUNIA"
+    get "/red/mi-perfil"
+    assert_redirected_to "/red/bienvenida"
+  end
+
+  test "la red nunca se sirve bajo el prefijo de un tenant" do
+    get "/t/#{@logia.slug}/red/buscar?q=nevera"
+    assert_response :moved_permanently
+    assert_equal "/red/buscar?q=nevera", response.location.delete_prefix("http://www.example.com")
+    post "/t/#{@logia.slug}/red/p/abc/reportar"
+    assert_response :not_found
+    get "/t/#{@logia.slug}/redes"
+    assert_not_equal 301, response.status
+  end
+
   test "si la sesión caduca dentro de la red, se vuelve al login de la red" do
     sign_in red_usuario("Ana")
     get "/red/mi-perfil"

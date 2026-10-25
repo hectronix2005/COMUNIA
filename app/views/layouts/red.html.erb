@@ -85,13 +85,16 @@
       </div>
     </main>
 
+    <% volver = user_signed_in? && !current_user.solo_red? %>
     <footer class="py-4 text-center small text-muted d-none d-lg-block">
       <%= link_to "Privacidad y datos", red_privacidad_path, class: "text-muted me-3" %>
       <%= link_to "Cómo funciona la confianza", red_como_funciona_path, class: "text-muted" %>
+      <% if volver %><%= link_to "Volver a COMUNIA", root_path, class: "text-muted ms-3", data: { turbo: false } %><% end %>
     </footer>
     <div class="d-lg-none text-center small pb-3">
       <%= link_to "Privacidad", red_privacidad_path, class: "text-muted me-3" %>
       <%= link_to "Cómo funciona", red_como_funciona_path, class: "text-muted" %>
+      <% if volver %><%= link_to "Volver a COMUNIA", root_path, class: "text-muted ms-3", data: { turbo: false } %><% end %>
     </div>
 
     <nav class="red-inferior d-flex d-lg-none" aria-label="Navegación inferior">
