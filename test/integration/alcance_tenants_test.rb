@@ -147,6 +147,32 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     assert_not Publicacion.exists?(propia.id)
   end
 
+  test "hospitalía no apunta recaudos ni gastos a miembros de otra organización" do
+    admin = admin_de(@a)
+    sign_in admin
+    assert_no_difference -> { HospitaliaRecaudo.count + HospitaliaGasto.count } do
+      post "/hospitalia/recaudos", params: { hospitalia_recaudo: { concepto: "Cuota", monto: 10, fecha: Date.current, miembro_id: @ficha_b.id } }
+      assert_response :unprocessable_entity
+      post "/hospitalia/gastos", params: { hospitalia_gasto: { concepto: "Ayuda", monto: 10, fecha: Date.current, beneficiario_id: @ficha_b.id } }
+      assert_response :unprocessable_entity
+    end
+    assert_no_match "Secreto", response.body
+
+    post "/hospitalia/recaudos", params: { hospitalia_recaudo: { concepto: "Cuota", monto: 10, fecha: Date.current, miembro_id: @mi_ficha.id } }
+    assert_redirected_to "/hospitalia/recaudos"
+    assert_equal @mi_ficha, HospitaliaRecaudo.last.miembro
+  end
+
+  test "cambiar el rol en la ficha cambia también el enum rol" do
+    admin = admin_de(@a)
+    sign_in admin
+    patch "/miembros/#{@ficha_vecino.id}/cambiar_rol", params: { rol_codigo: "admin_logia" }
+    assert @vecino.reload.admin_logia?
+    patch "/miembros/#{@ficha_vecino.id}/cambiar_rol", params: { rol_codigo: "miembro" }
+    assert @vecino.reload.miembro?
+    assert_equal "miembro", @vecino.rol_ref.codigo
+  end
+
   private
 
   # Un 404 no guarda la cookie de sesión: se vuelve a entrar antes de cada petición.
