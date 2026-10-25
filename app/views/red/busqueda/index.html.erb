@@ -1,0 +1,73 @@
+<% content_for :title, "Buscar" %>
+<h1 class="h5">Buscar</h1>
+<%= form_with url: red_buscar_path, method: :get, role: "search", class: "mb-3" do %>
+  <div class="d-flex gap-2 mb-2">
+    <label for="b-q" class="visually-hidden">¿Qué buscas?</label>
+    <input id="b-q" name="q" type="search" class="form-control" value="<%= @filtros[:q] %>" maxlength="100" placeholder="Electricista, clases, arriendo…">
+    <button class="btn btn-primary" type="submit">Buscar</button>
+  </div>
+  <div class="btn-group btn-group-sm mb-2" role="group" aria-label="Qué buscar">
+    <input type="radio" class="btn-check" name="que" id="b-pub" value="publicaciones" <%= "checked" if @que == "publicaciones" %>>
+    <label class="btn btn-outline-primary" for="b-pub">Publicaciones</label>
+    <input type="radio" class="btn-check" name="que" id="b-per" value="personas" <%= "checked" if @que == "personas" %>>
+    <label class="btn btn-outline-primary" for="b-per">Personas</label>
+  </div>
+  <details <%= "open" if @filtros.values_at(:intencion, :categoria, :modalidad, :ciudad, :comunidad_id).any? || @filtros[:nivel_min].positive? %>>
+    <summary class="small">Filtros</summary>
+    <div class="row g-2 mt-1">
+      <div class="col-6 col-md-4">
+        <label class="form-label small" for="b-int">Necesito / Ofrezco</label>
+        <select class="form-select form-select-sm" id="b-int" name="intencion"><option value="">Todo</option><%= options_for_select(Red::Publicacion::INTENCIONES.invert, @filtros[:intencion]) %></select>
+      </div>
+      <div class="col-6 col-md-4">
+        <label class="form-label small" for="b-cat">Categoría</label>
+        <select class="form-select form-select-sm" id="b-cat" name="categoria"><option value="">Todas</option><%= options_for_select(Red::Publicacion::CATEGORIAS.invert, @filtros[:categoria]) %></select>
+      </div>
+      <div class="col-6 col-md-4">
+        <label class="form-label small" for="b-mod">Modalidad</label>
+        <select class="form-select form-select-sm" id="b-mod" name="modalidad"><option value="">Todas</option><%= options_for_select(Red::Publicacion::MODALIDADES.invert, @filtros[:modalidad]) %></select>
+      </div>
+      <div class="col-6 col-md-4">
+        <label class="form-label small" for="b-ciudad">Ciudad</label>
+        <input class="form-control form-control-sm" id="b-ciudad" name="ciudad" maxlength="60" value="<%= @filtros[:ciudad] %>">
+      </div>
+      <div class="col-6 col-md-4">
+        <label class="form-label small" for="b-nivel">Confianza mínima</label>
+        <select class="form-select form-select-sm" id="b-nivel" name="nivel_min"><%= options_for_select(Red::NIVELES.invert, @filtros[:nivel_min]) %></select>
+      </div>
+      <% if alcance_opciones.any? %>
+        <div class="col-6 col-md-4">
+          <label class="form-label small" for="b-com">De mi comunidad</label>
+          <select class="form-select form-select-sm" id="b-com" name="comunidad"><option value="">Cualquiera</option>
+            <%= options_for_select(Red::Comunidad.where(id: mis_comunidad_ids).order(:nombre).pluck(:nombre, :token),
+                                   Red::Comunidad.find_by(id: @filtros[:comunidad_id])&.token) %></select>
+        </div>
+      <% end %>
+    </div>
+    <button class="btn btn-outline-primary btn-sm mt-2" type="submit">Aplicar</button>
+  </details>
+<% end %>
+
+<% if @resultados.empty? %>
+  <p class="text-muted">No hay resultados<%= " para «#{@filtros[:q]}»" if @filtros[:q] %>.
+    <% unless user_signed_in? %>Sin cuenta solo ves lo que la gente eligió hacer público.<% end %></p>
+<% elsif @que == "personas" %>
+  <% @resultados.each do |perfil| %>
+    <% ficha = @fichas[perfil.user_id] %>
+    <article class="card red-tarjeta mb-2">
+      <a class="red-tarjeta-enlace card-body d-block" href="<%= red_perfil_path(perfil) %>">
+        <div class="d-flex align-items-center gap-2"><span class="fw-semibold"><%= ficha.nombre_publico %></span><%= render "red/shared/nivel", ficha: ficha %></div>
+        <% if ficha.titular.present? %><div class="small"><%= ficha.titular %></div><% end %>
+        <div class="small text-muted"><%= [ficha.ciudad, ficha.certificacion_texto].compact_blank.join(" · ") %></div>
+      </a>
+    </article>
+  <% end %>
+<% else %>
+  <% @resultados.each do |p| %><%= render "red/shared/publicacion", publicacion: p, ficha: @fichas[p.user_id] %><% end %>
+<% end %>
+<nav class="d-flex justify-content-between mt-3" aria-label="Páginas">
+  <% if @pagina > 1 %><%= link_to "← Anteriores", pagina_url(@pagina - 1), class: "btn btn-outline-secondary btn-sm" %><% else %><span></span><% end %>
+  <% if @resultados.size == Red::BusquedaController::POR_PAGINA && @pagina < Red::BusquedaController::PAGINAS_MAX %>
+    <%= link_to "Siguientes →", pagina_url(@pagina + 1), class: "btn btn-outline-secondary btn-sm" %>
+  <% end %>
+</nav>

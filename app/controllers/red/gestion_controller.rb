@@ -30,8 +30,8 @@ module Red
     def decidir
       accion = params[:accion].to_s
       return no_encontrado if accion.in?(ACCIONES_ADMIN) && !@comunidad.administrador?(current_user)
-      perfil = Perfil.find_by(token: params[:perfil].to_s) or return no_encontrado
-      m = @comunidad.membresias.find_by(user_id: perfil.user_id) or return no_encontrado
+      # Una sola consulta, dentro de ESTA comunidad: un perfil ajeno y uno inexistente responden igual.
+      m = @comunidad.membresias.joins(user: :red_perfil).find_by(red_perfiles: { token: params[:perfil].to_s }) or return no_encontrado
       return volver("No puedes decidir sobre tu propia membresía.") if m.user_id == current_user.id && !moderador?
 
       motivo = texto(:motivo, 500)
