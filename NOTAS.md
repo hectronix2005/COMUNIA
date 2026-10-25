@@ -111,6 +111,19 @@ No hecho o no comprobado:
   llegan los push (cumpleaños, avisos, red…). Las suscripciones empezarán a aparecer cuando los
   usuarios entren.
 
+## Revisión del 25-oct (5a5d156, desplegado)
+
+- 32 adjuntos del servicio «local» (22 anuncios, 7 pagos, otros soportes) no se abrían: en el
+  contenedor no estaban. Se recuperaron de la carpeta `storage/` de desarrollo (los 32 con su MD5),
+  se copiaron a `~/services/comunia-storage`, montado en /rails/storage, y entran en la copia diaria
+  (`archivos-*.tar.gpg`). Verificado: 32 de 32 en producción y la copia subió a Drive.
+- Devise `paranoid` y correos con `deliver_later`: «Olvidé mi contraseña» responde igual con o sin
+  cuenta y ya no depende del SMTP (antes iba a localhost:25). Verificado: 303 a /login.
+- `X-Robots-Tag: noindex` en perfiles y hojas de vida. Las publicaciones públicas siguen indexables
+  (decide Héctor).
+- `red_mantenimiento` corrió a las 4:00 del 25-oct sin fallos.
+- Falta recorrer la moderación en el navegador.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
@@ -118,7 +131,12 @@ No hecho o no comprobado:
 - Que los miembros de la logia **creen su perfil** en `/red` (ya tienen el enlace en el menú):
   hoy ninguno lo tiene. Avisarles es cosa de Héctor.
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
-  cuentas de la red.
+  cuentas de la red. Activarlo es solo poner en `app.env` SMTP_ADDRESS, SMTP_PORT, SMTP_USERNAME,
+  SMTP_PASSWORD y MAIL_FROM (de un dominio propio) y desplegar; sin SMTP_ADDRESS no se envía nada.
+- **Cuenta de R2**: confirmar que la de las variables R2_* (2 adjuntos y los nuevos) es suya y no de
+  Picap.
+- **Para la revisión legal**: a los miembros de una logia certificada se les da la membresía sin
+  consentimiento expreso; no se ven hasta que crean su perfil y aceptan la política.
 - **Turnstile**: claves en una cuenta de Cloudflare suya, nunca de Picap. Sin ellas, en producción
   no se aceptan registros ni contactos sin cuenta.
 - **Revisión legal**: política de tratamiento de datos (Ley 1581) y términos de la red.
