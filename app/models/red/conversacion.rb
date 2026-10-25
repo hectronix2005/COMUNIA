@@ -33,12 +33,10 @@ module Red
       self.contacto_externo_cif = valor.present? ? Red::Cifra.cifrar(valor) : nil
     end
 
-    def no_leidos_para(user) = mensajes.where(leido_at: nil).where.not(user_id: user.id).count
-
     # Reseña verificable: los dos escribieron al menos un mensaje y pasó un día desde el primero.
     def resenable_por?(user)
       return false if externa? || !participa?(user)
-      autores = mensajes.where(tipo: %w[texto contacto_compartido]).distinct.pluck(:user_id)
+      autores = mensajes.reorder(nil).where(tipo: %w[texto contacto_compartido]).distinct.pluck(:user_id)
       primero = mensajes.minimum(:created_at)
       autores.include?(iniciador_id) && autores.include?(destinatario_id) && primero && primero <= 1.day.ago &&
         !resenas.exists?(autor_id: user.id)

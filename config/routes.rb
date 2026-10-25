@@ -123,6 +123,7 @@ Rails.application.routes.draw do
       end
     end
     post "p/:token/escribir", to: "conversaciones#create", as: :escribir
+    get  "avisos",            to: "avisos#index",     as: :avisos
 
     scope "moderacion", controller: :moderacion, as: :moderacion do
       get  "/",                          action: :index

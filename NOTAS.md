@@ -51,9 +51,12 @@ Estados: ✅ hecho y verificado · 🔄 en curso · ⏳ pendiente · ⛔ bloquea
    lote diario a las 4 a. m. (Red::MantenimientoDiarioJob), alertas de comunidades infladas
 6. ✅ Búsqueda pública sin cuenta (HTML y JSON con lista blanca), filtros y categorías, tope de 25
    páginas. Pruebas de extracción de la privacidad (test/red/privacidad_test.rb, 11 ataques)
-7. 🔄 Mensajería intermediada, contacto sin cuenta, reseñas verificables, reportes y moderación,
-   notificaciones
-8. ⏳ Administración de comunidades y métricas, Ley 1581 (exportar, borrar), onboarding,
+7. ✅ Mensajería intermediada (el contacto solo sale si se comparte), contacto sin cuenta con
+   captcha, consentimiento y medio cifrado, bloqueo, reseñas verificables (tras conversación real de
+   los dos y un día), reportes (uno por persona o IP con HMAC; a los 3, a revisión y aviso a
+   moderación), avisos con campana, tope diario de conversaciones nuevas (20; 5 en cuarentena)
+   (test/red/mensajeria_test.rb, 14 pruebas)
+8. 🔄 Administración de comunidades y métricas, Ley 1581 (exportar, borrar), onboarding,
    accesibilidad, datos de demostración sintéticos, README
 
 ## Pendiente de Héctor

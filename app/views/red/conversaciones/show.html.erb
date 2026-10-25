@@ -1,0 +1,83 @@
+<% nombre = @otro ? (@ficha_otro&.nombre_publico || "Persona que ya no está en la red") : "#{@conversacion.nombre_externo} (sin cuenta)" %>
+<% content_for :title, "Conversación con #{nombre}" %>
+<p class="mb-2"><%= link_to red_conversaciones_path do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Mensajes<% end %></p>
+
+<div class="card red-tarjeta mb-3"><div class="card-body py-2">
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <% if @ficha_otro %>
+      <%= link_to @ficha_otro.nombre_publico, red_perfil_path(@ficha_otro.token), class: "fw-semibold" %>
+      <%= render "red/shared/nivel", ficha: @ficha_otro %>
+    <% else %>
+      <h1 class="h6 mb-0"><%= nombre %></h1>
+    <% end %>
+  </div>
+  <% if @conversacion.publicacion %>
+    <p class="small text-muted mb-0">Sobre: <%= link_to @conversacion.publicacion.titulo, red_publicacion_path(@conversacion.publicacion) %></p>
+  <% end %>
+  <% if @conversacion.externa? %>
+    <p class="small mb-0 mt-1">Te escribió sin cuenta y dejó este medio para que le respondas:
+      <strong><%= @conversacion.contacto_externo.presence || "ya borrado (se guarda 90 días)" %></strong></p>
+  <% end %>
+</div></div>
+
+<ol class="list-unstyled d-grid gap-2 mb-3" aria-label="Mensajes">
+  <% @conversacion.mensajes.each do |m| %>
+    <% mio = m.user_id.present? && m.user_id == current_user.id %>
+    <li class="d-flex <%= mio ? 'justify-content-end' : '' %>">
+      <div class="p-2 rounded-3 <%= mio ? 'bg-primary text-white' : 'bg-white border' %>" style="max-width: 85%;">
+        <% if m.tipo == "contacto_compartido" %><div class="small fw-semibold"><i class="bi bi-person-vcard" aria-hidden="true"></i> Contacto compartido</div><% end %>
+        <div style="white-space: pre-line;"><%= m.cuerpo %></div>
+        <div class="small <%= mio ? 'text-white-50' : 'text-muted' %>"><span class="visually-hidden"><%= mio ? "Tú" : nombre %>, </span><%= l(m.created_at, format: :short) %></div>
+        <% unless mio || m.user_id.nil? %>
+          <%= render "red/shared/reportar", tipo: "mensaje", token: m.id %>
+        <% end %>
+      </div>
+    </li>
+  <% end %>
+</ol>
+<span id="fin"></span>
+
+<% if @conversacion.estado == "abierta" && !@conversacion.externa? %>
+  <%= form_with url: mensajes_red_conversacion_path(@conversacion), method: :post, class: "card red-tarjeta mb-3" do %>
+    <div class="card-body">
+      <label class="form-label small" for="cuerpo">Tu mensaje</label>
+      <textarea class="form-control mb-2" id="cuerpo" name="cuerpo" rows="3" required maxlength="2000"></textarea>
+      <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-send" aria-hidden="true"></i> Enviar</button>
+    </div>
+  <% end %>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <%= button_to compartir_red_conversacion_path(@conversacion), class: "btn btn-outline-success btn-sm",
+                  form: { data: { turbo_confirm: "Esta persona verá el teléfono y el correo de tu perfil. ¿Compartir?" } } do %>
+      <i class="bi bi-person-vcard" aria-hidden="true"></i> Compartir mi contacto
+    <% end %>
+    <%= button_to bloquear_red_conversacion_path(@conversacion), class: "btn btn-outline-danger btn-sm",
+                  form: { data: { turbo_confirm: "No podrá volver a escribirte. ¿Bloquear?" } } do %>
+      <i class="bi bi-slash-circle" aria-hidden="true"></i> Bloquear
+    <% end %>
+  </div>
+<% elsif @conversacion.externa? && @conversacion.estado == "abierta" %>
+  <%= button_to "Cerrar y bloquear esta conversación", bloquear_red_conversacion_path(@conversacion), class: "btn btn-outline-danger btn-sm mb-3" %>
+<% else %>
+  <p class="text-muted small">Esta conversación está <%= @conversacion.estado %>.</p>
+<% end %>
+
+<% if @puede_resenar %>
+  <%= form_with url: resena_red_conversacion_path(@conversacion), method: :post, class: "card red-tarjeta" do %>
+    <div class="card-body">
+      <h2 class="h6">Deja una reseña</h2>
+      <p class="small text-muted">Solo se puede reseñar tras una conversación real. La verá cualquiera que vea su perfil.</p>
+      <fieldset class="mb-2">
+        <legend class="form-label small">Puntuación</legend>
+        <% 1.upto(5) do |n| %>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="puntaje" id="p<%= n %>" value="<%= n %>" required>
+            <label class="form-check-label" for="p<%= n %>"><%= n %></label>
+          </div>
+        <% end %>
+      </fieldset>
+      <label class="form-label small" for="comentario">Comentario</label>
+      <textarea class="form-control mb-2" id="comentario" name="comentario" rows="2" maxlength="1000"></textarea>
+      <button class="btn btn-outline-primary btn-sm" type="submit">Publicar reseña</button>
+    </div>
+  <% end %>
+<% end %>

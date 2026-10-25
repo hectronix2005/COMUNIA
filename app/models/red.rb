@@ -41,6 +41,16 @@ module Red
   # Moderadores y certificadores de la plataforma. Por ahora, el superadmin de COMUNIA.
   def self.moderador?(user) = user&.rol_ref&.es_super_admin? || false
 
+  def self.moderadores = User.joins(:rol_ref).where(roles: { codigo: "super_admin" })
+
+  # Aviso dentro de COMUNIA (y push). Nunca rompe la acción que lo dispara.
+  def self.avisar(user, titulo, cuerpo = nil, url = nil, tipo: "red_aviso")
+    NotificacionService.crear!(user: user, tipo: tipo, titulo: titulo, cuerpo: cuerpo, url: url)
+  rescue StandardError => e
+    Rails.logger.warn("[red] aviso no enviado: #{e.class}")
+    nil
+  end
+
   # Ids de las comunidades certificadas en las que `user` está verificado y vigente. Es la única
   # puerta para saber «qué ve esta persona»; nunca se usa para enseñar nada de otra.
   def self.comunidades_de(user)

@@ -1,0 +1,20 @@
+<% content_for :title, "Avisos" %>
+<h1 class="h4 mb-3">Avisos</h1>
+<% if @avisos.empty? %>
+  <p class="text-muted">No tienes avisos.</p>
+<% else %>
+  <ul class="list-unstyled d-grid gap-2">
+    <% @avisos.each do |a| %>
+      <li class="card red-tarjeta"><div class="card-body py-2">
+        <div class="d-flex justify-content-between gap-2">
+          <span class="<%= 'fw-semibold' unless a.leida %>">
+            <% if a.url.to_s.start_with?("/red/") %><%= link_to a.titulo, a.url %><% else %><%= a.titulo %><% end %>
+          </span>
+          <span class="small text-muted text-nowrap"><%= l(a.created_at, format: :short) %></span>
+        </div>
+        <% if a.cuerpo.present? %><div class="small text-muted"><%= a.cuerpo %></div><% end %>
+      </div></li>
+    <% end %>
+  </ul>
+  <%= paginate @avisos %>
+<% end %>

@@ -1,0 +1,34 @@
+<% content_for :title, "Mensajes" %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Mensajes</h1>
+  <%= link_to red_avisos_path, class: "btn btn-outline-secondary btn-sm" do %><i class="bi bi-bell" aria-hidden="true"></i> Avisos<% end %>
+</div>
+<% if @conversaciones.empty? %>
+  <div class="card red-tarjeta"><div class="card-body text-muted">
+    Aún no tienes conversaciones. <%= link_to "Busca", red_buscar_path %> a alguien y escríbele desde su publicación o su perfil:
+    nadie verá tu teléfono ni tu correo hasta que tú lo compartas.
+  </div></div>
+<% else %>
+  <ul class="list-unstyled d-grid gap-2">
+    <% @conversaciones.each do |c| %>
+      <% otro = c.externa? ? nil : c.otro(current_user) %>
+      <% nombre = otro ? (otro.red_perfil&.nombre_publico || "Persona que ya no está en la red") : "#{c.nombre_externo} (sin cuenta)" %>
+      <% sin_leer = @no_leidos[c.id].to_i %>
+      <li>
+        <%= link_to red_conversacion_path(c), class: "card red-tarjeta red-tarjeta-enlace" do %>
+          <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2">
+            <div class="text-truncate">
+              <div class="fw-semibold text-truncate"><%= nombre %></div>
+              <div class="small text-muted text-truncate"><%= c.publicacion&.titulo || "Conversación directa" %>
+                <% unless c.estado == "abierta" %> · <%= c.estado %><% end %></div>
+            </div>
+            <% if sin_leer.positive? %>
+              <span class="badge rounded-pill text-bg-primary"><%= sin_leer %><span class="visually-hidden"> sin leer</span></span>
+            <% end %>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+  <%= paginate @conversaciones %>
+<% end %>
