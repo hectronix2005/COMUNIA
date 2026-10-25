@@ -130,6 +130,9 @@ class Red::PerfilesPublicacionesTest < ActionDispatch::IntegrationTest
     travel 3.days do
       get "/red/publicaciones/#{pub.token}"
       assert_response :success
+      assert_includes response.headers["X-Robots-Tag"].to_s, "noindex" # pública, pero fuera de los buscadores
+      get "/red/buscar", params: { q: pub.titulo.split.first }
+      assert_includes response.headers["X-Robots-Tag"].to_s, "noindex"
     end
   end
 

@@ -7,6 +7,7 @@ module Red
   # - El JSON sale de una lista blanca de campos (Red::Ficha::CAMPOS_JSON y CAMPOS_PUBLICACION).
   class BusquedaController < BaseController
     publico only: :index
+    fuera_de_buscadores only: :index
     helper_method :pagina_url
 
     POR_PAGINA = 20

@@ -17,6 +17,8 @@ module Red
 
     # Acciones públicas: se declaran en cada controlador con `publico only: %i[...]`.
     def self.publico(**opciones) = skip_before_action(:exigir_cuenta, **opciones)
+    # Páginas que se ven sin cuenta pero no deben quedar en los buscadores.
+    def self.fuera_de_buscadores(**opciones) = after_action(**opciones) { response.set_header("X-Robots-Tag", "noindex, nofollow, noarchive") }
 
     private
 

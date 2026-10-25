@@ -6,8 +6,7 @@ module Red
     publico only: %i[show hoja_de_vida]
 
     before_action :cargar_perfil
-    # Un perfil o una hoja de vida no deben quedar en los buscadores aunque se vean sin cuenta.
-    after_action { response.set_header("X-Robots-Tag", "noindex, nofollow, noarchive") }
+    fuera_de_buscadores
 
     def show
       @ficha = Ficha.new(@perfil)

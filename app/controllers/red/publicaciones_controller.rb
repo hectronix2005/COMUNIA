@@ -3,6 +3,7 @@ module Red
   # la cuarentena y el filtro de estafas están en Red::Antifraude.
   class PublicacionesController < BaseController
     publico only: :show
+    fuera_de_buscadores only: :show
 
     before_action :exigir_perfil, except: :show
     before_action :cargar_propia, only: %i[edit update renovar cambiar_estado]
