@@ -1,5 +1,6 @@
 module Red
   # Lote diario de la red (config/recurring.yml, 4 a. m.):
+  # 0. sincroniza las logias certificadas con su registro (altas, bajas y renovación de la membresía);
   # 1. recalcula la foto de confianza de todos a la vez, para que un cambio de nivel no delate en qué
   #    momento alguien entró en otra comunidad;
   # 2. borra el contacto que dejaron quienes escribieron sin cuenta hace más de 90 días (Ley 1581,
@@ -9,12 +10,22 @@ module Red
     queue_as :default
 
     def perform(ahora = Time.current)
+      sincronizar_logias
       CalculoConfianza.recalcular_todo!(ahora)
       purgar_contactos_externos(ahora)
       avisar_vencimientos(ahora.to_date)
     end
 
     private
+
+    # Una logia no tiene verificadores en la red: su registro en COMUNIA es la evidencia.
+    def sincronizar_logias
+      Comunidad.where(estado: "certificada").where.not(logia_id: nil).includes(:logia, :revisada_por).find_each do |c|
+        Comunidad.transaction { CertificarLogia.sincronizar!(c, c.logia, c.revisada_por) }
+      rescue StandardError => e
+        Rails.logger.warn("[red] logia #{c.logia_id} sin sincronizar: #{e.class}")
+      end
+    end
 
     def purgar_contactos_externos(ahora)
       Conversacion.where(iniciador_id: nil).where.not(contacto_externo_cif: nil)

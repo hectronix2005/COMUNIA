@@ -47,6 +47,27 @@ class Red::MantenimientoTest < ActiveSupport::TestCase
     assert_includes titulos, "Tu membresía en Club Vence vence en 15 días"
   end
 
+  test "el lote diario sincroniza las logias certificadas: altas, bajas y renovación" do
+    logia = Logia.create!(nombre: "Logia Sur", slug: "sur-#{SecureRandom.hex(3)}", codigo: "SR#{rand(10_000)}")
+    u1 = User.create!(nombre: "Uno", apellido: "L", email: "s1_#{SecureRandom.hex(3)}@x.co", password: "password123", logia: logia)
+    u2 = User.create!(nombre: "Dos", apellido: "L", email: "s2_#{SecureRandom.hex(3)}@x.co", password: "password123", logia: logia)
+    mi1 = Miembro.create!(user: u1, logia: logia, numero_miembro: "N#{SecureRandom.hex(3)}", cedula: SecureRandom.hex(5), fecha_ingreso: Date.new(2018, 1, 1))
+    c = Red::CertificarLogia.call(logia, por: red_moderador)
+    assert_equal 1, c.miembros_count
+    c.membresias.find_by(user: u1).update!(vence_el: 15.days.from_now.to_date)
+
+    Miembro.create!(user: u2, logia: logia, numero_miembro: "N#{SecureRandom.hex(3)}", cedula: SecureRandom.hex(5), fecha_ingreso: Date.new(2024, 1, 1))
+    Red::MantenimientoDiarioJob.perform_now
+    assert_equal 2, c.reload.miembros_count
+    assert c.membresias.find_by(user: u1).vence_el > 11.months.from_now.to_date
+    assert_not_includes u1.notificaciones.pluck(:titulo), "Tu membresía en Logia Sur vence en 15 días"
+
+    mi1.update_columns(estado: Miembro.estados.fetch("quite"))
+    Red::MantenimientoDiarioJob.perform_now
+    assert_equal "revocada", c.membresias.find_by(user: u1).estado
+    assert_equal 1, c.reload.miembros_count
+  end
+
   test "alerta: una comunidad que se infla de golpe o un verificador que aprueba en masa" do
     verificador = red_usuario("Vero")
     club = red_comunidad("Club Inflado", miembros: [verificador] + red_relleno(5), dias: 200)
