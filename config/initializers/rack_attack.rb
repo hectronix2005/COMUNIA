@@ -46,6 +46,22 @@ class Rack::Attack
     end
   end
 
+  # Red de comunidades: registro, contacto sin cuenta y reportes (formularios públicos con captcha).
+  throttle("red/registro/ip", limit: 5, period: 1.hour) do |req|
+    req.ip if req.post? && req.path == "/red/registro"
+  end
+  throttle("red/publico/ip", limit: 10, period: 1.hour) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A/red/(publicaciones/[^/]+/contactar|reportar)\z})
+  end
+  # Escrituras con cuenta en la red (mensajes, publicaciones, solicitudes): contra ráfagas.
+  throttle("red/escrituras/ip", limit: 60, period: 10.minutes) do |req|
+    req.ip if !req.get? && !req.head? && req.path.start_with?("/red/") && req.path != "/red/entrar"
+  end
+  # La búsqueda sin cuenta: contra el raspado del directorio.
+  throttle("red/buscar/ip", limit: 60, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/red/buscar")
+  end
+
   # 5) Ráfaga global por IP para mitigar scraping/DoS.
   throttle("req/ip", limit: 300, period: 1.minute) do |req|
     req.ip unless req.path.start_with?("/up", "/assets/")

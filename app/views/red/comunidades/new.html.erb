@@ -1,0 +1,50 @@
+<% content_for :title, "Proponer una comunidad" %>
+<h1 class="h5">Proponer una comunidad</h1>
+<div class="alert alert-light small">
+  <strong>Cómo se certifica:</strong> 1) nos cuentas qué tienen en común y cómo lo demostramos;
+  2) revisamos la evidencia de que la comunidad existe (sitio oficial, NIT, resolución, acta…);
+  3) si la aprobamos, quedas como su primer administrador y nombras verificadores;
+  4) cada miembro entra con evidencia y la aprueba un verificador (nunca uno mismo);
+  5) las membresías vencen al año y se renuevan; se pueden revocar con motivo, y la plataforma
+  puede suspender o revocar una comunidad entera. Hasta tener 5 miembros y meses de antigüedad, una
+  comunidad apenas suma confianza.
+</div>
+<%= form_with url: red_comunidades_path, method: :post do %>
+  <div class="mb-2">
+    <label class="form-label" for="c-nombre">Nombre</label>
+    <input class="form-control" id="c-nombre" name="nombre" required minlength="3" maxlength="80" value="<%= @comunidad.nombre %>">
+  </div>
+  <div class="row g-2">
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="c-tipo">Tipo de vínculo</label>
+      <select class="form-select" id="c-tipo" name="tipo_vinculo"><%= options_for_select(Red::Comunidad::TIPOS.except("logia").invert, @comunidad.tipo_vinculo) %></select>
+    </div>
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="c-ciudad">Ciudad (opcional)</label>
+      <input class="form-control" id="c-ciudad" name="ciudad" maxlength="60" value="<%= @comunidad.ciudad %>">
+    </div>
+  </div>
+  <div class="mb-2">
+    <label class="form-label" for="c-criterio">¿Qué tienen en común, que se pueda comprobar?</label>
+    <textarea class="form-control" id="c-criterio" name="criterio" rows="2" required minlength="10" maxlength="500"><%= @comunidad.criterio %></textarea>
+  </div>
+  <div class="row g-2">
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="c-metodo">Cómo se comprueba a cada miembro</label>
+      <select class="form-select" id="c-metodo" name="metodo_verificacion"><%= options_for_select(Red::Comunidad::METODOS.except("registro_oficial").invert, @comunidad.metodo_verificacion) %></select>
+    </div>
+    <div class="col-sm-6 mb-2">
+      <label class="form-label" for="c-dominio">Dominio del correo (si es por correo)</label>
+      <input class="form-control" id="c-dominio" name="dominio_correo" maxlength="80" placeholder="unal.edu.co" value="<%= @comunidad.dominio_correo %>">
+    </div>
+  </div>
+  <div class="mb-2">
+    <label class="form-label" for="c-evidencia">Evidencia de que la comunidad existe</label>
+    <textarea class="form-control" id="c-evidencia" name="evidencia" rows="3" maxlength="2000" required placeholder="Sitio web oficial, NIT, personería jurídica, acta de constitución…"><%= @comunidad.evidencia %></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="c-desc">Descripción (opcional)</label>
+    <textarea class="form-control" id="c-desc" name="descripcion" rows="3" maxlength="2000"><%= @comunidad.descripcion %></textarea>
+  </div>
+  <button class="btn btn-primary" type="submit">Enviar a revisión</button>
+<% end %>

@@ -1,0 +1,85 @@
+<% content_for :title, "Gestionar #{@comunidad.nombre}" %>
+<% admin = @comunidad.administrador?(current_user) %>
+<h1 class="h5">Gestionar <%= @comunidad.nombre %></h1>
+<div class="row g-2 mb-3 text-center">
+  <% [["Verificados", :verificados], ["Pendientes", :pendientes], ["Nuevos (30 días)", :nuevos_30],
+      ["Vencen en 30 días", :por_vencer], ["Con perfil", :con_perfil], ["Publicaciones activas", :publicaciones]].each do |rotulo, k| %>
+    <div class="col-4 col-md-2"><div class="card red-tarjeta"><div class="card-body p-2">
+      <div class="fs-5 fw-bold"><%= @metricas[k] %></div><div class="small text-muted"><%= rotulo %></div>
+    </div></div></div>
+  <% end %>
+</div>
+
+<h2 class="h6">Solicitudes pendientes</h2>
+<% if @pendientes.empty? %><p class="small text-muted">No hay solicitudes.</p><% end %>
+<% @pendientes.each do |m| %>
+  <div class="card red-tarjeta mb-2"><div class="card-body">
+    <div class="fw-semibold"><%= m.user.red_perfil&.nombre_publico || m.user.nombre_corto %></div>
+    <% if @comunidad.metodo_verificacion == "correo_institucional" %><div class="small">Correo de la cuenta: <%= m.user.email %></div><% end %>
+    <div class="small text-muted">Pidió entrar el <%= l(m.created_at.to_date) %></div>
+    <p class="small mb-2"><strong>Evidencia:</strong> <%= m.evidencia.presence || "—" %></p>
+    <% if m.user.red_perfil && m.user_id != current_user.id %>
+      <div class="d-flex flex-wrap gap-2">
+        <%= button_to "Aprobar", decidir_red_comunidad_path(@comunidad, perfil: m.user.red_perfil.token, accion: "aprobar"), class: "btn btn-success btn-sm" %>
+        <%= form_with url: decidir_red_comunidad_path(@comunidad, perfil: m.user.red_perfil.token, accion: "rechazar"), method: :post, class: "d-flex gap-1" do %>
+          <label class="visually-hidden" for="mot-<%= m.id %>">Motivo</label>
+          <input id="mot-<%= m.id %>" name="motivo" class="form-control form-control-sm" placeholder="Motivo (opcional)" maxlength="500">
+          <button class="btn btn-outline-danger btn-sm" type="submit">Rechazar</button>
+        <% end %>
+      </div>
+    <% elsif m.user_id == current_user.id %>
+      <p class="small text-muted mb-0">Es tu propia solicitud: la aprueba otro verificador.</p>
+    <% end %>
+  </div></div>
+<% end %>
+
+<div class="d-flex justify-content-between align-items-center mt-4">
+  <h2 class="h6 mb-0">Miembros verificados</h2>
+  <% if admin %><%= link_to "Exportar CSV", exportar_red_comunidad_path(@comunidad), class: "btn btn-outline-secondary btn-sm" %><% end %>
+</div>
+<div class="table-responsive">
+  <table class="table table-sm align-middle mt-2">
+    <thead><tr><th scope="col">Nombre</th><th scope="col">Rol</th><th scope="col">Vence</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+    <tbody>
+      <% @miembros.each do |m| %>
+        <% pt = m.user.red_perfil&.token %>
+        <tr>
+          <td><%= m.user.red_perfil&.nombre_publico || m.user.nombre_corto %></td>
+          <td><%= m.rol_texto %></td>
+          <td class="<%= 'text-danger' if m.vencida? %>"><%= m.vence_el ? l(m.vence_el) : "—" %></td>
+          <td class="text-end">
+            <% if pt && m.user_id != current_user.id %>
+              <div class="d-inline-flex flex-wrap gap-1 justify-content-end">
+                <%= button_to "Renovar", decidir_red_comunidad_path(@comunidad, perfil: pt, accion: "renovar"), class: "btn btn-outline-secondary btn-sm" %>
+                <% if admin %>
+                  <% if m.rol == "miembro" %>
+                    <%= button_to "Hacer verificador", decidir_red_comunidad_path(@comunidad, perfil: pt, accion: "hacer_verificador"), class: "btn btn-outline-primary btn-sm" %>
+                  <% elsif m.rol == "verificador" %>
+                    <%= button_to "Quitar verificador", decidir_red_comunidad_path(@comunidad, perfil: pt, accion: "hacer_miembro"), class: "btn btn-outline-primary btn-sm" %>
+                  <% end %>
+                  <%= form_with url: decidir_red_comunidad_path(@comunidad, perfil: pt, accion: "revocar"), method: :post, class: "d-inline-flex gap-1" do %>
+                    <label class="visually-hidden" for="rev-<%= m.id %>">Motivo de la revocación</label>
+                    <input id="rev-<%= m.id %>" name="motivo" class="form-control form-control-sm" placeholder="Motivo" maxlength="500" required style="max-width: 9rem;">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Revocar</button>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<%= paginate @miembros %>
+
+<% if admin %>
+  <h2 class="h6 mt-4">Datos de la comunidad</h2>
+  <%= form_with url: gestion_red_comunidad_path(@comunidad), method: :patch do %>
+    <label class="form-label small" for="g-ciudad">Ciudad</label>
+    <input class="form-control mb-2" id="g-ciudad" name="ciudad" maxlength="60" value="<%= @comunidad.ciudad %>">
+    <label class="form-label small" for="g-desc">Descripción</label>
+    <textarea class="form-control mb-2" id="g-desc" name="descripcion" rows="3" maxlength="2000"><%= @comunidad.descripcion %></textarea>
+    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+  <% end %>
+<% end %>

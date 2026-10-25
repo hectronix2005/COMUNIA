@@ -1,0 +1,23 @@
+<% content_for :title, "Métricas de la red" %>
+<h1 class="h5">Métricas de la red</h1>
+<div class="row g-2 text-center mb-3">
+  <% { "Cuentas solo de la red" => :cuentas_red, "Perfiles" => :perfiles, "Perfiles públicos" => :publicos,
+       "Comunidades certificadas" => :comunidades, "Comunidades por revisar" => :pendientes,
+       "Membresías vigentes" => :membresias, "Publicaciones activas" => :publicaciones, "«Necesito»" => :necesito,
+       "«Ofrezco»" => :ofrezco, "Conversaciones (30 días)" => :conversaciones_30, "Reseñas" => :resenas,
+       "Reportes pendientes" => :reportes_pendientes }.each do |rotulo, k| %>
+    <div class="col-6 col-md-3"><div class="card red-tarjeta"><div class="card-body p-2">
+      <div class="fs-5 fw-bold"><%= @m[k] %></div><div class="small text-muted"><%= rotulo %></div>
+    </div></div></div>
+  <% end %>
+</div>
+<h2 class="h6">Personas por nivel de confianza</h2>
+<table class="table table-sm w-auto">
+  <thead><tr><th scope="col">Nivel</th><th scope="col">Personas</th></tr></thead>
+  <tbody><% Red::NIVELES.each do |n, texto| %><tr><td><%= texto %></td><td><%= @m[:niveles][n] || 0 %></td></tr><% end %></tbody>
+</table>
+<h2 class="h6">Búsquedas por día (30 días)</h2>
+<table class="table table-sm w-auto">
+  <thead><tr><th scope="col">Día</th><th scope="col">Sin cuenta</th><th scope="col">Con cuenta</th></tr></thead>
+  <tbody><% @busquedas.each do |b| %><tr><td><%= l(b.fecha) %></td><td><%= b.sin_cuenta %></td><td><%= b.con_cuenta %></td></tr><% end %></tbody>
+</table>

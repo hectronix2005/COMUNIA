@@ -1,0 +1,47 @@
+<% content_for :title, "Crear cuenta" %>
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="card red-tarjeta"><div class="card-body p-4">
+      <h1 class="h4">Crea tu cuenta</h1>
+      <p class="small text-muted">Gratis. Después te unirás a tus comunidades y crearás tu perfil.</p>
+      <%= form_with url: red_registro_path, method: :post, local: true, data: { turbo: false } do %>
+        <div class="row g-2">
+          <div class="col-sm-6 mb-2">
+            <label class="form-label" for="r-nombre">Nombre</label>
+            <input class="form-control" id="r-nombre" name="nombre" required maxlength="60" autocomplete="given-name" value="<%= @user.nombre %>">
+          </div>
+          <div class="col-sm-6 mb-2">
+            <label class="form-label" for="r-apellido">Apellido</label>
+            <input class="form-control" id="r-apellido" name="apellido" required maxlength="60" autocomplete="family-name" value="<%= @user.apellido %>">
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="r-email">Correo</label>
+          <input class="form-control" id="r-email" name="email" type="email" required maxlength="120" autocomplete="email" value="<%= @user.email %>" aria-describedby="r-email-ayuda">
+          <div id="r-email-ayuda" class="form-text">Para entrar y recuperar tu cuenta. Nadie más lo ve.</div>
+        </div>
+        <div class="row g-2">
+          <div class="col-sm-6 mb-2">
+            <label class="form-label" for="r-clave">Contraseña</label>
+            <input class="form-control" id="r-clave" name="password" type="password" required minlength="10" maxlength="128" autocomplete="new-password" aria-describedby="r-clave-ayuda">
+            <div id="r-clave-ayuda" class="form-text">Mínimo 10 caracteres.</div>
+          </div>
+          <div class="col-sm-6 mb-2">
+            <label class="form-label" for="r-clave2">Repítela</label>
+            <input class="form-control" id="r-clave2" name="password_confirmation" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="form-check my-3">
+          <input class="form-check-input" type="checkbox" value="1" id="r-acepto" name="acepto" required>
+          <label class="form-check-label small" for="r-acepto">
+            Autorizo el tratamiento de mis datos personales para usar la red (Ley 1581 de 2012), según la
+            <%= link_to "política de privacidad", red_privacidad_path, target: "_blank" %>. Puedo exportarlos o borrarlos cuando quiera.
+          </label>
+        </div>
+        <%= render "red/shared/captcha" %>
+        <button class="btn btn-primary w-100" type="submit">Crear cuenta</button>
+      <% end %>
+      <p class="small mt-3 mb-0">¿Ya tienes cuenta? <%= link_to "Entra", red_entrar_path %></p>
+    </div></div>
+  </div>
+</div>

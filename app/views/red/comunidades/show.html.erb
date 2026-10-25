@@ -1,0 +1,43 @@
+<% content_for :title, @comunidad.nombre %>
+<div class="card red-tarjeta mb-3"><div class="card-body">
+  <div class="small text-muted"><%= @comunidad.tipo_texto %><%= " · #{@comunidad.ciudad}" if @comunidad.ciudad.present? %></div>
+  <h1 class="h4">
+    <% if @comunidad.certificada? %><i class="bi bi-patch-check-fill text-success" aria-hidden="true"></i><% end %>
+    <%= @comunidad.nombre %>
+  </h1>
+  <% unless @comunidad.certificada? %>
+    <div class="alert alert-warning small py-2">Estado: <strong><%= @comunidad.estado %></strong><%= " — #{@comunidad.motivo_estado}" if @comunidad.motivo_estado.present? %></div>
+  <% end %>
+  <dl class="small mb-0">
+    <dt>Qué tienen en común</dt><dd><%= @comunidad.criterio %></dd>
+    <dt>Cómo se comprueba a cada miembro</dt><dd><%= @comunidad.metodo_texto %><%= " (@#{@comunidad.dominio_correo})" if @comunidad.dominio_correo.present? %></dd>
+    <dt>Tamaño</dt><dd><%= Red::BANDAS.fetch(Red.banda(@comunidad.tamano_publico)).sub("ninguna comunidad", "recién certificada") %></dd>
+    <% if @comunidad.descripcion.present? %><dt>Descripción</dt><dd><%= simple_format(@comunidad.descripcion, {}, wrapper_tag: "span") %></dd><% end %>
+  </dl>
+</div></div>
+
+<% if @comunidad.certificada? %>
+  <% if !user_signed_in? %>
+    <p><%= link_to "Crea tu cuenta", red_registro_path %> o <%= link_to "entra", red_entrar_path %> para pedir unirte.</p>
+  <% elsif @mia&.verificada? %>
+    <div class="d-flex flex-wrap gap-2">
+      <span class="badge text-bg-success align-self-center">Eres <%= @mia.rol_texto.downcase %> verificado</span>
+      <%= link_to "Directorio de miembros", miembros_red_comunidad_path(@comunidad), class: "btn btn-outline-primary btn-sm" %>
+      <% if @mia.rol.in?(%w[verificador administrador]) %><%= link_to "Gestionar", gestion_red_comunidad_path(@comunidad), class: "btn btn-primary btn-sm" %><% end %>
+      <%= button_to "Salir de la comunidad", salir_red_comunidad_path(@comunidad), method: :delete, class: "btn btn-link btn-sm text-danger", form: { data: { turbo_confirm: "¿Seguro que quieres salir?" } } %>
+    </div>
+  <% elsif @mia&.estado == "solicitada" %>
+    <div class="alert alert-info small">Tu solicitud está pendiente: la revisa un verificador de la comunidad.</div>
+  <% else %>
+    <div class="card red-tarjeta"><div class="card-body">
+      <h2 class="h6">Pedir unirme</h2>
+      <% if @mia&.estado == "rechazada" %><p class="small text-muted">Tu solicitud anterior no se aprobó<%= ": #{@mia.motivo}" if @mia.motivo.present? %>. Puedes volver a pedirlo.</p><% end %>
+      <%= form_with url: unirse_red_comunidad_path(@comunidad), method: :post do %>
+        <label for="m-evidencia" class="form-label small">¿Cómo pueden comprobar que eres parte? (número de carné, promoción, unidad, cargo…)</label>
+        <textarea id="m-evidencia" name="evidencia" class="form-control mb-2" rows="3" maxlength="1000" required></textarea>
+        <p class="form-text">Solo lo ven los verificadores de esta comunidad. No sabrán a qué otras comunidades perteneces.</p>
+        <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+      <% end %>
+    </div></div>
+  <% end %>
+<% end %>

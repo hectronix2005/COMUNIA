@@ -1,0 +1,5 @@
+<%# Cloudflare Turnstile (solo si hay clave; en desarrollo y pruebas se acepta sin ella). %>
+<% if captcha_site_key %>
+  <% content_for :head do %><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script><% end %>
+  <div class="cf-turnstile mb-3" data-sitekey="<%= captcha_site_key %>" data-language="es"></div>
+<% end %>

@@ -1,0 +1,13 @@
+<% content_for :title, "Miembros de #{@comunidad.nombre}" %>
+<h1 class="h5">Miembros de <%= @comunidad.nombre %></h1>
+<p class="small text-muted">Solo lo ven los miembros verificados de esta comunidad. Aparecen quienes ya crearon su perfil.</p>
+<div class="list-group mb-3">
+  <% @perfiles.each do |p| %>
+    <% f = @fichas[p.user_id] %>
+    <%= link_to red_perfil_path(p), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+      <span><span class="fw-semibold"><%= p.nombre_publico %></span><% if p.titular.present? %><br><span class="small text-muted"><%= p.titular %></span><% end %></span>
+      <%= render "red/shared/nivel", ficha: f %>
+    <% end %>
+  <% end %>
+</div>
+<%= paginate @perfiles %>

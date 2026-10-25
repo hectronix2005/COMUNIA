@@ -1,0 +1,67 @@
+<% content_for :title, "Moderación" %>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h5 mb-0">Moderación de la red</h1>
+  <%= link_to "Métricas", red_moderacion_metricas_path, class: "btn btn-outline-secondary btn-sm" %>
+</div>
+
+<% if @alertas.any? %>
+  <div class="alert alert-warning small">
+    <strong>Crecimiento anómalo:</strong>
+    <ul class="mb-0"><% @alertas.each do |a| %><li><%= link_to a[:comunidad].nombre, red_comunidad_path(a[:comunidad]) %>: <%= a[:texto] %></li><% end %></ul>
+  </div>
+<% end %>
+
+<h2 class="h6 mt-3">Comunidades por certificar (<%= @comunidades.size %>)</h2>
+<% @comunidades.each do |c| %>
+  <div class="card red-tarjeta mb-2"><div class="card-body small">
+    <div class="fw-semibold"><%= link_to c.nombre, red_comunidad_path(c) %> · <%= c.tipo_texto %></div>
+    <div>Pide: <%= c.solicitada_por&.nombre_completo %> (<%= c.solicitada_por&.email %>)</div>
+    <div><strong>En común:</strong> <%= c.criterio %></div>
+    <div><strong>Método:</strong> <%= c.metodo_texto %><%= " @#{c.dominio_correo}" if c.dominio_correo.present? %></div>
+    <div class="mb-2"><strong>Evidencia:</strong> <%= c.evidencia.presence || "—" %></div>
+    <div class="d-flex flex-wrap gap-2">
+      <%= button_to "Certificar", red_moderacion_comunidad_path(token: c.token, accion: "certificar"), class: "btn btn-success btn-sm" %>
+      <%= form_with url: red_moderacion_comunidad_path(token: c.token, accion: "rechazar"), method: :post, class: "d-flex gap-1" do %>
+        <label class="visually-hidden" for="cm-<%= c.id %>">Motivo</label>
+        <input id="cm-<%= c.id %>" name="motivo" class="form-control form-control-sm" placeholder="Motivo del rechazo" required maxlength="500">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Rechazar</button>
+      <% end %>
+    </div>
+  </div></div>
+<% end %>
+
+<h2 class="h6 mt-4">Reportes pendientes (<%= @reportes.size %>)</h2>
+<% @reportes.group_by(&:objeto).each do |objeto, reportes| %>
+  <div class="card red-tarjeta mb-2"><div class="card-body small">
+    <div class="fw-semibold">
+      <% if objeto.is_a?(Red::Publicacion) %>Publicación: <%= link_to objeto.titulo, red_publicacion_path(objeto) %> (<%= objeto.estado %>)
+      <% elsif objeto.is_a?(Red::Perfil) %>Perfil: <%= link_to objeto.nombre_publico, red_perfil_path(objeto) %>
+      <% elsif objeto.is_a?(Red::Mensaje) %>Mensaje: «<%= truncate(objeto.cuerpo, length: 160) %>»
+      <% end %>
+    </div>
+    <ul class="mb-2"><% reportes.each do |r| %><li><%= r.motivo_texto %><%= ": #{r.detalle}" if r.detalle.present? %></li><% end %></ul>
+    <div class="d-flex gap-2">
+      <%= button_to "Sancionar y retirar", red_moderacion_reporte_path(id: reportes.first.id, accion: "sancionar"), class: "btn btn-danger btn-sm", form: { data: { turbo_confirm: "Se retira y suma una sanción al autor. ¿Seguro?" } } %>
+      <%= button_to "Descartar", red_moderacion_reporte_path(id: reportes.first.id, accion: "descartar"), class: "btn btn-outline-secondary btn-sm" %>
+    </div>
+  </div></div>
+<% end %>
+
+<h2 class="h6 mt-4">Publicaciones retenidas (<%= @retenidas.size %>)</h2>
+<% @retenidas.each do |p| %>
+  <div class="card red-tarjeta mb-2"><div class="card-body small">
+    <div class="fw-semibold"><%= link_to p.titulo, red_publicacion_path(p) %> — <%= p.user.red_perfil&.nombre_publico %></div>
+    <div class="text-muted mb-1"><%= p.motivo_revision %></div>
+    <p class="mb-2"><%= truncate(p.descripcion, length: 300) %></p>
+    <%= button_to "Aprobar", red_moderacion_aprobar_path(token: p.token), class: "btn btn-success btn-sm" %>
+  </div></div>
+<% end %>
+
+<h2 class="h6 mt-4">Certificar una logia de COMUNIA</h2>
+<p class="small text-muted">Sus miembros activos quedan verificados por el registro de la logia. Se puede repetir para sincronizar.</p>
+<% @logias.each do |l| %>
+  <div class="d-flex justify-content-between align-items-center border-bottom py-1 small">
+    <span><%= l.nombre %></span>
+    <%= button_to "Certificar", red_moderacion_certificar_logia_path(id: l.id), class: "btn btn-outline-success btn-sm" %>
+  </div>
+<% end %>
