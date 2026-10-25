@@ -13,11 +13,17 @@ development:
   marcar_vencidos:
     class: MarcarVencidosJob
     schedule: at 6am every day
+  red_mantenimiento:
+    class: Red::MantenimientoDiarioJob
+    schedule: at 4am every day
 
 production:
   marcar_vencidos:
     class: MarcarVencidosJob
     schedule: at 6am every day
+  red_mantenimiento:
+    class: Red::MantenimientoDiarioJob
+    schedule: at 4am every day
   cumpleanos_notificaciones:
     class: CumpleanosNotificacionJob
     schedule: at 7am every day

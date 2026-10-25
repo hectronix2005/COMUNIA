@@ -47,8 +47,9 @@ Estados: ✅ hecho y verificado · 🔄 en curso · ⏳ pendiente · ⛔ bloquea
    verificadores, revisión, revocación, renovación, certificar una logia (test/red/comunidades_test.rb)
 4. ✅ Perfiles (hoja de vida incluida), publicaciones necesito/ofrezco con alcance, topes, cuarentena
    y filtro de estafas, exportar y borrar mis datos (test/red/perfiles_publicaciones_test.rb)
-5. 🔄 Fórmula de confianza y antifraude: cuarentena, topes, anillos, duplicados, filtros de estafa
-6. ⏳ Búsqueda pública sin cuenta, filtros y categorías. Pruebas de extracción de la privacidad
+5. ✅ Fórmula de confianza y antifraude: cuarentena, topes, anillos, duplicados, filtros de estafa,
+   lote diario a las 4 a. m. (Red::MantenimientoDiarioJob), alertas de comunidades infladas
+6. 🔄 Búsqueda pública sin cuenta, filtros y categorías. Pruebas de extracción de la privacidad
 7. ⏳ Mensajería intermediada, contacto sin cuenta, reseñas verificables, reportes y moderación,
    notificaciones
 8. ⏳ Administración de comunidades y métricas, Ley 1581 (exportar, borrar), onboarding,
