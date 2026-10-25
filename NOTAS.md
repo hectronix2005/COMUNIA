@@ -90,16 +90,31 @@ No hecho o no comprobado:
 - 24-oct, 23:05: primera comunidad, **Logia Propagadores de la Luz N1** (la única con miembros
   activos), certificada por la cuenta de plataforma con `Red::CertificarLogia`: 28 membresías
   verificadas, 0 perfiles todavía. Las demás logias tienen 0 activos.
-- Arreglo 1fedecf (local, sin desplegar): la tarea diaria vuelve a sincronizar las logias
-  certificadas. Sin él, las altas y bajas no llegan a la comunidad y las membresías vencen al año
-  sin nadie que las renueve. Hasta desplegarlo, basta con volver a certificar la logia a mano.
+- 24-oct, 23:20, desplegado 49c1b26 (por decisión de Héctor):
+  - 1fedecf: la tarea diaria vuelve a sincronizar las logias certificadas (altas, bajas y
+    renovación). Probado en producción: la logia sigue con 28.
+  - Enlace «Red» en el menú de COMUNIA (escritorio y móvil) y «Volver a COMUNIA» en el pie de la
+    red, solo para cuentas con logia. Recorrido en navegador (1280 y 390 px).
+  - La red nunca se sirve bajo `/t/<slug>`: un enlace copiado dentro del tenant habría delatado la
+    organización de quien lo comparte. GET → 301 a `/red/...`; escrituras → 404. Comprobado en
+    producción.
+
+### Fallo anterior encontrado (no es de la red; sin tocar)
+
+- **Las notificaciones push de COMUNIA nunca han funcionado en producción**: 0 suscripciones.
+  `/service-worker` responde 422 (Rails lo bloquea como «JavaScript pedido desde otro sitio»,
+  falta `skip_forgery_protection` en `PwaController#service_worker`), así que el navegador no
+  registra el service worker. Además el manifiesto sale con las comillas escapadas (`&quot;`), así
+  que no se puede instalar como app. Arreglarlo es poco código, pero hará que COMUNIA empiece a
+  mandar push a usuarios reales: decisión de Héctor.
 
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
 
-- **Desplegar 1fedecf** (sincronización diaria de logias).
-- Que los miembros de la logia **creen su perfil** en `/red`: hoy ninguno lo tiene.
+- Que los miembros de la logia **creen su perfil** en `/red` (ya tienen el enlace en el menú):
+  hoy ninguno lo tiene. Avisarles es cosa de Héctor.
+- Decidir si se arregla el push y el manifiesto de la PWA (ver «Fallo anterior encontrado»).
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
   cuentas de la red.
 - **Turnstile**: claves en una cuenta de Cloudflare suya, nunca de Picap. Sin ellas, en producción
@@ -108,7 +123,6 @@ No hecho o no comprobado:
 - Quién hace de **certificador/moderador de plataforma** además del superadmin.
 - **Responsable del tratamiento** y canal de atención para la página de privacidad, que hoy dice
   «se publicarán aquí antes de abrir la red al público».
-- Decidir si la red se anuncia desde la portada de COMUNIA: hoy solo se llega por `/red`.
 
 ### Arrastrado de antes
 
