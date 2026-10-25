@@ -134,6 +134,9 @@ GEM
     devise-passwordless (1.1.0)
       devise
       globalid
+    devise_invitable (2.0.14)
+      actionmailer (>= 5.0)
+      devise (>= 4.6)
     dotenv (3.2.0)
     drb (2.2.3)
     ed25519 (1.4.0)
@@ -480,6 +483,7 @@ DEPENDENCIES
   debug
   devise (~> 5.0, >= 5.0.4)
   devise-passwordless (~> 1.1)
+  devise_invitable (~> 2.0, >= 2.0.14)
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

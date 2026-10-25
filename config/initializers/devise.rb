@@ -135,6 +135,13 @@ Devise.setup do |config|
   # Send a notification email when the user's password is changed.
   # config.send_password_change_notification = false
 
+  # ==> Configuration for :invitable
+  # Las invitaciones las genera un admin desde la ficha del miembro y el enlace se manda por WhatsApp:
+  # no sale ningún correo. Caduca a los 7 días, y generar otro deja sin valor el anterior.
+  config.invite_for = 7.days
+  # Quien acepta elige ahí su contraseña y entra sin volver a escribirla (lo que la gema hace por defecto).
+  config.allow_insecure_sign_in_after_accept = true
+
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without
   # confirming their account. For instance, if set to 2.days, the user will be
