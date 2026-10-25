@@ -132,12 +132,12 @@ No hecho o no comprobado:
 - ✅ **El login enseñaba usuarios y contraseñas de demostración** (279a34d, desplegado). Se cambiaron
   las 7 contraseñas publicadas en producción; ninguna cuenta acepta ya las viejas. No hay registro
   anterior al arranque del contenedor para saber si alguien las usó.
-- 🔄 **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c, rama
-  `fix-alcance-miembros`, sin desplegar). Ahora da 404.
+- ✅ **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c,
+  desplegado). Ahora da 404.
 - ⏳ Quedan unos 40 `find(params[:id])` sin acotar a la logia en otros controladores (biblioteca,
   usuarios, cargos, cobros, hospitalía, publicaciones, calendario, chat…). Sin revisar uno a uno.
-- 🔄 **Invitaciones por enlace** (rama `invitaciones`, encima de la anterior, sin desplegar;
-  lleva migración):
+- ✅ **Invitaciones por enlace** (c80f1f4, desplegado el 25-oct con su migración; en producción
+  cargan la ficha y la lista, y las rutas de la gema dan 404):
   - El admin pulsa «Invitar» en la ficha. Sale un enlace de un solo uso que caduca a los 7 días,
     para mandar por WhatsApp o copiar. No se envía ningún correo.
   - El miembro elige su contraseña (mínimo 10) y llega a `/bienvenida`, donde activa los avisos e
