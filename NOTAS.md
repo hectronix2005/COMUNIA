@@ -151,7 +151,7 @@ No hecho o no comprobado:
     verde; brakeman y bundle-audit sin avisos.
   - Sin cambiar, a decidir: los periodos de cobro son globales (`generar_cobros!` crea cobros en
     todas las logias; solo el superadmin tiene ese permiso); el enum `rol` no coincide con
-    `rol_ref` en 4 usuarios de producción; hospitalía acepta un `miembro_id` o `beneficiario_id` de
+    `rol_ref` en 5 usuarios de producción; hospitalía acepta un `miembro_id` o `beneficiario_id` de
     otra logia al crear un recaudo o un gasto (no enseña nada, pero ensucia los datos); el admin
     de la raíz no ve los cobros de las logias hijas.
 - ✅ **Invitaciones por enlace** (c80f1f4, desplegado el 25-oct con su migración; en producción
