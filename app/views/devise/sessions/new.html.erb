@@ -77,75 +77,6 @@
       <% end %>
     </div>
 
-    <%# ── Credenciales de demostración ───────────────────────── %>
-    <div class="border-top pt-3">
-      <p class="text-center text-muted small mb-2">
-        <i class="bi bi-info-circle me-1"></i>Credenciales de demostración (clic para usar)
-      </p>
-      <div class="row g-2">
-        <% if display_logia.nil? %>
-          <%
-            super_admin = User.joins(:rol_ref).find_by(roles: { codigo: "super_admin" })
-          %>
-          <% if super_admin %>
-            <div class="col-12">
-              <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential"
-                      data-username="<%= super_admin.username %>" data-password="comunia2025!">
-                <span class="badge rounded-pill me-2" style="background: #C9A84C; color: #1B2A4A; min-width: 110px;">COMUNIA Admin</span>
-                <span class="text-muted small"><%= super_admin.username %></span>
-                <i class="bi bi-arrow-right-circle ms-auto"></i>
-              </button>
-            </div>
-          <% end %>
-        <% else %>
-          <%
-            logia_ids = [display_logia.id] + display_logia.logias.pluck(:id)
-            admins_tenant = User.where(logia_id: logia_ids)
-                                .joins(:rol_ref)
-                                .where(roles: { codigo: "admin_logia" })
-                                .order(:apellido, :nombre)
-            miembros_tenant = User.where(logia_id: logia_ids)
-                                  .joins(:rol_ref)
-                                  .where(roles: { codigo: "miembro" })
-                                  .order(:apellido, :nombre)
-          %>
-          <% if admins_tenant.any? %>
-            <div class="col-12">
-              <p class="text-muted small mb-1 fw-semibold">Administradores</p>
-              <% admins_tenant.each do |admin| %>
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential mb-1"
-                        data-username="<%= admin.username %>" data-password="password123">
-                  <span class="badge rounded-pill me-2" style="background: <%= display_logia.color_display %>; color: #fff; min-width: 60px;">Admin</span>
-                  <span class="text-muted small text-truncate"><%= admin.username %></span>
-                  <i class="bi bi-arrow-right-circle ms-auto flex-shrink-0"></i>
-                </button>
-              <% end %>
-            </div>
-          <% end %>
-          <% if miembros_tenant.any? %>
-            <div class="col-12 mt-1">
-              <p class="text-muted small mb-1 fw-semibold"><%= display_logia.t_miembro.pluralize %></p>
-              <div style="max-height: 180px; overflow-y: auto;">
-                <% miembros_tenant.each do |m| %>
-                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center demo-credential mb-1"
-                          data-username="<%= m.username %>" data-password="password123">
-                    <span class="badge rounded-pill me-2" style="background: #1B7A4A; color: #fff; min-width: 60px;"><%= display_logia.t_miembro %></span>
-                    <span class="text-muted small text-truncate"><%= m.username %></span>
-                    <i class="bi bi-arrow-right-circle ms-auto flex-shrink-0"></i>
-                  </button>
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-          <% if admins_tenant.empty? && miembros_tenant.empty? %>
-            <div class="col-12 text-center text-muted small">
-              <i class="bi bi-info-circle me-1"></i>No hay usuarios de demo configurados para este tenant.
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -163,12 +94,4 @@
       icon.classList.add("bi-eye");
     }
   }
-
-  document.querySelectorAll(".demo-credential").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      document.getElementById("login-username").value = this.dataset.username;
-      document.getElementById("login-password").value = this.dataset.password;
-      document.getElementById("login-username").focus();
-    });
-  });
 </script>
