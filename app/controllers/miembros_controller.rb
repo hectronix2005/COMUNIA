@@ -1,5 +1,5 @@
 class MiembrosController < ApplicationController
-  before_action :set_miembro, only: [:show, :edit, :update, :destroy, :cambiar_estado, :cambiar_rol]
+  before_action :set_miembro, only: [:show, :edit, :update, :destroy, :cambiar_estado, :cambiar_rol, :invitar]
 
   def index
     authorize Miembro
@@ -7,6 +7,8 @@ class MiembrosController < ApplicationController
     base = base.por_logia(params[:logia_id]) if params[:logia_id].present?
 
     @resumen_estados = base.group(:estado).count
+    activos = base.where(estado: :activo)
+    @acceso = { activos: activos.count, entraron: activos.joins(:user).where.not(users: { last_seen_at: nil }).count }
 
     @miembros = base.includes(:user, :logia)
 
@@ -49,6 +51,9 @@ class MiembrosController < ApplicationController
 
   def show
     authorize @miembro
+    # Se saca del flash aquí para que el layout no lo pinte también como aviso.
+    @enlace_invitacion = flash[:enlace_invitacion]
+    flash.delete(:enlace_invitacion)
   end
 
   def new
@@ -218,6 +223,17 @@ class MiembrosController < ApplicationController
 
     @miembro.user.update!(rol_ref: rol)
     redirect_to @miembro, notice: "Rol actualizado a «#{rol.nombre}»."
+  end
+
+  # Enlace de un solo uso para que el miembro elija su contraseña; se manda por WhatsApp, sin correo. El
+  # token en claro solo viaja en el flash de esta redirección (en la base queda su resumen): si se pierde,
+  # se genera otro y el anterior deja de servir.
+  def invitar
+    authorize @miembro
+    user = @miembro.user
+    user.invite!(current_user) { |u| u.skip_invitation = true }
+    flash[:enlace_invitacion] = accept_user_invitation_url(invitation_token: user.raw_invitation_token)
+    redirect_to miembro_path(@miembro, anchor: "acceso")
   end
 
   def destroy

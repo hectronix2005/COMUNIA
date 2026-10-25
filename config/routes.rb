@@ -50,10 +50,19 @@ Rails.application.routes.draw do
   get    "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
   delete "t",       to: "tenant_access#exit_tenant", as: :exit_tenant
 
-  devise_for :users, path: "", path_names: {
+  # Las rutas de invitación de la gema se omiten: su «new/create» deja invitar a cualquier usuario con
+  # sesión, y su «remove» borra la cuenta con solo tener el enlace. Aquí solo se acepta; invitar se hace
+  # desde la ficha del miembro (MiembrosController#invitar), con permiso.
+  devise_for :users, path: "", skip: [:invitations], path_names: {
     sign_in: "login",
     sign_out: "logout"
   }
+  devise_scope :user do
+    get   "invitacion", to: "invitaciones#edit",   as: :accept_user_invitation
+    patch "invitacion", to: "invitaciones#update", as: :user_invitation
+    put   "invitacion", to: "invitaciones#update"
+  end
+  get "bienvenida", to: "bienvenida#show", as: :bienvenida
 
   get "dashboard", to: "dashboard#index", as: :dashboard
 
@@ -168,6 +177,7 @@ Rails.application.routes.draw do
       get   :cambiar_estado
       patch :cambiar_estado
       patch :cambiar_rol
+      post  :invitar
     end
     resources :estado_cambios,
               only:       [:update],

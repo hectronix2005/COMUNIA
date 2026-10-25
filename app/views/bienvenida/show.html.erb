@@ -1,0 +1,36 @@
+<% content_for(:title, "Bienvenida") %>
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card" data-controller="bienvenida">
+      <div class="card-body">
+        <h1 class="h4 mb-3">Bienvenido, <%= current_user.nombre %></h1>
+        <p>
+          Para volver a entrar usarás tu usuario <strong><%= current_user.username %></strong> y la contraseña que
+          acabas de elegir.
+        </p>
+
+        <h2 class="h6 mt-4">1. Avisos en el celular</h2>
+        <p class="small text-muted mb-2">Convocatorias y novedades de la logia, aunque no tengas la app abierta.</p>
+        <button type="button" class="btn btn-outline-primary" data-action="bienvenida#activarAvisos"
+                data-bienvenida-target="avisos">
+          <i class="bi bi-bell me-1"></i>Activar avisos
+        </button>
+        <p class="small mt-2 mb-0 d-none" data-bienvenida-target="avisosEstado"></p>
+
+        <h2 class="h6 mt-4">2. La app en tu pantalla de inicio</h2>
+        <button type="button" class="btn btn-outline-primary d-none" data-action="bienvenida#instalar"
+                data-bienvenida-target="instalar">
+          <i class="bi bi-download me-1"></i>Instalar la app
+        </button>
+        <p class="small text-muted mb-0" data-bienvenida-target="instalarAyuda">
+          En iPhone: botón <i class="bi bi-box-arrow-up"></i> Compartir de Safari y «Agregar a inicio».
+          En Android: menú del navegador y «Instalar app» o «Agregar a la pantalla principal».
+        </p>
+
+        <div class="d-grid mt-4">
+          <%= link_to "Ir al inicio", dashboard_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

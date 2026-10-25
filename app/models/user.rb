@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  devise :database_authenticatable, :recoverable, :rememberable, :validatable,
+  devise :invitable, :database_authenticatable, :recoverable, :rememberable, :validatable,
          :lockable, :timeoutable
 
   # Los correos de Devise salen en segundo plano: un fallo del SMTP no llega a la página, y la
@@ -32,8 +32,9 @@ class User < ApplicationRecord
 
   validates :nombre, :apellido, presence: true
   validates :logia, presence: true, unless: -> { super_admin? || solo_red? }
-  # Las cuentas de la red se registran solas: contraseña más larga que las que crea un admin.
-  validates :password, length: { minimum: 10 }, if: -> { solo_red? && password.present? }
+  # Las cuentas de la red se registran solas, y quien acepta una invitación elige la suya: contraseña más
+  # larga que las que crea un admin.
+  validates :password, length: { minimum: 10 }, if: -> { (solo_red? || accepting_invitation?) && password.present? }
   validates :username, presence: true, uniqueness: { case_sensitive: false },
                        format: { with: /\A[a-z0-9]+\z/, message: "solo letras minúsculas y números" },
                        if: -> { username.present? }
@@ -57,6 +58,17 @@ class User < ApplicationRecord
 
   def touch_last_seen!
     update_column(:last_seen_at, Time.current) if last_seen_at.nil? || last_seen_at < 2.minutes.ago
+  end
+
+  # Estado del acceso a la app, para la ficha y la lista de miembros.
+  def acceso
+    if invitation_token.present? && invitation_created_at
+      valid_invitation? ? :invitado : :invitacion_caducada
+    elsif last_seen_at
+      :entro
+    else
+      :nunca
+    end
   end
 
   def online?

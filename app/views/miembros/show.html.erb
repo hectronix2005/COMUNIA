@@ -71,6 +71,10 @@
   </div>
 </div>
 
+<% if policy(@miembro).update? %>
+  <%= render "acceso", miembro: @miembro, enlace: @enlace_invitacion %>
+<% end %>
+
 <%# ── Rol del Sistema ─────────────────────────────────────── %>
 <% if policy(@miembro).update? %>
 <div class="card mb-4">

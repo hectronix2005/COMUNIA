@@ -6,6 +6,9 @@ export default class extends Controller {
   connect() {
     this.open = false
     this.initPush()
+    // La bienvenida pide el permiso con un toque y avisa aquí para suscribir.
+    this._avisosPermitidos = () => this.subscribeToPush()
+    window.addEventListener("avisos:permitidos", this._avisosPermitidos)
 
     this._outsideClick = (e) => {
       if (this.open && !this.element.contains(e.target)) this.closePanel()
@@ -15,6 +18,7 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("click", this._outsideClick)
+    window.removeEventListener("avisos:permitidos", this._avisosPermitidos)
   }
 
   togglePanel(e) {

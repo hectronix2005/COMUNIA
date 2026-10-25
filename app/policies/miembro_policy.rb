@@ -15,6 +15,14 @@ class MiembroPolicy < ApplicationPolicy
     tiene_permiso?("miembros", "update")
   end
 
+  # Generar un enlace de invitación es poder entrar en esa cuenta: solo para miembros rasos (un admin de
+  # logia no se apodera así de otro admin ni del superadmin), y nunca para la propia cuenta.
+  def invitar?
+    return false unless update? && record.user_id != user.id
+    destino = record.user
+    user.rol_ref&.es_super_admin? || (destino.miembro? && destino.rol_ref&.codigo == "miembro")
+  end
+
   def destroy?
     tiene_permiso?("miembros", "destroy")
   end

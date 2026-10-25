@@ -1,0 +1,45 @@
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+<div class="login-wrapper" data-turbo-cache="false">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <div class="login-icon mb-3">
+        <span style="font-size: 3rem;"><%= display_logia&.icono_display || "🏛️" %></span>
+      </div>
+      <h2 class="fw-bold" style="color: <%= display_logia&.color_display || '#6c757d' %>;">
+        <%= display_logia&.nombre_display || "COMUNIA" %>
+      </h2>
+      <% if resource.persisted? %>
+        <p class="mb-1">Hola, <strong><%= resource.nombre %></strong>. Elige tu contraseña para entrar.</p>
+        <p class="text-muted small mb-0">
+          Tu usuario es <strong class="text-body"><%= resource.username %></strong>: lo necesitarás para volver a entrar.
+        </p>
+      <% end %>
+    </div>
+
+    <%= render "devise/shared/error_messages", resource: resource %>
+
+    <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :patch }) do |f| %>
+      <%= f.hidden_field :invitation_token, readonly: true %>
+      <input type="text" name="username" value="<%= resource.username %>" autocomplete="username" hidden>
+
+      <div class="form-floating mb-3">
+        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", minlength: 10,
+                                        class: "form-control", placeholder: "Contraseña", id: "invitacion-password" %>
+        <label for="invitacion-password"><i class="bi bi-lock me-1"></i> Contraseña (mínimo 10 caracteres)</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", minlength: 10,
+                                                     class: "form-control", placeholder: "Repítela", id: "invitacion-password2" %>
+        <label for="invitacion-password2"><i class="bi bi-lock me-1"></i> Repite la contraseña</label>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Guardar y entrar
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

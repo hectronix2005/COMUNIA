@@ -39,6 +39,11 @@ class Rack::Attack
     end
   end
 
+  # Aceptar una invitación (también /t/:slug/invitacion): el token no se adivina, pero se limita igual.
+  throttle("invitaciones/ip", limit: 20, period: 1.hour) do |req|
+    req.ip if req.path.end_with?("/invitacion")
+  end
+
   # 4) POST /chat — máx 60 mensajes / minuto por usuario para mitigar floods.
   throttle("chat/ip", limit: 60, period: 1.minute) do |req|
     if req.post? && req.path.end_with?("/chat")

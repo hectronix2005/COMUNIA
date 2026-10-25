@@ -1,0 +1,56 @@
+<%# Acceso a la app: si ha entrado y, para quien puede, el enlace de invitación que se manda por WhatsApp. %>
+<% u = miembro.user %>
+<div id="acceso" class="card mb-4">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h5 class="mb-0"><i class="bi bi-phone me-2"></i>Acceso a la app</h5>
+    <%= acceso_badge(u) %>
+  </div>
+  <div class="card-body">
+    <p class="small text-muted">
+      Usuario: <strong class="text-body"><%= u.username %></strong>.
+      <% if u.last_seen_at %>
+        Última vez en la app: <%= l(u.last_seen_at.to_date, format: :long) %>.
+      <% end %>
+      <% if u.acceso == :invitado %>
+        Tiene un enlace de invitación sin usar que caduca el <%= l(u.invitation_due_at.to_date, format: :long) %>.
+      <% end %>
+    </p>
+
+    <% if enlace %>
+      <% texto = "Hola, #{u.nombre}. Te invito a COMUNIA, la app de #{miembro.logia.nombre}. Entra con este enlace " \
+                 "y elige tu contraseña; tu usuario es #{u.username}. El enlace sirve una sola vez y caduca el " \
+                 "#{l(u.invitation_due_at.to_date, format: :long)}: #{enlace}" %>
+      <div class="alert alert-info" data-controller="copiar">
+        <p class="mb-2">
+          <strong>Enlace listo.</strong> Solo se muestra ahora: mándalo ya. Sirve una sola vez y caduca el
+          <%= l(u.invitation_due_at.to_date, format: :long) %>. Si se pierde, genera otro.
+        </p>
+        <input type="text" class="form-control form-control-sm mb-2" value="<%= enlace %>" readonly
+               data-copiar-target="texto" aria-label="Enlace de invitación">
+        <div class="d-flex flex-wrap gap-2">
+          <%= link_to whatsapp_url(miembro.telefono, texto), class: "btn btn-success", target: "_blank", rel: "noopener noreferrer" do %>
+            <i class="bi bi-whatsapp me-1"></i>Enviar por WhatsApp
+          <% end %>
+          <button type="button" class="btn btn-outline-secondary" data-action="copiar#copiar" data-copiar-target="boton">
+            <i class="bi bi-clipboard me-1"></i>Copiar enlace
+          </button>
+        </div>
+      </div>
+    <% elsif policy(miembro).invitar? %>
+      <%
+        confirmar = if u.acceso == :invitado
+          "El enlace anterior dejará de servir. ¿Generar uno nuevo?"
+        elsif u.last_seen_at
+          "#{u.nombre} ya ha entrado antes. Su contraseña actual dejará de servir hasta que use el enlace. ¿Seguro?"
+        end
+      %>
+      <%= button_to invitar_miembro_path(miembro), class: "btn btn-primary",
+                    form: { data: { turbo_confirm: confirmar }.compact } do %>
+        <i class="bi bi-send me-1"></i><%= u.acceso == :nunca ? "Generar enlace de invitación" : "Generar un enlace nuevo" %>
+      <% end %>
+      <p class="small text-muted mt-2 mb-0">El enlace se manda por WhatsApp; no sale ningún correo.</p>
+    <% else %>
+      <p class="small text-muted mb-0">Los enlaces de invitación de los administradores los genera el superadministrador.</p>
+    <% end %>
+  </div>
+</div>
