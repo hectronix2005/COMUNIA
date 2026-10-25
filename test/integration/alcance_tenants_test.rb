@@ -135,6 +135,29 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     assert_response :ok
   end
 
+  test "el admin de la raíz ve los cobros de sus logias hijas, como sus miembros" do
+    admin = admin_de(@a)
+    _, ficha_hija = persona("Hija", @a_hija)
+    periodo = PeriodoCobro.create!(anio: 2090 + rand(9), mes: rand(1..12), monto: 10, fecha_vencimiento: Date.current, creado_por: admin)
+    cobro = Cobro.create!(periodo_cobro: periodo, miembro: ficha_hija, monto: 10)
+    pago = Pago.new(cobro: cobro, monto_pagado: 10, fecha_pago: Date.current, metodo_pago: "transferencia")
+    pago.save!(validate: false)
+
+    sign_in admin
+    get "/cobros/#{cobro.id}"
+    assert_response :ok
+    get "/reportes/recibo/#{pago.id}"
+    assert_response :ok
+    get "/miembros/#{ficha_hija.id}"
+    assert_response :ok
+  end
+
+  test "las logias tienen dos niveles: organización y logia" do
+    assert_raises(ActiveRecord::RecordInvalid) { logia("Nieta", tenant: @a_hija) }
+    assert_not @a.update(tenant: @b), "una organización con logias no pasa a ser hija"
+    assert @a_hija.update(nombre: "Grupo A2 renombrado")
+  end
+
   test "un admin modera su organización y no la ajena" do
     admin = admin_de(@a)
     propia = Publicacion.create!(user: @vecino, logia: @a, contenido: "De A")
