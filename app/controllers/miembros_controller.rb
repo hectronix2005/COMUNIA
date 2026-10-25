@@ -229,7 +229,8 @@ class MiembrosController < ApplicationController
   private
 
   def set_miembro
-    @miembro = Miembro.find(params[:id])
+    # Acotado a las logias que el usuario puede ver: con un id ajeno da 404, no la ficha de otra logia.
+    @miembro = policy_scope(Miembro).find(params[:id])
   end
 
   def miembro_params
