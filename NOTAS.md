@@ -127,12 +127,39 @@ No hecho o no comprobado:
   secciones vacías dicen «Nada pendiente». Con datos de prueba en local, que se borraron después.
 - Publicaciones públicas y búsqueda con noindex (00e7072, desplegado a petición de Héctor).
 
+## Seguridad e invitaciones (25-oct)
+
+- ✅ **El login enseñaba usuarios y contraseñas de demostración** (279a34d, desplegado). Se cambiaron
+  las 7 contraseñas publicadas en producción; ninguna cuenta acepta ya las viejas. No hay registro
+  anterior al arranque del contenedor para saber si alguien las usó.
+- 🔄 **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c, rama
+  `fix-alcance-miembros`, sin desplegar). Ahora da 404.
+- ⏳ Quedan unos 40 `find(params[:id])` sin acotar a la logia en otros controladores (biblioteca,
+  usuarios, cargos, cobros, hospitalía, publicaciones, calendario, chat…). Sin revisar uno a uno.
+- 🔄 **Invitaciones por enlace** (rama `invitaciones`, encima de la anterior, sin desplegar;
+  lleva migración):
+  - El admin pulsa «Invitar» en la ficha. Sale un enlace de un solo uso que caduca a los 7 días,
+    para mandar por WhatsApp o copiar. No se envía ningún correo.
+  - El miembro elige su contraseña (mínimo 10) y llega a `/bienvenida`, donde activa los avisos e
+    instala la app.
+  - La lista de miembros muestra quién está invitado, quién entró y quién nunca entró, con un
+    resumen de los activos.
+  - Solo invita quien puede editar al miembro, nunca a sí mismo. A un admin solo lo invita el
+    superadmin.
+  - Las rutas propias de devise_invitable están desactivadas: dejaban invitar a cualquiera y borrar
+    la cuenta.
+  - Límite de 20 intentos por hora y por IP.
+  - Revisado en el navegador a 390 px: ficha, enlace, aceptar, bienvenida, enlace reutilizado y
+    lista.
+  - 183 pruebas en verde; brakeman y bundle-audit sin avisos.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
 
-- Que los miembros de la logia **creen su perfil** en `/red` (ya tienen el enlace en el menú):
-  hoy ninguno lo tiene. Avisarles es cosa de Héctor.
+- Que los miembros de la logia **entren y creen su perfil** en `/red`: hoy han entrado 1 de 41 y
+  ninguno tiene perfil. Cuando se despliegue, con las invitaciones por WhatsApp. Solo 1 miembro
+  tiene teléfono guardado; para los demás el botón abre WhatsApp sin destinatario.
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
   cuentas de la red. Activarlo es solo poner en `app.env` SMTP_ADDRESS, SMTP_PORT, SMTP_USERNAME,
   SMTP_PASSWORD y MAIL_FROM (de un dominio propio) y desplegar; sin SMTP_ADDRESS no se envía nada.
