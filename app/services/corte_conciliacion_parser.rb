@@ -10,7 +10,6 @@ require "csv"
 #   Col AH(34): NIT/CEDULA
 #   Cell V7 (row=7, col=22): fecha del corte
 class CorteConciliacionParser
-
   # Columnas fijas del reporte Gran Logia (1-based para roo)
   COL_NOMBRE    = 20  # T
   COL_CEDULA    = 34  # AH

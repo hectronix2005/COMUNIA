@@ -23,11 +23,11 @@ module AttachmentValidations
     # validates_attachment :soportes, types: :doc, max: 10.megabytes, multi: true
     def validates_attachment(name, types: :doc, max: nil, multi: false)
       allowed_types = case types
-                      when :image then IMAGE_TYPES
-                      when :doc   then DOC_TYPES
-                      when :any   then DOC_TYPES_FULL
-                      else Array(types)
-                      end
+      when :image then IMAGE_TYPES
+      when :doc   then DOC_TYPES
+      when :any   then DOC_TYPES_FULL
+      else Array(types)
+      end
       max_bytes = max || (types == :image ? MAX_IMAGE_BYTES : MAX_DOC_BYTES)
 
       validate do |record|

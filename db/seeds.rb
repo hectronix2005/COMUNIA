@@ -106,10 +106,10 @@ puts "  #{Rol.count} roles creados"
 # === MIGRAR USUARIOS EXISTENTES ===
 User.where(rol_ref_id: nil).find_each do |u|
   caso = case u.rol
-         when "super_admin" then rol_super_admin
-         when "admin_logia" then rol_admin_logia
-         else rol_miembro
-         end
+  when "super_admin" then rol_super_admin
+  when "admin_logia" then rol_admin_logia
+  else rol_miembro
+  end
   u.update_column(:rol_ref_id, caso.id)
 end
 puts "  Usuarios migrados a roles dinamicos"

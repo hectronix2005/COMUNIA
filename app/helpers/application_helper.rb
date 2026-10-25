@@ -29,11 +29,11 @@ module ApplicationHelper
 
     icono = if dir_actual == "asc"
               '<i class="bi bi-sort-up"></i>'
-            elsif dir_actual == "desc"
+    elsif dir_actual == "desc"
               '<i class="bi bi-sort-down"></i>'
-            else
+    else
               '<i class="bi bi-arrow-down-up text-muted"></i>'
-            end
+    end
 
     link_to(
       "#{titulo} #{icono}".html_safe,

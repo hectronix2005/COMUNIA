@@ -68,9 +68,9 @@ class MiembrosController < ApplicationController
 
     logia_id = if current_user.scope_propia_logia?
                  current_user.logia_id
-               else
+    else
                  miembro_params[:logia_id]
-               end
+    end
 
     ActiveRecord::Base.transaction do
       user = User.new(

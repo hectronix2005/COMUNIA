@@ -13,7 +13,7 @@ class DashboardController < ApplicationController
     if current_user.rol_ref&.es_super_admin?
       if platform_admin_context?
         # Sin subdominio y sin preview → panel de plataforma COMUNIA
-        return redirect_to tenants_path
+        redirect_to tenants_path
       elsif previewing_tenant?
         # En preview → dashboard del tenant activo (como admin de esa logia)
         dashboard_admin_logia_para(current_logia)

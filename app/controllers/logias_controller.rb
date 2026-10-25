@@ -15,11 +15,11 @@ class LogiasController < ApplicationController
     @sort_dir = params[:dir] == "desc" ? "desc" : "asc"
 
     base = case @sort_col
-           when "nombre"
+    when "nombre"
              base.joins(:user).order("users.apellido #{@sort_dir}, users.nombre #{@sort_dir}")
-           else
+    else
              base.order("miembros.#{@sort_col} #{@sort_dir}")
-           end
+    end
 
     @miembros = base.page(params[:page])
   end

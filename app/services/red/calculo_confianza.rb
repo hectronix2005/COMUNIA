@@ -81,8 +81,8 @@ module Red
       puntaje = contadas.each_with_index.sum { |a, i| a[:aporte] * DECAIMIENTO**i }
       puntaje *= 0.5**perfil.sanciones if perfil
       nivel = if contadas.empty? || perfil&.suspendido? then 0
-              else UMBRALES.find { |_, minimo| puntaje >= minimo }&.first || 1
-              end
+      else UMBRALES.find { |_, minimo| puntaje >= minimo }&.first || 1
+      end
       { puntaje: puntaje.round(4), nivel: nivel, comunidades: contadas.size, miembros: contadas.sum { _1[:n] } }
     end
 
