@@ -32,6 +32,8 @@ Rails.application.routes.draw do
   end
 
   get "up" => "rails/health#show", as: :rails_health_check
+  # /up y además la base, para el monitor externo (.github/workflows/disponibilidad.yml).
+  get "salud" => "salud#show"
 
   # ── PWA ──────────────────────────────────────────────────────
   get "manifest"      => "pwa#manifest", as: :pwa_manifest, defaults: { format: "json" }
@@ -155,6 +157,11 @@ Rails.application.routes.draw do
   # Perfil personal: cada usuario puede editar su nombre visible en el chat.
   get   "perfil", to: "perfil#edit",   as: :perfil
   patch "perfil", to: "perfil#update"
+
+  # Errores registrados (ErrorApp), del superadmin.
+  get   "errores",              to: "errores#index",    as: :errores
+  get   "errores/:id",          to: "errores#show",     as: :error_registrado
+  patch "errores/:id/resolver", to: "errores#resolver", as: :resolver_error
 
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do

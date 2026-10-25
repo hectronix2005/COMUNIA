@@ -1,0 +1,31 @@
+name: Disponibilidad
+
+# Comprueba desde fuera que producción responde y llega a su base (/salud). asus puede apagarse (la VM de
+# WSL) y entonces nada de lo que corre allí avisa. Si falla, GitHub avisa al dueño del repo como con
+# cualquier ejecución fallida. GitHub desactiva las programaciones tras 60 días sin actividad en el repo,
+# y las ejecuta con retraso cuando va cargado.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: disponibilidad
+
+jobs:
+  salud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Producción responde
+        run: |
+          for intento in 1 2 3; do
+            codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 https://comunia.tail0be41e.ts.net/salud || true)
+            [ "$codigo" = "200" ] && exit 0
+            echo "Intento $intento: código $codigo"
+            [ "$intento" = 3 ] || sleep 30
+          done
+          echo "::error::COMUNIA no responde en /salud (último código: $codigo)"
+          exit 1
