@@ -388,10 +388,10 @@
     <% end %>
 
     <%# ── PWA: registrar service worker para instalación móvil ── %>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
-          navigator.serviceWorker.register("<%= pwa_service_worker_path %>", { scope: "<%= request.script_name.presence || '/' %>/" }).catch(function (e) {
+          navigator.serviceWorker.register("<%= pwa_service_worker_path %>", { scope: "<%= request.script_name %>/" }).catch(function (e) {
             console.warn("SW registration failed", e);
           });
         });

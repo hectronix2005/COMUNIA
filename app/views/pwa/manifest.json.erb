@@ -8,16 +8,17 @@
   start_url     = request.script_name.present? ? "#{request.script_name}/dashboard" : "/dashboard"
   scope_url     = request.script_name.present? ? "#{request.script_name}/" : "/"
 %>
+<%# Salida sin escapar: es JSON, no HTML. Escapada, las comillas salían como &quot; y el manifiesto no se leía. %>
 {
-  "name": <%= app_name.to_json %>,
-  "short_name": <%= short_name.to_json %>,
-  "description": <%= description.to_json %>,
-  "start_url": <%= start_url.to_json %>,
-  "scope": <%= scope_url.to_json %>,
+  "name": <%== app_name.to_json %>,
+  "short_name": <%== short_name.to_json %>,
+  "description": <%== description.to_json %>,
+  "start_url": <%== start_url.to_json %>,
+  "scope": <%== scope_url.to_json %>,
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": <%= theme_color.to_json %>,
-  "background_color": <%= bg_color.to_json %>,
+  "theme_color": <%== theme_color.to_json %>,
+  "background_color": <%== bg_color.to_json %>,
   "lang": "es-CO",
   "categories": ["productivity", "business"],
   "icons": [
