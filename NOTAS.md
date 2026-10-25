@@ -134,7 +134,7 @@ No hecho o no comprobado:
   anterior al arranque del contenedor para saber si alguien las usó.
 - ✅ **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c,
   desplegado). Ahora da 404.
-- 🔄 **Revisión de los 40 controladores** (rama `alcance-logias`, 445c0ab..1a31f08, SIN desplegar):
+- 🔄 **Revisión de los 40 controladores** (rama `alcance-logias`, 445c0ab..57ad3f8, SIN desplegar):
   - Cambiar `/t/<slug>` en la URL enseñaba el directorio, el chat y el calendario de otra
     organización. Ahora lleva al dashboard propio.
   - Un miembro abría o tocaba por id las publicaciones, encuestas, fichas del directorio, eventos,
@@ -147,13 +147,17 @@ No hecho o no comprobado:
   - Los familiares de un miembro solo los ve él o el hospitalario. El indicador de «escribiendo»
     solo va a canales propios.
   - La confirmación de asistencia daba siempre 404 (leía un parámetro que no llega). Arreglada.
-  - Prueba nueva `test/integration/alcance_tenants_test.rb` (falla sin el arreglo). 190 pruebas en
+  - Prueba nueva `test/integration/alcance_tenants_test.rb` (falla sin el arreglo). 192 pruebas en
     verde; brakeman y bundle-audit sin avisos.
+  - El enum `rol` no coincidía con `rol_ref` en 5 usuarios de producción: «Cambiar rol» en la ficha
+    solo cambiaba `rol_ref`. Ahora el modelo copia el enum de `rol_ref` al guardar, y la migración
+    20261025200000 iguala los 5 al desplegar (`db:prepare`). Nadie gana ni pierde acceso: los
+    permisos ya salían de `rol_ref`.
+  - Hospitalía aceptaba un miembro de otra organización en un recaudo o un gasto, y la lista
+    enseñaba su nombre. Ahora lo rechaza; en producción no había ninguno.
   - Sin cambiar, a decidir: los periodos de cobro son globales (`generar_cobros!` crea cobros en
-    todas las logias; solo el superadmin tiene ese permiso); el enum `rol` no coincide con
-    `rol_ref` en 5 usuarios de producción; hospitalía acepta un `miembro_id` o `beneficiario_id` de
-    otra logia al crear un recaudo o un gasto (no enseña nada, pero ensucia los datos); el admin
-    de la raíz no ve los cobros de las logias hijas.
+    todas las logias; solo el superadmin tiene ese permiso); el admin de la raíz no ve los cobros
+    de las logias hijas.
 - ✅ **Invitaciones por enlace** (c80f1f4, desplegado el 25-oct con su migración; en producción
   cargan la ficha y la lista, y las rutas de la gema dan 404):
   - El admin pulsa «Invitar» en la ficha. Sale un enlace de un solo uso que caduca a los 7 días,
