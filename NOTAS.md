@@ -122,7 +122,10 @@ No hecho o no comprobado:
 - `X-Robots-Tag: noindex` en perfiles y hojas de vida. Las publicaciones públicas siguen indexables
   (decide Héctor).
 - `red_mantenimiento` corrió a las 4:00 del 25-oct sin fallos.
-- Falta recorrer la moderación en el navegador.
+- Moderación revisada en el navegador (390 px) y desplegada (7e6ab11): certificar una comunidad o
+  una logia pide confirmación, los estados se leen bien, los motivos repetidos se agrupan y las
+  secciones vacías dicen «Nada pendiente». Con datos de prueba en local, que se borraron después.
+- Publicaciones públicas y búsqueda con noindex (00e7072, desplegado a petición de Héctor).
 
 ## Pendiente de Héctor
 
