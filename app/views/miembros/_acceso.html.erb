@@ -20,7 +20,8 @@
       <% texto = "Hola, #{u.nombre}. Te invito a COMUNIA, la app de #{miembro.logia.nombre}. Entra con este enlace " \
                  "y elige tu contraseña; tu usuario es #{u.username}. El enlace sirve una sola vez y caduca el " \
                  "#{l(u.invitation_due_at.to_date, format: :long)}: #{enlace}" %>
-      <div class="alert alert-info" data-controller="copiar">
+      <%# Sin .alert: en esta app es flex en fila (para el icono de los avisos) y apretaba el enlace. %>
+      <div class="rounded-3 border border-info-subtle bg-info-subtle text-info-emphasis p-3" data-controller="copiar">
         <p class="mb-2">
           <strong>Enlace listo.</strong> Solo se muestra ahora: mándalo ya. Sirve una sola vez y caduca el
           <%= l(u.invitation_due_at.to_date, format: :long) %>. Si se pierde, genera otro.
