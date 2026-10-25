@@ -86,15 +86,20 @@ No hecho o no comprobado:
 - Comprobado en https://comunia.tail0be41e.ts.net: `/login`, `/red`, búsqueda (HTML y JSON),
   cómo funciona, privacidad, comunidades, entrar y registro dan 200; lo privado redirige a
   `/red/entrar`. Sin Turnstile, el registro se ve pero no crea cuentas («Hoy no podemos crear
-  cuentas nuevas»), y el contacto sin cuenta tampoco funciona. La red está vacía: 0 comunidades y
-  0 cuentas de la red.
+  cuentas nuevas»), y el contacto sin cuenta tampoco funciona.
+- 24-oct, 23:05: primera comunidad, **Logia Propagadores de la Luz N1** (la única con miembros
+  activos), certificada por la cuenta de plataforma con `Red::CertificarLogia`: 28 membresías
+  verificadas, 0 perfiles todavía. Las demás logias tienen 0 activos.
+- Arreglo 1fedecf (local, sin desplegar): la tarea diaria vuelve a sincronizar las logias
+  certificadas. Sin él, las altas y bajas no llegan a la comunidad y las membresías vencen al año
+  sin nadie que las renueve. Hasta desplegarlo, basta con volver a certificar la logia a mano.
 
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
 
-- **Primera comunidad**: certificar una logia desde `/red/moderacion` (con un superadmin) o pedir
-  una comunidad nueva, para que la red tenga contenido.
+- **Desplegar 1fedecf** (sincronización diaria de logias).
+- Que los miembros de la logia **creen su perfil** en `/red`: hoy ninguno lo tiene.
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
   cuentas de la red.
 - **Turnstile**: claves en una cuenta de Cloudflare suya, nunca de Picap. Sin ellas, en producción
