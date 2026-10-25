@@ -134,7 +134,8 @@ No hecho o no comprobado:
   anterior al arranque del contenedor para saber si alguien las usó.
 - ✅ **Un admin podía abrir y editar miembros de otra logia** cambiando el id (462764c,
   desplegado). Ahora da 404.
-- 🔄 **Revisión de los 40 controladores** (rama `alcance-logias`, 445c0ab..57ad3f8, SIN desplegar):
+- ✅ **Revisión de los 40 controladores** (445c0ab..57ad3f8, desplegado el 25-oct; en producción la
+  migración igualó los roles: 0 desincronizados):
   - Cambiar `/t/<slug>` en la URL enseñaba el directorio, el chat y el calendario de otra
     organización. Ahora lleva al dashboard propio.
   - Un miembro abría o tocaba por id las publicaciones, encuestas, fichas del directorio, eventos,
