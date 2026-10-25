@@ -24,8 +24,12 @@ module Red
     end
 
     # Primer mensaje a una persona (desde su perfil o desde una publicación suya).
+    # Se puede escribir a quien uno ve: por su perfil o por una publicación suya visible (aunque su
+    # perfil sea solo para su comunidad).
     def create
-      destino = Perfil.visibles_para(current_user, mis_comunidad_ids).activos.find_by(token: params[:token].to_s)
+      publicacion = (Publicacion.visible(texto(:publicacion, 30), current_user) if texto(:publicacion, 30).present?)
+      destino = Perfil.activos.find_by(token: params[:token].to_s, user_id: publicacion.user_id) if publicacion
+      destino ||= Perfil.visibles_para(current_user, mis_comunidad_ids).activos.find_by(token: params[:token].to_s)
       return no_encontrado unless destino
       return redirect_back(fallback_location: red_inicio_path, alert: "No puedes escribirte a ti mismo.") if destino.user_id == current_user.id
       cuerpo = texto(:cuerpo, 2000)
@@ -33,7 +37,6 @@ module Red
       return redirect_back(fallback_location: red_perfil_path(destino), alert: "No puedes escribir a esta persona.") if
         Bloqueo.entre?(current_user, destino.user) || mi_perfil.suspendido?
 
-      publicacion = (Publicacion.visible(texto(:publicacion, 30), current_user) if texto(:publicacion, 30).present?)
       publicacion = nil unless publicacion&.user_id == destino.user_id
       conversacion = Conversacion.find_by(iniciador_id: current_user.id, destinatario_id: destino.user_id, publicacion_id: publicacion&.id)
       unless conversacion

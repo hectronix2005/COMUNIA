@@ -56,8 +56,28 @@ Estados: ✅ hecho y verificado · 🔄 en curso · ⏳ pendiente · ⛔ bloquea
    los dos y un día), reportes (uno por persona o IP con HMAC; a los 3, a revisión y aviso a
    moderación), avisos con campana, tope diario de conversaciones nuevas (20; 5 en cuarentena)
    (test/red/mensajeria_test.rb, 14 pruebas)
-8. 🔄 Administración de comunidades y métricas, Ley 1581 (exportar, borrar), onboarding,
-   accesibilidad, datos de demostración sintéticos, README
+8. ✅ Páginas «Cómo funciona» (fórmula explicada) y «Privacidad» (Ley 1581, borrador), semillas
+   ficticias (`bin/rails red:demo`, correos @ejemplo.invalid, repetible, prohibida en producción),
+   sección en el README, repaso de accesibilidad (encabezados, etiquetas, foco, menú sin cortes) y
+   prueba en navegador (Chromium sin ventana, 390 px y 1280 px) (test/red/paginas_test.rb)
+
+## Resultado del piloto (24-oct, 22:45)
+
+Hecho y verificado:
+
+- Suite completa: 168 pruebas en verde (81 de la red), brakeman sin avisos, bundle-audit limpio.
+- En navegador contra un servidor local (puerto 3099, datos de demostración), en móvil y escritorio:
+  portada, búsqueda (publicaciones y personas), cómo funciona, privacidad, catálogo de comunidades,
+  publicación, contacto sin cuenta, entrar, avisos con campana, mensajes, compartir contacto, mi
+  perfil, mis publicaciones, publicar, mis comunidades, comunidad, gestión y directorio. Todas con
+  200, sin errores de consola y sin scroll horizontal.
+
+No hecho o no comprobado:
+
+- Nada desplegado ni subido: 8 commits locales en `main` sin push (desde 503a388 hasta el último).
+- La pantalla de moderación no se recorrió en navegador; la cubren las pruebas.
+- Turnstile real y el envío de correo no se pudieron probar: no hay claves ni servicio.
+- Las notificaciones push de la red usan el sistema de COMUNIA y no se probaron en un móvil real.
 
 ## Pendiente de Héctor
 
@@ -71,6 +91,9 @@ Estados: ✅ hecho y verificado · 🔄 en curso · ⏳ pendiente · ⛔ bloquea
   no se aceptan registros ni contactos sin cuenta.
 - **Revisión legal**: política de tratamiento de datos (Ley 1581) y términos de la red.
 - Quién hace de **certificador/moderador de plataforma** además del superadmin.
+- **Responsable del tratamiento** y canal de atención para la página de privacidad, que hoy dice
+  «se publicarán aquí antes de abrir la red al público».
+- Decidir si la red se anuncia desde la portada de COMUNIA: hoy solo se llega por `/red`.
 
 ### Arrastrado de antes
 

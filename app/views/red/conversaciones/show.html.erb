@@ -1,5 +1,6 @@
 <% nombre = @otro ? (@ficha_otro&.nombre_publico || "Persona que ya no está en la red") : "#{@conversacion.nombre_externo} (sin cuenta)" %>
 <% content_for :title, "Conversación con #{nombre}" %>
+<h1 class="visually-hidden">Conversación con <%= nombre %></h1>
 <p class="mb-2"><%= link_to red_conversaciones_path do %><i class="bi bi-arrow-left" aria-hidden="true"></i> Mensajes<% end %></p>
 
 <div class="card red-tarjeta mb-3"><div class="card-body py-2">
@@ -8,7 +9,7 @@
       <%= link_to @ficha_otro.nombre_publico, red_perfil_path(@ficha_otro.token), class: "fw-semibold" %>
       <%= render "red/shared/nivel", ficha: @ficha_otro %>
     <% else %>
-      <h1 class="h6 mb-0"><%= nombre %></h1>
+      <span class="fw-semibold"><%= nombre %></span>
     <% end %>
   </div>
   <% if @conversacion.publicacion %>

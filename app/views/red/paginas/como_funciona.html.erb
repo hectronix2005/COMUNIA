@@ -1,0 +1,59 @@
+<% content_for :title, "Cómo funciona" %>
+<article class="card red-tarjeta"><div class="card-body">
+  <h1 class="h4">Cómo funciona la Red COMUNIA</h1>
+  <p>Aquí encuentras trabajo, servicios y productos de personas <strong>avaladas por comunidades certificadas</strong>:
+    clubes, universidades, barrios, empresas, gremios o logias. No hace falta cuenta para buscar ni para escribir a
+    quien publicó.</p>
+
+  <h2 class="h5 mt-4">1. Comunidades certificadas</h2>
+  <ul>
+    <li>Alguien pide certificar su comunidad diciendo <strong>qué tienen en común</strong> sus miembros y cómo se comprueba
+      (carné o diploma, correo institucional, conocerse en persona o un registro oficial). La plataforma revisa la evidencia
+      antes de certificarla.</li>
+    <li>Cada persona pide entrar con su evidencia y la aprueba un <strong>verificador</strong> de esa comunidad; nadie se
+      aprueba a sí mismo. La membresía vence en un año y se renueva.</li>
+    <li>Una comunidad puede ser suspendida o revocada si deja de cumplir; un verificador puede revocar una membresía con
+      un motivo.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">2. La confianza</h2>
+  <p>Tu nivel crece con <strong>más comunidades</strong> y con <strong>comunidades más grandes</strong>, pero cada vez
+    suma menos, para que nadie gane coleccionando comunidades pequeñas:</p>
+  <ul>
+    <li>Cada comunidad aporta según su tamaño (crece despacio: una de 100 miembros aporta la mitad que una de 10.000),
+      su antigüedad como certificada (madura a los 6 meses) y la de tu membresía (madura al mes).</li>
+    <li>Las comunidades de menos de <%= Red::Comunidad::MINIMO_MIEMBROS %> miembros no aportan.</li>
+    <li>Se suman de mayor a menor y cada una vale un 70 % de la anterior.</li>
+    <li>Dos comunidades con casi los mismos miembros cuentan como una; si quien te avaló fue avalado por ti, ese aval
+      vale una cuarta parte.</li>
+    <li>Cada sanción de moderación reduce tu puntaje a la mitad; con <%= Red::Perfil::SANCIONES_PARA_SUSPENDER %>, la cuenta
+      se suspende.</li>
+    <li>Se recalcula <strong>una vez al día</strong>, no en el momento: así nadie puede saber cuándo entraste en otra
+      comunidad mirando tu nivel.</li>
+  </ul>
+  <p class="mb-1">Niveles:</p>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <% Red::NIVELES.each do |n, texto| %><span class="red-nivel" data-nivel="<%= n %>"><%= texto %></span><% end %>
+  </div>
+
+  <h2 class="h5 mt-4">3. Lo que nadie sabe de ti</h2>
+  <ul>
+    <li><strong>Ninguna comunidad sabe en qué otras comunidades estás.</strong> Hacia fuera solo se ve «certificado/a en
+      N comunidades» y una banda de miembros en total (por ejemplo, «entre 100 y 1.000 miembros»), nunca nombres.</li>
+    <li>Tú decides quién ve tu perfil y cada publicación: solo tu comunidad, las comunidades que elijas o todas.</li>
+    <li>Tu teléfono y tu correo no se ven nunca: los compartes tú dentro de una conversación, si quieres.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">4. Contra el abuso</h2>
+  <ul>
+    <li>Las cuentas nuevas esperan <%= (Red::Perfil::CUARENTENA / 1.hour).to_i %> horas antes de publicar para todos y
+      abren pocas conversaciones al día.</li>
+    <li>Hay tope de publicaciones activas y diarias; los textos con señales de estafa (pagos por adelantado, giros,
+      criptomonedas, cobros por inscribirse) pasan a revisión antes de verse.</li>
+    <li>Cualquiera puede reportar. Con <%= Red::Reporte::OCULTAR_CON %> reportes de personas distintas, la publicación se
+      oculta hasta que moderación decide.</li>
+    <li>Las reseñas solo se dejan tras una conversación real entre los dos.</li>
+  </ul>
+  <p class="mb-0"><%= link_to "Buscar ahora", red_buscar_path, class: "btn btn-primary" %>
+    <%= link_to "Política de datos", red_privacidad_path, class: "btn btn-link" %></p>
+</div></article>

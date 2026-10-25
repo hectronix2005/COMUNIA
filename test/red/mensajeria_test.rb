@@ -74,6 +74,20 @@ class Red::MensajeriaTest < ActionDispatch::IntegrationTest
     assert_equal 0, Red::Conversacion.count
   end
 
+  test "a quien tiene el perfil solo para su comunidad se le escribe desde su publicación pública" do
+    reservada = red_usuario("Reservada", alcance: "mis_comunidades")
+    red_comunidad("Club Tres", miembros: [reservada])
+    pub = red_publicacion(reservada, titulo: "Vendo bicicleta usada")
+    sign_in @beto
+    escribir_a(reservada.red_perfil)
+    assert_response :not_found, "sin publicación, su perfil no existe para Beto"
+    escribir_a(reservada.red_perfil, publicacion: pub.token)
+    assert_equal pub.id, Red::Conversacion.last&.publicacion_id
+    privada = red_publicacion(reservada, titulo: "Solo para el club tres", alcance: "mis_comunidades")
+    escribir_a(reservada.red_perfil, "Otra", publicacion: privada.token)
+    assert_response :not_found
+  end
+
   test "la publicación ligada debe ser visible y del destinatario" do
     otra = red_publicacion(@beto, titulo: "De Beto, no de Ana")
     sign_in red_usuario("Carla").tap { red_membresia(@club, _1) }

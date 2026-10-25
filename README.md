@@ -12,6 +12,7 @@ Construida sobre **Ruby on Rails 8**, PostgreSQL, Hotwire (Turbo + Stimulus) y B
 - [Stack técnico](#stack-técnico)
 - [Arquitectura multi-tenant](#arquitectura-multi-tenant)
 - [Roles y cargos](#roles-y-cargos)
+- [Red de comunidades certificadas](#red-de-comunidades-certificadas)
 - [Requisitos](#requisitos)
 - [Puesta en marcha](#puesta-en-marcha)
 - [Estructura del proyecto](#estructura-del-proyecto)
@@ -108,6 +109,36 @@ El método `User#tiene_cargo?("Tesorero")` controla el acceso modular. `admin_lo
 | `Hospitalario` | `/hospitalia/*` |
 
 Otros cargos predefinidos (Venerable Maestro, Orador, Secretario, etc.) se usan solo para directorio.
+
+---
+
+## Red de comunidades certificadas
+
+Bajo `/red` vive una red social para encontrar trabajo, servicios y productos de personas avaladas por
+**comunidades certificadas** (clubes, universidades, barrios, empresas, gremios, logias). Comparte la
+cuenta de COMUNIA, pero las cuentas creadas en la red (`users.solo_red`) quedan encerradas en `/red`.
+
+- **Comunidades**: la plataforma (superadmin) certifica la solicitud; los verificadores de cada
+  comunidad aprueban membresías con evidencia; vencen al año; se revocan con motivo.
+- **Confianza**: crece con el número y el tamaño de las comunidades, con rendimientos decrecientes y
+  defensas contra comunidades pequeñas, duplicadas o colusivas (`app/services/red/calculo_confianza.rb`).
+  Se recalcula en lote a las 4 a. m. (`Red::MantenimientoDiarioJob`).
+- **Privacidad entre comunidades**: hacia fuera solo «N comunidades» y una banda de miembros. Lo
+  oculto y lo inexistente responden igual (cuerpo, consultas). Las pruebas de `test/red/privacidad_test.rb`
+  intentan extraer esa información y fallan si lo consiguen.
+- **Sin cuenta**: búsqueda pública, contacto con captcha y reportes. Con cuenta: publicaciones con
+  alcance (mi comunidad / las que elija / todas), mensajería intermediada, reseñas verificables.
+- **Ley 1581**: consentimiento versionado, exportar y borrar mis datos, contactos externos cifrados y
+  borrados a los 90 días.
+
+Datos ficticios para probarla en local (nunca en producción):
+
+```bash
+bin/rails red:demo   # entra con lucia.montoya@ejemplo.invalid / demo-red-comunia
+```
+
+Variables: `TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET` (sin ellas, en producción se cierran el registro
+y los formularios públicos sin cuenta).
 
 ---
 
