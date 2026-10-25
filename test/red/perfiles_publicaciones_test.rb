@@ -62,6 +62,7 @@ class Red::PerfilesPublicacionesTest < ActionDispatch::IntegrationTest
     get "/red/p/#{token}/hoja-de-vida"
     assert_response :success
     assert_equal "application/pdf", response.media_type
+    assert_includes response.headers["X-Robots-Tag"].to_s, "noindex"
     sign_out ana
     get "/red/p/#{token}/hoja-de-vida" # perfil de alcance «mis_comunidades»: sin cuenta no se ve
     assert_response :not_found
@@ -72,6 +73,7 @@ class Red::PerfilesPublicacionesTest < ActionDispatch::IntegrationTest
     visible = red_usuario("Visible", alcance: "publico", visible_publico: true)
     get "/red/p/#{visible.red_perfil.token}"
     assert_response :success
+    assert_includes response.headers["X-Robots-Tag"].to_s, "noindex" # público, pero fuera de los buscadores
     get "/red/p/#{oculto.red_perfil.token}"
     cuerpo_oculto = response.body
     assert_response :not_found

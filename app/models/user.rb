@@ -2,6 +2,12 @@ class User < ApplicationRecord
   devise :database_authenticatable, :recoverable, :rememberable, :validatable,
          :lockable, :timeoutable
 
+  # Los correos de Devise salen en segundo plano: un fallo del SMTP no llega a la página, y la
+  # respuesta tarda lo mismo exista o no la cuenta.
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
+  end
+
   enum :rol, { miembro: 0, admin_logia: 1, super_admin: 2 }
 
   belongs_to :logia, optional: true

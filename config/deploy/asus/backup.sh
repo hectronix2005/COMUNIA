@@ -11,7 +11,9 @@
 #     el mismo de Prestandonos; carpeta COMUNIA-backups); allí se guardan 30 días.
 #  4. Si la subida va bien, no queda nada en asus. Si falla, la copia se queda en
 #     ~/backups/comunia para no perderla.
-#  5. Las evidencias de DENUNCIAPP (~/services/denuncias-evidencia) van en un tar aparte, cifrado
+#  5. Los adjuntos guardados en disco (~/services/comunia-storage: servicio «local» de ActiveStorage)
+#     van en otro tar cifrado. Los de R2 no se copian aquí.
+#  6. Las evidencias de DENUNCIAPP (~/services/denuncias-evidencia) van en un tar aparte, cifrado
 #     con la misma clave gpg. Sus tablas ya están en el dump. Los originales de las fotos, además,
 #     llevan AES-GCM con DENUNCIAS_CLAVE (app.env y Llavero del Air, nunca en Drive): con solo
 #     la copia de Drive no se pueden abrir.
@@ -19,12 +21,14 @@
 #   gpg -d comunia-AAAAMMDD-HHMM.dump.gpg > comunia-AAAAMMDD-HHMM.dump
 #   docker exec -i comunia-db-1 pg_restore --clean --if-exists --no-owner --no-acl \
 #     -U comunia -d comunia_production < comunia-AAAAMMDD-HHMM.dump
+#   gpg -d archivos-AAAAMMDD-HHMM.tar.gpg | tar -C ~/services/comunia-storage -xf -
 #   gpg -d denuncias-AAAAMMDD-HHMM.tar.gpg | tar -C ~/services/denuncias-evidencia -xf -
 set -euo pipefail
 export PATH="$HOME/.local/bin:/usr/bin:/bin"
 
 DIR="$HOME/backups/comunia"
 EVIDENCIA="$HOME/services/denuncias-evidencia"
+ARCHIVOS="$HOME/services/comunia-storage"
 PASS="$HOME/.config/comunia-backup/passphrase"
 REMOTE="gdrive-personal:COMUNIA-backups"  # Drive de hectorn.personal@gmail.com (antes gdrive = Drive de Picap)
 LOG="$HOME/services/comunia-backup.log"
@@ -59,6 +63,15 @@ else
   rm -f "$F.gpg"
   log "ERROR: no se pudo subir a Drive; la copia queda en $F"
   exit 1
+fi
+
+if [ -n "$(ls -A "$ARCHIVOS" 2>/dev/null)" ]; then
+  A="$DIR/archivos-$SELLO.tar.gpg"
+  tar -C "$ARCHIVOS" -cf - . | cifrar "$A"
+  rclone copy "$A" "$REMOTE" --quiet \
+    || { log "ERROR: no se pudieron subir los archivos; quedan en $A"; exit 1; }
+  rm -f "$A"
+  log "subida a Drive: $REMOTE/$(basename "$A")"
 fi
 
 if [ -n "$(ls -A "$EVIDENCIA" 2>/dev/null)" ]; then

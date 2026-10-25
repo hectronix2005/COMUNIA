@@ -2,7 +2,8 @@
 # Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600) y las claves de los
 # pases en $PASES_DIR (~/.config/comunia-pases, 700). Las evidencias de DENUNCIAPP, en
 # $DENUNCIAS_DIR (~/services/denuncias-evidencia, 700): los originales van cifrados con
-# DENUNCIAS_CLAVE (app.env), que no está en git ni en Drive.
+# DENUNCIAS_CLAVE (app.env), que no está en git ni en Drive. Los adjuntos del servicio «local» de
+# ActiveStorage (los subidos antes de pasar a R2), en $STORAGE_DIR (~/services/comunia-storage).
 # URL pública: https://comunia.tail0be41e.ts.net (Funnel del nodo "comunia", sin depender del Air).
 name: comunia
 
@@ -34,6 +35,8 @@ services:
       # Claves de los pases de DENUNCIAPP; las genera config/deploy/asus/pases-claves.sh (cron).
       - ${PASES_DIR}:/pases:ro
       - ${DENUNCIAS_DIR}:/denuncias
+      # Sin este volumen, los blobs con service_name «local» no se abrían: /rails/storage está vacío.
+      - ${STORAGE_DIR}:/rails/storage
     depends_on:
       db:
         condition: service_healthy
