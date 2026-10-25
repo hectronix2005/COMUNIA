@@ -191,6 +191,20 @@ No hecho o no comprobado:
 - La base de producción guarda también las tablas de Solid Queue y Solid Cable y la extensión
   `pg_stat_statements`: al restaurar vuelven los trabajos en cola de ese momento.
 
+## Cobros de las hijas, logias de dos niveles y CI (25-oct, rama `alcance-cobros`, SIN desplegar)
+
+- 🔄 El admin de la raíz veía los miembros de sus logias hijas pero no sus cobros, cortes ni reportes
+  (en producción: el admin de la raíz 6 no veía los 662 cobros de la logia 1). Ahora todo usa
+  `logia_ids_accesibles`. Los admins de una logia hija siguen viendo solo la suya.
+- 🔄 Las logias solo tienen dos niveles; se valida al cambiar el padre.
+- ⏳ En producción la logia 4 cuelga de la 1, que ya es hija de la 6 (tres niveles). Está vacía
+  (0 usuarios, miembros y eventos). Decidir: moverla bajo la 6 o borrarla.
+- 🔄 CI: el lint fallaba desde el 13-jul (892 corchetes sin espacios, el estilo de todo el
+  proyecto); `.rubocop.yml` lo acepta y el resto se autocorrigió (solo espacios, un `return` y unas
+  comillas). El CI no ejecutaba las pruebas: trabajo nuevo `test` con Postgres 17, sin probar aún en
+  GitHub (corre al subir a main).
+- 194 pruebas en verde; brakeman, bundle-audit y rubocop sin avisos.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
