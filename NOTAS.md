@@ -99,14 +99,17 @@ No hecho o no comprobado:
     organización de quien lo comparte. GET → 301 a `/red/...`; escrituras → 404. Comprobado en
     producción.
 
-### Fallo anterior encontrado (no es de la red; sin tocar)
+### Push y PWA arreglados (24-oct, 23:35, c49ce8e, por decisión de Héctor)
 
-- **Las notificaciones push de COMUNIA nunca han funcionado en producción**: 0 suscripciones.
-  `/service-worker` responde 422 (Rails lo bloquea como «JavaScript pedido desde otro sitio»,
-  falta `skip_forgery_protection` en `PwaController#service_worker`), así que el navegador no
-  registra el service worker. Además el manifiesto sale con las comillas escapadas (`&quot;`), así
-  que no se puede instalar como app. Arreglarlo es poco código, pero hará que COMUNIA empiece a
-  mandar push a usuarios reales: decisión de Héctor.
+- Antes, las notificaciones push de COMUNIA nunca habían funcionado en producción (0 suscripciones):
+  `/service-worker` daba 422 por la protección CSRF de Rails, el manifiesto salía con `&quot;` y
+  el `scope` de la raíz era `"//"`.
+- Ahora: service worker sin CSRF (es estático), manifiesto sin escapar, scope correcto y nonce en
+  el script. Probado en local de punta a punta (registro, suscripción guardada, envío aceptado por
+  FCM con 201) y en producción (`/service-worker` 200 JavaScript, manifiesto JSON válido).
+- Desde ahora, COMUNIA pide permiso de notificaciones una vez por sesión, y a quien lo acepta le
+  llegan los push (cumpleaños, avisos, red…). Las suscripciones empezarán a aparecer cuando los
+  usuarios entren.
 
 ## Pendiente de Héctor
 
@@ -114,7 +117,6 @@ No hecho o no comprobado:
 
 - Que los miembros de la logia **creen su perfil** en `/red` (ya tienen el enlace en el menú):
   hoy ninguno lo tiene. Avisarles es cosa de Héctor.
-- Decidir si se arregla el push y el manifiesto de la PWA (ver «Fallo anterior encontrado»).
 - **Servicio de correo**: sin él no hay recuperación de contraseña ni confirmación de correo para las
   cuentas de la red.
 - **Turnstile**: claves en una cuenta de Cloudflare suya, nunca de Picap. Sin ellas, en producción
