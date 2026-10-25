@@ -1,0 +1,20 @@
+<% content_for(:title, "Error") %>
+
+<p><%= link_to "← Errores", errores_path %></p>
+<h1 class="h3 text-break"><i class="bi bi-bug"></i> <%= @error.clase %></h1>
+<p class="text-break"><%= @error.mensaje %></p>
+
+<dl class="row small">
+  <dt class="col-sm-3">Dónde</dt><dd class="col-sm-9 text-break"><%= @error.origen %></dd>
+  <dt class="col-sm-3">Veces</dt><dd class="col-sm-9"><%= @error.veces %></dd>
+  <dt class="col-sm-3">Primera vez</dt><dd class="col-sm-9"><%= l @error.primera_vez, format: :long %></dd>
+  <dt class="col-sm-3">Última vez</dt><dd class="col-sm-9"><%= l @error.ultima_vez, format: :long %></dd>
+  <dt class="col-sm-3">Estado</dt>
+  <dd class="col-sm-9"><%= @error.resuelto_at ? "Resuelto el #{l @error.resuelto_at, format: :long}" : "Abierto" %></dd>
+</dl>
+
+<pre class="bg-body-tertiary p-3 small text-wrap"><%= @error.traza.presence || "Sin traza del proyecto." %></pre>
+
+<% unless @error.resuelto_at %>
+  <%= button_to "Marcar resuelto", resolver_error_path(@error), method: :patch, class: "btn btn-outline-success" %>
+<% end %>

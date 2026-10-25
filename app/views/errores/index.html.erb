@@ -1,0 +1,39 @@
+<% content_for(:title, "Errores") %>
+
+<div class="mb-4">
+  <h1><i class="bi bi-bug"></i> Errores</h1>
+  <small class="text-muted">Errores 500 de peticiones y trabajos. Cada uno avisa la primera vez y cuando vuelve tras darlo por resuelto.</small>
+</div>
+
+<h2 class="h5">Abiertos (<%= @abiertos.size %>)</h2>
+<% if @abiertos.empty? %>
+  <p class="text-muted">Ninguno.</p>
+<% else %>
+  <div class="table-responsive mb-4">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr><th>Error</th><th>Dónde</th><th class="text-end">Veces</th><th>Última vez</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @abiertos.each do |error| %>
+          <tr>
+            <td><%= link_to error.clase, error_registrado_path(error) %><div class="small text-muted text-break"><%= error.mensaje.to_s.truncate(120) %></div></td>
+            <td class="small text-break"><%= error.origen %><div class="text-muted"><%= error.ubicacion %></div></td>
+            <td class="text-end"><%= error.veces %></td>
+            <td class="small text-nowrap"><%= l error.ultima_vez, format: :short %></td>
+            <td><%= button_to "Resuelto", resolver_error_path(error), method: :patch, class: "btn btn-sm btn-outline-success" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<% if @resueltos.any? %>
+  <h2 class="h5">Resueltos recientes</h2>
+  <ul class="list-unstyled small">
+    <% @resueltos.each do |error| %>
+      <li><%= link_to error.clase, error_registrado_path(error) %> — <%= error.origen %>, <%= error.veces %> veces, resuelto <%= l error.resuelto_at, format: :short %></li>
+    <% end %>
+  </ul>
+<% end %>

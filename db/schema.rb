@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -316,6 +316,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_200000) do
     t.datetime "updated_at", null: false
     t.index ["logia_id"], name: "index_encuestas_on_logia_id"
     t.index ["user_id"], name: "index_encuestas_on_user_id"
+  end
+
+  create_table "errores_app", force: :cascade do |t|
+    t.string "huella", null: false
+    t.string "clase", null: false
+    t.text "mensaje"
+    t.string "ubicacion"
+    t.string "origen"
+    t.text "traza"
+    t.integer "veces", default: 1, null: false
+    t.datetime "primera_vez", null: false
+    t.datetime "ultima_vez", null: false
+    t.datetime "resuelto_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["huella"], name: "index_errores_app_on_huella", unique: true
+    t.index ["ultima_vez"], name: "index_errores_app_on_ultima_vez"
   end
 
   create_table "evento_confirmaciones", force: :cascade do |t|

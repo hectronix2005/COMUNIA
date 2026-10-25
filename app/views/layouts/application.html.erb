@@ -73,6 +73,12 @@
                     <i class="bi bi-grid-3x3-gap"></i> Tenants
                   <% end %>
                 </li>
+                <li class="nav-item">
+                  <%= link_to errores_path, class: "nav-link #{'active' if request.path.start_with?('/errores')}" do %>
+                    <i class="bi bi-bug"></i> Errores
+                    <% if (abiertos = ErrorApp.abiertos.count) > 0 %><span class="badge bg-danger"><%= abiertos %></span><% end %>
+                  <% end %>
+                </li>
                 <% if current_user.tiene_permiso?("roles", "index") %>
                   <li class="nav-item">
                     <%= link_to roles_path, class: "nav-link #{'active' if request.path.start_with?('/roles')}" do %>
