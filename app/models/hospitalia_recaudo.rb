@@ -10,6 +10,8 @@ class HospitaliaRecaudo < ApplicationRecord
   validates :concepto, presence: true, length: { maximum: 200 }
   validates :monto,    presence: true, numericality: { greater_than: 0 }
   validates :fecha,    presence: true
+  # El selector solo ofrece miembros de la logia; un id de otra se rechaza (la lista enseñaría su nombre).
+  validate { errors.add(:miembro, "no es de esta logia") if miembro && miembro.logia_id != logia_id }
 
   scope :de_logia,  ->(id) { where(logia_id: id) }
   scope :ordenados, -> { order(fecha: :desc, created_at: :desc) }
