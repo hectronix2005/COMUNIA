@@ -176,6 +176,21 @@ No hecho o no comprobado:
     lista.
   - 183 pruebas en verde; brakeman y bundle-audit sin avisos.
 
+## Prueba de restauración de la copia (25-oct)
+
+- ✅ Se bajó de Drive la copia de las 07:28 (`comunia-20261025-0728.dump.gpg` y
+  `archivos-20261025-0728.tar.gpg`), se descifró con la clave de asus y se restauró en un Postgres 17
+  desechable, aparte de producción:
+  - `pg_restore` sin errores; 79 tablas, y usuarios (49), miembros (41), logias (6), cobros (662),
+    pagos (625), eventos (53), mensajes (24) y blobs (34) iguales que en producción.
+  - Los 32 archivos del servicio `local` están en el tar y su MD5 coincide con el de la base.
+  - Sobre la copia restaurada corren las migraciones de hoy (invitaciones y roles) sin error.
+  - Se borraron el contenedor y los descifrados.
+- Lo que la copia no trae: los 2 blobs del servicio `cloudflare` (R2), que viven solo en R2, y lo
+  que ocurra después de la última copia (la diaria es a las 3:45).
+- La base de producción guarda también las tablas de Solid Queue y Solid Cable y la extensión
+  `pg_stat_statements`: al restaurar vuelven los trabajos en cola de ese momento.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
