@@ -567,8 +567,10 @@ No hecho o no comprobado:
 
 ### Arrastrado de antes
 
-- DENUNCIAPP (apagada): claves de Turnstile, correo, DENUNCIAS_CONTACTO, revisión legal, aspecto,
-  HEIC/WebP. Después, la clave de Tailscale en `ts-denunciapp.env`, `bin/deploy` y DENUNCIAPP_URL.
+- DENUNCIAPP (apagada; 0 denuncias): claves de Turnstile, DENUNCIAS_CONTACTO, revisión legal. Después, la clave
+  de Tailscale en `ts-denunciapp.env`, DENUNCIAPP_URL y `bin/deploy`. Sin servicio de correo arranca sin cuentas
+  con alias. El aspecto ya usa la paleta de COMUNIA (`app/denuncias_web/estilo.css`). HEIC/WebP: el vips de
+  producción los lee (26-oct), pero hoy solo se admiten JPEG y PNG.
 - client_id de Drive: proyecto «rclone-copias» en la cuenta personal (encargado a Tmux, sin
   respuesta). Después, un remoto con `drive.file` y pasar a él COMUNIA, Rival y Prestandonos.
 - Borrar el proyecto «rclone-hector» de Picap. Avisar a los usuarios de la URL nueva.
