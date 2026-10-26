@@ -41,5 +41,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "reunion", "reuniones"
   inflect.irregular "asistencia", "asistencias"
   inflect.irregular "votacion", "votaciones"
+  inflect.irregular "propuesta", "propuestas"
   inflect.irregular "opcion", "opciones"
 end

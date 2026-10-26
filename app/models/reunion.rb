@@ -8,6 +8,7 @@ class Reunion < ApplicationRecord
   has_many :reunion_asistencias, dependent: :delete_all
   has_many :asistentes, through: :reunion_asistencias, source: :miembro
   has_many :reunion_votaciones, -> { order(:created_at) }, dependent: :destroy
+  has_many :reunion_propuestas, -> { order(:created_at) }, dependent: :delete_all
 
   enum :estado, { convocada: 0, celebrada: 1, cancelada: 2 }
 
@@ -92,6 +93,9 @@ class Reunion < ApplicationRecord
   end
 
   def acta_publicada? = acta_publicada_at.present?
+
+  # Los puntos para el orden del día se proponen mientras está convocada y antes de que empiece.
+  def admite_propuestas? = convocada? && inicio.future?
 
   # El QR vale desde una hora antes hasta una hora después.
   def asistencia_abierta? = !cancelada? && (inicio - 1.hour..fin + 1.hour).cover?(Time.current)

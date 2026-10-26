@@ -7,12 +7,12 @@
       <h4 class="fw-bold mb-3"><%= @reunion.titulo %></h4>
 
       <% if @mi_ficha.nil? %>
-        <p class="text-muted mb-0">No figuras entre quienes se convocan a esta <%= @reunion.logia.t_reunion.downcase %>.</p>
+        <p class="text-muted mb-0">No figuras entre quienes se convocan a «<%= @reunion.titulo %>».</p>
       <% elsif @ya_esta %>
         <p class="text-success fw-semibold mb-0"><i class="bi bi-check-circle-fill me-1"></i>Ya estás en la asistencia.</p>
       <% elsif !@codigo_valido %>
         <p class="text-muted mb-0">
-          Este código no vale o la <%= @reunion.logia.t_reunion.downcase %> no está en curso: funciona desde una hora antes
+          Este código no vale o la convocatoria no está en curso: funciona desde una hora antes
           hasta una hora después. Pide que te marquen en la lista.
         </p>
       <% else %>
@@ -22,5 +22,5 @@
       <% end %>
     </div>
   </div>
-  <div class="mt-3 text-center"><%= link_to "Ver la #{@reunion.logia.t_reunion.downcase}", reunion_path(@reunion), class: "text-muted small" %></div>
+  <div class="mt-3 text-center"><%= link_to "Ver la convocatoria", reunion_path(@reunion), class: "text-muted small" %></div>
 </div>

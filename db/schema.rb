@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_195839) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -869,6 +869,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_195839) do
     t.index ["reunion_id"], name: "index_reunion_asistencias_on_reunion_id"
   end
 
+  create_table "reunion_propuestas", force: :cascade do |t|
+    t.bigint "reunion_id", null: false
+    t.bigint "miembro_id", null: false
+    t.string "texto", null: false
+    t.integer "estado", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["miembro_id"], name: "index_reunion_propuestas_on_miembro_id"
+    t.index ["reunion_id", "estado"], name: "index_reunion_propuestas_on_reunion_id_and_estado"
+  end
+
   create_table "reunion_votaciones", force: :cascade do |t|
     t.bigint "reunion_id", null: false
     t.bigint "user_id", null: false
@@ -1068,6 +1079,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_195839) do
   add_foreign_key "red_resenas", "users", column: "sujeto_id"
   add_foreign_key "reunion_asistencias", "miembros"
   add_foreign_key "reunion_asistencias", "reuniones"
+  add_foreign_key "reunion_propuestas", "miembros", on_delete: :cascade
+  add_foreign_key "reunion_propuestas", "reuniones", on_delete: :cascade
   add_foreign_key "reunion_votaciones", "reuniones"
   add_foreign_key "reunion_votaciones", "users"
   add_foreign_key "reunion_votos", "miembros"

@@ -1,0 +1,55 @@
+<%# Puntos para el orden del día. Quien gestiona ve los que esperan respuesta; cada convocado, solo los suyos. %>
+<% gestiona = gestiona_reunion?(reunion) %>
+<% pendientes = gestiona ? reunion.reunion_propuestas.pendiente.includes(miembro: :user).to_a : [] %>
+<% mias = mi_ficha ? reunion.reunion_propuestas.where(miembro: mi_ficha).to_a : [] %>
+<% puede_proponer = mi_ficha && reunion.admite_propuestas? %>
+<% if pendientes.any? || mias.any? || puede_proponer %>
+  <div class="card border-0 shadow-sm mb-3" id="propuestas">
+    <div class="card-body p-4">
+      <h6 class="fw-bold small text-muted text-uppercase mb-3">
+        <i class="bi bi-lightbulb me-1"></i>Puntos para el orden del día
+        <% if pendientes.any? %><span class="badge bg-primary ms-1"><%= pendientes.size %> por revisar</span><% end %>
+      </h6>
+
+      <% pendientes.each do |p| %>
+        <div class="border rounded p-3 mb-2">
+          <div class="mb-1" style="white-space:pre-wrap;"><%= p.texto %></div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span class="text-muted small">Propone <%= p.miembro.user.nombre_corto %></span>
+            <div class="d-flex gap-2">
+              <%= button_to "Incluir", incluir_reunion_propuesta_path(reunion, p), class: "btn btn-sm btn-primary" %>
+              <%= button_to "Descartar", descartar_reunion_propuesta_path(reunion, p), class: "btn btn-sm btn-outline-secondary",
+                            form: { data: { turbo_confirm: "¿Descartar este punto? No se avisa a quien lo propuso." } } %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% if mias.any? %>
+        <div class="small text-muted mb-1">Tus puntos</div>
+        <ul class="list-unstyled small mb-3">
+          <% mias.each do |p| %>
+            <li class="d-flex align-items-start gap-2 mb-1">
+              <% if p.incluida? %><span class="badge bg-success">Incluido</span>
+              <% elsif p.descartada? %><span class="badge bg-secondary">No se incluyó</span>
+              <% else %><span class="badge bg-light text-dark">Esperando</span><% end %>
+              <span><%= p.texto %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <% if puede_proponer %>
+        <%= form_with model: ReunionPropuesta.new, url: reunion_propuestas_path(reunion) do |f| %>
+          <%= f.label :texto, "¿Quieres proponer un punto para el orden del día?", class: "form-label small" %>
+          <div class="input-group input-group-sm">
+            <%= f.text_field :texto, class: "form-control", required: true, maxlength: 500,
+                             placeholder: "Organizar la salida de fin de año" %>
+            <%= f.submit "Proponer", class: "btn btn-outline-primary" %>
+          </div>
+          <div class="form-text">Lo ve solo quien gestiona la convocatoria. Si lo incluye, entra en el orden del día con tu nombre.</div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

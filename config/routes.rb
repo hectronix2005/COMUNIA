@@ -283,6 +283,12 @@ Rails.application.routes.draw do
         post :cerrar
       end
     end
+    resources :propuestas, controller: "reunion_propuestas", only: [:create] do
+      member do
+        post :incluir
+        post :descartar
+      end
+    end
   end
 
   # ── RSVP Eventos ───────────────────────────────────────────

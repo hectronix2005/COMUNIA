@@ -85,6 +85,7 @@
     </div>
   </div>
 
+  <%= render "reuniones/propuestas", reunion: @reunion, mi_ficha: @mi_ficha %>
   <%= render "reuniones/votaciones", reunion: @reunion, mi_ficha: @mi_ficha %>
 
   <% if gestiona_reunion?(@reunion) && !@reunion.cancelada? %>

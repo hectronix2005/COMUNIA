@@ -475,6 +475,20 @@ No hecho o no comprobado:
   y los superadmins; los socios, no.
 - Prueba nueva en `test/integration/evento_a_reunion_test.rb`.
 
+## Puntos para el orden del día (26-oct, en la rama feat/puntos-orden-del-dia, sin desplegar)
+
+- Mientras la reunión está convocada y no ha empezado, cada convocado puede proponer un punto (hasta 500
+  caracteres; como mucho 3 esperando respuesta por persona y reunión). Se avisa a quien la convocó.
+- Solo ven el punto quien lo propuso y quien gestiona la reunión. Al incluirlo, entra al final del orden del día
+  como «- texto (propone Nombre)», se actualiza el evento del calendario y se avisa a quien lo propuso. Descartarlo
+  no avisa; quien lo propuso ve «No se incluyó».
+- Por qué: da a los miembros un motivo para entrar durante la semana, antes de la reunión.
+- Arreglo de género: el término puede ser masculino («encuentro»), así que se quitan «la/esta + término» de los
+  textos del QR (ya desplegados) y de los nuevos; ahora dicen «la convocatoria».
+- Tabla `reunion_propuestas` (migración 20261026210000) e inflexión «propuesta → propuestas» (el inglés la dejaba
+  igual). Límite de 10 envíos por minuto y persona.
+- `test/integration/puntos_orden_del_dia_test.rb` (3 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

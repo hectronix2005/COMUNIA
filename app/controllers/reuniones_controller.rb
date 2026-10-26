@@ -116,7 +116,7 @@ class ReunionesController < ApplicationController
   def marcar_presente
     ficha = @reunion.convocados.find_by(id: current_miembro&.id)
     unless ficha && codigo_de_asistencia_valido?
-      return redirect_to reunion_path(@reunion), alert: "No se pudo registrar: el código no vale o la #{@reunion.logia.t_reunion.downcase} no está en curso."
+      return redirect_to reunion_path(@reunion), alert: "No se pudo registrar: el código no vale o la convocatoria no está en curso."
     end
 
     @reunion.reunion_asistencias.find_or_create_by!(miembro_id: ficha.id)
