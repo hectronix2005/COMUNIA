@@ -237,13 +237,12 @@ class CalendarioController < ApplicationController
   end
 
   def logia_ids_visibles
-    @filtro == "tenant" ? logia_ids_del_tenant : CalendarioSincronizacion.logia_ids_visibles_para(current_logia.id)
+    @filtro == "tenant" ? logia_ids_del_tenant : CalendarioSincronizacion.logia_ids_visibles_para(current_logia)
   end
 
+  # Desde la raíz, toda la comunidad; desde un grupo, el grupo y la raíz (los grupos hermanos no se ven).
   def logia_ids_del_tenant
-    ids = [current_logia.id]
-    ids += current_logia.logias.pluck(:id) if current_logia.tenant_id.nil?
-    ids
+    current_logia.tenant_id.nil? ? [current_logia.id, *current_logia.logias.ids] : [current_logia.id, current_logia.tenant_id]
   end
 
   def logias_del_tenant_sin_sync

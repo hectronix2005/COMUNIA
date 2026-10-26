@@ -361,6 +361,16 @@ No hecho o no comprobado:
 - De paso, el filtro del calendario dice «Mi <grupo>» y «Toda la comunidad» en vez de «Mi Logia» y «Todo el
   Tenant».
 
+## Calendario: lo de la raíz llega a sus grupos (26-oct, en la rama fix/calendario-comunidad-raiz, sin desplegar)
+
+- Al probar el feed en producción salió vacío para los 28 miembros: están en el grupo 1 y los 24 eventos
+  futuros (serie «Tenida Propagadores de la Luz») están en la raíz, el grupo 6. Dentro de la app sí los ven
+  porque `/t/<slug>` solo admite raíces y allí `current_logia` es la raíz. El feed partía de `user.logia`.
+- Ahora el calendario de un grupo incluye la raíz de su comunidad, como ya hacían las reuniones
+  (`CalendarioSincronizacion.logia_ids_visibles_para(logia)`). Los grupos hermanos siguen sin verse, y desde
+  un grupo «Toda la comunidad» es el grupo y la raíz.
+- No se mueven los eventos al grupo 1: dentro de la app (contexto de la raíz) dejarían de verse en «Mi grupo».
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

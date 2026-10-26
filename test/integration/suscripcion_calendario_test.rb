@@ -55,6 +55,26 @@ class SuscripcionCalendarioTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Cedritos"
   end
 
+  test "un grupo recibe lo de la raíz de su comunidad, no lo de un grupo hermano" do
+    suv = Logia.create!(nombre: "SUV", slug: "suv-#{SecureRandom.hex(3)}", codigo: "S#{SecureRandom.hex(3).upcase}", tenant: @club)
+    sedanes = Logia.create!(nombre: "Sedanes", slug: "sed-#{SecureRandom.hex(3)}", codigo: "D#{SecureRandom.hex(3).upcase}", tenant: @club)
+    CalendarioEvento.create!(logia: sedanes, user: persona("Teo", sedanes), titulo: "Lavado de sedanes",
+                             inicio: 4.days.from_now, fin: 4.days.from_now + 1.hour)
+    conductor = persona("Ana", suv)
+    conductor.renovar_calendario!
+    get "/calendario/feed.ics", params: { token: conductor.calendario_token }
+    assert_includes response.body, "Asado de fin de año", "lo de la raíz llega a sus grupos"
+    assert_not_includes response.body, "Lavado de sedanes"
+
+    # Sin /t/<slug> el calendario de la app parte de su grupo, y también ve lo de la raíz.
+    sign_in conductor
+    get "/calendario", params: { fecha: 20.days.from_now.to_date.iso8601 }
+    assert_match "Asado de fin de año", response.body
+    get "/calendario", params: { fecha: 4.days.from_now.to_date.iso8601, filtro: "tenant" }
+    assert_response :ok
+    assert_no_match "Lavado de sedanes", response.body
+  end
+
   test "una dirección cambiada, anulada, inventada o de quien ya no está no sirve" do
     @socio.renovar_calendario!
     vieja = @socio.calendario_token

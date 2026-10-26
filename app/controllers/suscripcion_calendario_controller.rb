@@ -9,7 +9,7 @@ class SuscripcionCalendarioController < ActionController::Base
     return head(:not_found) unless user && vigente?(user)
 
     tenant = "/t/#{user.logia.slug}"
-    eventos = CalendarioEvento.de_logias(CalendarioSincronizacion.logia_ids_visibles_para(user.logia_id))
+    eventos = CalendarioEvento.de_logias(CalendarioSincronizacion.logia_ids_visibles_para(user.logia))
                               .en_rango(1.month.ago, 1.year.from_now).includes(:reunion).ordenados.limit(500)
     datos = eventos.map do |e|
       url = e.reunion ? reunion_url(e.reunion, script_name: tenant) : calendario_url(e, script_name: tenant)

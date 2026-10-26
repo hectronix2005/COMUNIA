@@ -21,9 +21,11 @@ class CalendarioSincronizacion < ApplicationRecord
   }
   scope :aceptadas_para_logia, ->(logia_id) { aceptadas.para_logia(logia_id) }
 
-  # Logias cuyo calendario ve la logia dada: ella misma y las sincronizadas con ella.
-  def self.logia_ids_visibles_para(logia_id)
-    [logia_id, *aceptadas_para_logia(logia_id).flat_map { [_1.logia_solicitante_id, _1.logia_destino_id] }].uniq
+  # Logias cuyo calendario ve un grupo: él mismo, la raíz de su comunidad (lo que se organiza para toda, como
+  # en las reuniones) y las sincronizadas con él.
+  def self.logia_ids_visibles_para(logia)
+    sincronizadas = aceptadas_para_logia(logia.id).flat_map { [_1.logia_solicitante_id, _1.logia_destino_id] }
+    [logia.id, logia.organizacion.id, *sincronizadas].uniq
   end
 
   def pendiente? = estado == "pendiente"
