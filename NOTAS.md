@@ -325,6 +325,15 @@ No hecho o no comprobado:
   mensaje». Un celular mal escrito no guarda nada. Sin correos. Sin migraciones.
 - El teléfono del miembro ahora se valida: hasta 20 caracteres, solo números, espacios y + ( ) - .
 
+## Reuniones que se repiten (26-oct, en la rama feat/reuniones-periodicas, sin desplegar)
+
+- Al convocar se elige «¿Se repite?»: cada semana, cada dos semanas o cada mes el mismo día de la semana (el
+  segundo martes; si era el quinto, el último del mes), y cuántas fechas (2 a 12).
+- Cada fecha es una reunión normal, con su evento, confirmación, asistencia, acta y recordatorio, unidas
+  por la columna `serie` (migración 20261026100000). Se avisa una sola vez por la serie, no por cada fecha.
+- En la lista solo sale la fecha más cercana de cada serie; la ficha enseña las siguientes. Se puede
+  cancelar solo esa fecha o esa y las siguientes (un solo aviso). Editar cambia solo esa fecha.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

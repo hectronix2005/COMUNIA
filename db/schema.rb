@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -904,9 +904,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_080000) do
     t.datetime "recordatorio_enviado_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "serie"
     t.index ["calendario_evento_id"], name: "index_reuniones_on_calendario_evento_id"
     t.index ["logia_id", "inicio"], name: "index_reuniones_on_logia_id_and_inicio"
     t.index ["logia_id"], name: "index_reuniones_on_logia_id"
+    t.index ["serie", "inicio"], name: "index_reuniones_on_serie_and_inicio"
     t.index ["user_id"], name: "index_reuniones_on_user_id"
   end
 

@@ -26,6 +26,17 @@
         <div class="d-flex gap-3 mb-2"><i class="bi bi-geo-alt text-muted"></i><span><%= @reunion.lugar %></span></div>
       <% end %>
 
+      <% otras = @reunion.otras_de_la_serie.where(estado: :convocada).where(fin: Time.current..).limit(5) %>
+      <% if otras.any? %>
+        <div class="d-flex gap-3 mb-2">
+          <i class="bi bi-arrow-repeat text-muted mt-1"></i>
+          <div class="small">
+            Se repite. Próximas fechas:
+            <% otras.each_with_index do |r, i| %><%= ", " if i.positive? %><%= link_to I18n.l(r.inicio, format: "%-d %b"), reunion_path(r) %><% end %>
+          </div>
+        </div>
+      <% end %>
+
       <% if @reunion.orden_del_dia.present? %>
         <h6 class="fw-bold small text-muted text-uppercase mt-4 mb-2">Orden del día</h6>
         <div style="white-space:pre-wrap;"><%= @reunion.orden_del_dia %></div>
@@ -87,9 +98,16 @@
         <% end %>
       <% end %>
       <% if @reunion.convocada? %>
+        <% siguientes = @reunion.serie_desde_aqui.count %>
         <%= button_to cancelar_reunion_path(@reunion), class: "btn btn-sm btn-outline-danger",
                       form: { data: { turbo_confirm: "Se avisará a todos los convocados. ¿Cancelar?" } } do %>
-          <i class="bi bi-x-octagon me-1"></i>Cancelar
+          <i class="bi bi-x-octagon me-1"></i><%= siguientes > 1 ? "Cancelar solo esta fecha" : "Cancelar" %>
+        <% end %>
+        <% if siguientes > 1 %>
+          <%= button_to cancelar_reunion_path(@reunion, alcance: "siguientes"), class: "btn btn-sm btn-outline-danger",
+                        form: { data: { turbo_confirm: "Se cancelarán #{siguientes} fechas y se avisará a los convocados. ¿Seguro?" } } do %>
+            <i class="bi bi-x-octagon me-1"></i>Cancelar esta y las <%= siguientes - 1 %> siguientes
+          <% end %>
         <% end %>
       <% end %>
     </div>

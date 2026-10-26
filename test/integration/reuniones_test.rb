@@ -243,6 +243,69 @@ class ReunionesTest < ActionDispatch::IntegrationTest
                  %w[Reunión Tenida Encuentro Asamblea Sesión Pez].map { Logia.plural(_1) }
   end
 
+  test "una serie semanal crea todas las fechas con un solo aviso y cada una su evento" do
+    sign_in @admin
+    perform_enqueued_jobs do
+      post "/t/#{@mercedes.slug}/reuniones", params: { reunion: datos(logia_id: @suv.id), repetir: "semanal", veces: "4" }
+    end
+    serie = Reunion.where(logia: @suv).order(:inicio).to_a
+    assert_equal 4, serie.size
+    assert_equal 1, serie.map(&:serie).uniq.size
+    assert_equal [7.days] * 3, serie.each_cons(2).map { (_2.inicio - _1.inicio).seconds }
+    assert serie.all? { _1.fin - _1.inicio == 2.hours }
+    assert_equal 4, serie.map(&:calendario_evento_id).compact.uniq.size
+    assert_redirected_to "/t/#{@mercedes.slug}/reuniones/#{serie.first.id}"
+
+    avisos = Notificacion.where(tipo: "reunion_serie")
+    assert_equal [@socio.id, @otro_socio.id].sort, avisos.pluck(:user_id).sort, "un aviso por persona, no uno por fecha"
+    assert_match "4 fechas, cada semana", avisos.first.cuerpo
+    assert_equal 0, Notificacion.where(tipo: "reunion_convocatoria").count
+
+    get "/t/#{@mercedes.slug}/reuniones"
+    assert_equal 1, response.body.scan("Ruta a La Calera").size, "en la lista, solo la fecha más cercana de la serie"
+
+    get "/t/#{@mercedes.slug}/reuniones/#{serie.first.id}"
+    assert_match "Se repite", response.body
+    assert_match "Cancelar esta y las 3 siguientes", response.body
+  end
+
+  test "cancelar esta y las siguientes deja las anteriores y avisa una vez" do
+    sign_in @admin
+    post "/t/#{@mercedes.slug}/reuniones", params: { reunion: datos(logia_id: @suv.id), repetir: "quincenal", veces: "5" }
+    serie = Reunion.where(logia: @suv).order(:inicio).to_a
+    assert_equal 14.days, serie[1].inicio - serie[0].inicio
+
+    perform_enqueued_jobs do
+      post "/t/#{@mercedes.slug}/reuniones/#{serie[2].id}/cancelar", params: { alcance: "siguientes" }
+    end
+    assert_equal %w[convocada convocada cancelada cancelada cancelada], serie.map { _1.reload.estado }
+    assert_nil serie[3].calendario_evento_id
+    assert_equal 2, Notificacion.where(tipo: "reunion_serie_cancelada").count
+    assert_match "Se cancelaron 3 fechas", Notificacion.find_by(tipo: "reunion_serie_cancelada").titulo
+
+    post "/t/#{@mercedes.slug}/reuniones/#{serie[0].id}/cancelar"
+    assert serie[0].reload.cancelada?
+    assert serie[1].reload.convocada?, "sin alcance solo se cancela esa fecha"
+  end
+
+  test "una serie mensual cae el mismo día de la semana; si era el quinto, el último del mes" do
+    segundo_martes = Time.zone.local(2026, 11, 10, 19)
+    assert_equal ["2026-11-10", "2026-12-08", "2027-01-12"],
+                 Reunion.fechas_de_serie(segundo_martes, "mensual", 3).map { _1.to_date.iso8601 }
+    quinto_jueves = Time.zone.local(2026, 10, 29, 19)
+    assert_equal ["2026-10-29", "2026-11-26", "2026-12-31"],
+                 Reunion.fechas_de_serie(quinto_jueves, "mensual", 3).map { _1.to_date.iso8601 }
+    assert Reunion.fechas_de_serie(quinto_jueves, "mensual", 3).all? { _1.hour == 19 }
+  end
+
+  test "una repetición desconocida o un número fuera de rango no se cuela" do
+    sign_in @admin
+    post "/t/#{@mercedes.slug}/reuniones", params: { reunion: datos(logia_id: @suv.id), repetir: "diaria", veces: "500" }
+    assert_equal 1, Reunion.where(logia: @suv).count
+    post "/t/#{@mercedes.slug}/reuniones", params: { reunion: datos(logia_id: @suv.id), repetir: "semanal", veces: "500" }
+    assert_equal 1 + Reunion::MAX_FECHAS, Reunion.where(logia: @suv).count
+  end
+
   private
 
   def datos(**extra)

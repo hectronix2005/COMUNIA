@@ -7,7 +7,8 @@ class ReunionesController < ApplicationController
 
   def index
     visibles = Reunion.where(logia_id: logia_ids_de_reuniones).includes(:logia)
-    @proximas = visibles.proximas
+    # De una serie solo se lista la fecha más cercana; las demás se ven al abrirla.
+    @proximas = visibles.proximas.to_a.uniq { _1.serie || "reunion-#{_1.id}" }
     @pasadas = visibles.pasadas.page(params[:page]).per(15)
   end
 
@@ -28,12 +29,13 @@ class ReunionesController < ApplicationController
     @reunion = Reunion.new(reunion_params.merge(user: current_user))
     return head(:not_found) unless logias_convocables.map(&:id).include?(@reunion.logia_id)
 
-    if @reunion.save
-      NotificarReunionJob.perform_later(@reunion.id, "convocatoria")
-      redirect_to reunion_path(@reunion), notice: "Convocatoria enviada: se avisó a los convocados."
-    else
-      render :new, status: :unprocessable_entity
-    end
+    repetir = params[:repetir].presence_in(Reunion::REPETICIONES.keys)
+    return render(:new, status: :unprocessable_entity) unless @reunion.valid?
+    return convocar_serie(repetir, params[:veces].to_i.clamp(2, Reunion::MAX_FECHAS)) if repetir
+
+    @reunion.save!
+    NotificarReunionJob.perform_later(@reunion.id, "convocatoria")
+    redirect_to reunion_path(@reunion), notice: "Convocatoria enviada: se avisó a los convocados."
   end
 
   def edit; end
@@ -91,12 +93,32 @@ class ReunionesController < ApplicationController
   def cancelar
     return redirect_to(reunion_path(@reunion), alert: "Solo se cancela lo que está convocado.") unless @reunion.convocada?
 
+    if params[:alcance] == "siguientes" && @reunion.serie
+      canceladas = @reunion.serie_desde_aqui.to_a
+      Reunion.transaction { canceladas.each { _1.update!(estado: :cancelada) } }
+      NotificarReunionJob.perform_later(@reunion.id, "serie_cancelada", canceladas.size)
+      return redirect_to reunion_path(@reunion), notice: "Se cancelaron #{canceladas.size} fechas y se avisó a los convocados."
+    end
+
     @reunion.update!(estado: :cancelada)
     NotificarReunionJob.perform_later(@reunion.id, "cancelada")
     redirect_to reunion_path(@reunion), notice: "Se canceló y se avisó a los convocados."
   end
 
   private
+
+  # Crea todas las fechas de una vez y manda un solo aviso; cada fecha tendrá después su recordatorio.
+  def convocar_serie(repetir, veces)
+    serie = SecureRandom.uuid
+    duracion = @reunion.fin - @reunion.inicio
+    fechas = Reunion.fechas_de_serie(@reunion.inicio, repetir, veces)
+    @reunion.serie = serie
+    # Las copias se sacan antes de guardar la primera, que al guardarse recibe su evento del calendario.
+    copias = fechas.drop(1).map { |inicio| @reunion.dup.tap { _1.assign_attributes(inicio: inicio, fin: inicio + duracion) } }
+    Reunion.transaction { [@reunion, *copias].each(&:save!) }
+    NotificarReunionJob.perform_later(@reunion.id, "serie", "#{veces} fechas, #{Reunion::REPETICIONES[repetir].downcase}")
+    redirect_to reunion_path(@reunion), notice: "Se convocaron #{veces} fechas y se avisó a los convocados."
+  end
 
   def set_reunion
     @reunion = Reunion.where(logia_id: logia_ids_de_reuniones).find(params[:id])

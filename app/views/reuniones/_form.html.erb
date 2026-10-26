@@ -32,6 +32,21 @@
     </div>
   </div>
 
+  <% if reunion.new_record? %>
+    <div class="row g-2 mb-3">
+      <div class="col-sm-7">
+        <%= label_tag :repetir, "¿Se repite?", class: "form-label small fw-semibold" %>
+        <%= select_tag :repetir, options_for_select([["No, es una sola fecha", ""], *Reunion::REPETICIONES.invert.to_a], params[:repetir]),
+                       class: "form-select" %>
+      </div>
+      <div class="col-sm-5">
+        <%= label_tag :veces, "¿Cuántas fechas?", class: "form-label small fw-semibold" %>
+        <%= number_field_tag :veces, params[:veces].presence || 6, min: 2, max: Reunion::MAX_FECHAS, class: "form-control" %>
+      </div>
+      <div class="form-text">Si se repite, se convocan todas las fechas de una vez con un solo aviso; cada una tiene después su recordatorio.</div>
+    </div>
+  <% end %>
+
   <div class="mb-3">
     <%= f.label :lugar, "Lugar", class: "form-label small fw-semibold" %>
     <%= f.text_field :lugar, class: "form-control", maxlength: 200, placeholder: "Dirección, salón o enlace de videollamada" %>

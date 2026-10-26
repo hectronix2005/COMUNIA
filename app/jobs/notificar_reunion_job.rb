@@ -1,4 +1,5 @@
-# Avisa a los convocados de una reunión: convocatoria, cambio, cancelación, votación abierta o acta publicada.
+# Avisa a los convocados de una reunión: convocatoria (de una fecha o de una serie), cambio, cancelación,
+# votación abierta o acta publicada.
 # Solo a los miembros activos del grupo convocado (o de toda la comunidad si es de la raíz).
 class NotificarReunionJob < ApplicationJob
   queue_as :default
@@ -9,6 +10,8 @@ class NotificarReunionJob < ApplicationJob
     "cancelada"    => ->(r, _detalle) { ["Se canceló: #{r.titulo}", "Estaba prevista el #{I18n.l(r.inicio, format: '%a %-d %b, %H:%M')}."] },
     "acta"         => ->(r, _detalle) { ["Acta publicada: #{r.titulo}", "Ya puedes leer el acta."] },
     "votacion"     => ->(r, pregunta) { ["Votación abierta: #{pregunta}", "En «#{r.titulo}». Entra a votar."] },
+    "serie"        => ->(r, detalle) { ["#{r.logia.t_reuniones}: #{r.titulo}", "#{detalle}. La primera: #{I18n.l(r.inicio, format: '%a %-d %b, %H:%M')}#{" · #{r.lugar}" if r.lugar.present?}"] },
+    "serie_cancelada" => ->(r, veces) { ["Se cancelaron #{veces} fechas: #{r.titulo}", "Desde el #{I18n.l(r.inicio, format: '%a %-d %b')} en adelante."] },
     "recordatorio" => ->(r, _detalle) { ["Mañana: #{r.titulo}", "#{I18n.l(r.inicio, format: '%H:%M')}#{" · #{r.lugar}" if r.lugar.present?}. ¿Vas a ir?"] }
   }.freeze
 
