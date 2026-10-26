@@ -1,0 +1,41 @@
+<% content_for(:title, "Constancia") %>
+
+<div class="container" style="max-width:720px;">
+  <h4 class="fw-bold mb-1"><i class="bi bi-graph-up me-2" style="color:#c5a24d;"></i>Constancia</h4>
+  <p class="text-muted small mb-3">
+    Convocatorias celebradas en el último año que incluían a cada miembro, desde que tiene ficha.
+    Primero, quien menos viene: si alguien lleva tres seguidas sin venir, quizá convenga llamarle.
+  </p>
+
+  <% if @filas.none? { _1.convocadas.positive? } %>
+    <div class="alert alert-light border small">
+      Aún no hay ninguna convocatoria celebrada. Se cuenta al guardar la asistencia («Registrar asistencia» en cada convocatoria).
+    </div>
+  <% end %>
+
+  <div class="list-group mb-3">
+    <% @filas.each do |f| %>
+      <div class="list-group-item d-flex align-items-center gap-3">
+        <div class="flex-grow-1 min-w-0">
+          <div class="fw-semibold text-truncate"><%= f.miembro.user.nombre_corto %></div>
+          <div class="text-muted small">
+            <% if @varios_grupos %><%= f.miembro.logia.nombre_display %> · <% end %>
+            <% if f.convocadas.zero? %>
+              Sin convocatorias celebradas aún
+            <% else %>
+              <%= f.asistidas %> de <%= f.convocadas %><%= f.ultima ? " · la última, el #{I18n.l(f.ultima, format: '%-d %b')}" : " · no ha venido a ninguna" %>
+            <% end %>
+          </div>
+        </div>
+        <% if f.faltas_seguidas >= 3 %>
+          <span class="badge bg-warning text-dark flex-shrink-0"><%= f.faltas_seguidas %> seguidas sin venir</span>
+        <% end %>
+        <% if f.porcentaje %>
+          <span class="fw-bold flex-shrink-0" style="width:3.5rem;text-align:right;"><%= f.porcentaje %> %</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= link_to "← #{current_logia.t_reuniones}", reuniones_path, class: "text-muted small text-decoration-none" %>
+</div>

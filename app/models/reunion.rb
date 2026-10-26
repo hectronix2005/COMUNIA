@@ -92,6 +92,27 @@ class Reunion < ApplicationRecord
     end
   end
 
+  # Constancia de cada miembro en las reuniones celebradas desde una fecha: a cuántas se le convocó (las de su grupo
+  # y las de la raíz, desde que tiene ficha), a cuántas asistió, la última vez que vino y cuántas lleva sin venir.
+  Constancia = Data.define(:miembro, :convocadas, :asistidas, :ultima, :faltas_seguidas) do
+    def porcentaje = convocadas.zero? ? nil : (asistidas * 100.0 / convocadas).round
+  end
+
+  def self.constancia(miembros, desde: 1.year.ago)
+    miembros = miembros.includes(:user, :logia).to_a
+    raiz = miembros.to_h { [_1.logia_id, _1.logia.tenant_id || _1.logia_id] }
+    reuniones = celebrada.where(logia_id: (raiz.keys + raiz.values).uniq, inicio: desde..Time.current).order(:inicio)
+                         .pluck(:id, :logia_id, :inicio)
+    asistio = ReunionAsistencia.where(reunion_id: reuniones.map(&:first), miembro_id: miembros.map(&:id))
+                               .pluck(:reunion_id, :miembro_id).to_set
+    miembros.map do |m|
+      suyas = reuniones.select { |_, logia_id, inicio| logia_id.in?([m.logia_id, raiz[m.logia_id]]) && inicio >= m.created_at }
+      fue = suyas.select { |id, _, _| asistio.include?([id, m.id]) }
+      Constancia.new(miembro: m, convocadas: suyas.size, asistidas: fue.size, ultima: fue.last&.last,
+                     faltas_seguidas: suyas.reverse.take_while { |id, _, _| !asistio.include?([id, m.id]) }.size)
+    end
+  end
+
   def acta_publicada? = acta_publicada_at.present?
 
   # Los puntos para el orden del día se proponen mientras está convocada y antes de que empiece.

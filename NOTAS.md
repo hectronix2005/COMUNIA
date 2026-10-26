@@ -489,6 +489,18 @@ No hecho o no comprobado:
   igual). Límite de 10 envíos por minuto y persona.
 - `test/integration/puntos_orden_del_dia_test.rb` (3 pruebas).
 
+## Constancia de asistencia (26-oct, en la rama feat/constancia-asistencia, sin desplegar)
+
+- Quien gestiona un grupo tiene «Constancia» junto a «Convocar» en Reuniones: los miembros activos de sus grupos
+  con «X de N», la fecha de la última a la que vino y el %, ordenados de menos a más. Si alguien lleva 3 o más
+  seguidas sin venir, sale la insignia «N seguidas sin venir»: a quien conviene llamar.
+- Cada miembro ve la suya arriba en Reuniones: «Tu asistencia en el último año: X de N (P %)».
+- Cuentan solo las celebradas del último año de su grupo y de la raíz, y solo desde que tiene ficha; no las de
+  otros grupos ni las convocadas que nadie dio por celebradas. Un socio no puede abrir la lista (vuelve a Reuniones).
+- Por qué: convierte el registro de asistencia (QR) en algo que la junta usa para cuidar a quien se aleja.
+- Sin migraciones. En producción aún no hay reuniones celebradas, así que por ahora solo se verá el aviso.
+- `test/integration/constancia_test.rb` (2 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

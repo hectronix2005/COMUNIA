@@ -2,7 +2,7 @@
 # quórum y acta. Quién ve y quién convoca está en AlcanceReuniones.
 class ReunionesController < ApplicationController
   before_action -> { requiere_modulo!(:reuniones) }
-  before_action :set_reunion, except: [:index, :new, :create, :desde_evento]
+  before_action :set_reunion, except: [:index, :new, :create, :desde_evento, :constancia]
   before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar, :qr]
 
   def index
@@ -10,6 +10,16 @@ class ReunionesController < ApplicationController
     # De una serie solo se lista la fecha más cercana; las demás se ven al abrirla.
     @proximas = visibles.proximas.to_a.uniq { _1.serie || "reunion-#{_1.id}" }
     @pasadas = visibles.pasadas.page(params[:page]).per(15)
+    @mi_constancia = Reunion.constancia(Miembro.where(id: current_miembro.id)).first if current_miembro
+  end
+
+  # Constancia de los miembros activos de los grupos que se gestionan, de menos a más: quién lleva tiempo sin venir.
+  def constancia
+    return redirect_to(reuniones_path, alert: "Solo la ve quien gestiona un grupo.") if logias_convocables.empty?
+
+    @varios_grupos = logias_convocables.many?
+    @filas = Reunion.constancia(Miembro.activos.where(logia_id: logias_convocables.map(&:id)))
+                    .sort_by { [_1.porcentaje || 101, -_1.faltas_seguidas, _1.miembro.user.nombre_corto] }
   end
 
   def show

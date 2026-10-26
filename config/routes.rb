@@ -267,6 +267,7 @@ Rails.application.routes.draw do
   # ── Reuniones ──────────────────────────────────────────────
   resources :reuniones, only: [:index, :show, :new, :create, :edit, :update] do
     post :desde_evento, on: :collection
+    get  :constancia, on: :collection
     member do
       post :responder
       get  :asistencia
