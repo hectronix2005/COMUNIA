@@ -501,6 +501,16 @@ No hecho o no comprobado:
 - Sin migraciones. En producción aún no hay reuniones celebradas, así que por ahora solo se verá el aviso.
 - `test/integration/constancia_test.rb` (2 pruebas).
 
+## Avisar por WhatsApp (26-oct, en la rama feat/avisar-whatsapp, sin desplegar)
+
+- Quien gestiona la reunión tiene «Avisar por WhatsApp» mientras está convocada y no ha empezado, y «Avisar del
+  acta por WhatsApp» cuando el acta está publicada. Abre WhatsApp con el mensaje escrito para elegir el grupo.
+- El mensaje solo lleva el nombre, la fecha, la hora, el lugar y el enlace a la reunión en COMUNIA. El orden del
+  día y el acta no salen de la app (lo que pasa por WhatsApp lo puede usar Meta).
+- Por qué: los miembros ya están en el grupo de WhatsApp; el enlace los trae a confirmar y a proponer puntos.
+  Sin sesión, el enlace pasa por el login y vuelve a la reunión.
+- Sin migraciones. `test/integration/avisar_whatsapp_test.rb` (2 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

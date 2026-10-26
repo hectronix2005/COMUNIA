@@ -90,6 +90,13 @@
 
   <% if gestiona_reunion?(@reunion) && !@reunion.cancelada? %>
     <div class="d-flex flex-wrap gap-2 mb-3">
+      <% if @reunion.admite_propuestas? || @reunion.acta_publicada? %>
+        <%= link_to whatsapp_url(nil, texto_whatsapp_reunion(@reunion, reunion_url(@reunion))), class: "btn btn-sm btn-success",
+                    target: "_blank", rel: "noopener noreferrer",
+                    title: "Abre WhatsApp con el mensaje escrito para que elijas el grupo. No lleva el orden del día ni el acta." do %>
+          <i class="bi bi-whatsapp me-1"></i><%= @reunion.acta_publicada? ? "Avisar del acta por WhatsApp" : "Avisar por WhatsApp" %>
+        <% end %>
+      <% end %>
       <%= link_to qr_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>
         <i class="bi bi-qr-code me-1"></i>QR de asistencia
       <% end %>
