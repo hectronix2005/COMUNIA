@@ -423,6 +423,16 @@ No hecho o no comprobado:
 - En producción, la primera la recibirían los 28 miembros activos (todos en el grupo 1) el 27-oct hacia las
   18:25, para la tenida del 28; sin push activado, solo la verán en la campana al entrar.
 
+## Índices únicos que faltaban (26-oct, en la rama fix/indices-unicos, sin desplegar)
+
+- Cuatro validaciones de unicidad no tenían índice único, así que un doble clic o un reintento podía crear el
+  duplicado: `miembros.user_id` (una persona con dos fichas: `user.miembro` cogería una cualquiera),
+  `negocio_reportes` (anuncio, usuario), `conceptos_cobros` (logia, nombre) y `red_comunidades` lower(nombre).
+- Migración 20261026150000. En producción no había duplicados (comprobado el 26-oct), así que crea los índices
+  sin tocar datos.
+- `test/models/indices_unicos_test.rb` revisa todos los modelos: una validación de unicidad nueva sin su índice
+  hace fallar la suite.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
