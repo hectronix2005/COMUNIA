@@ -3,7 +3,7 @@
 class ReunionesController < ApplicationController
   before_action -> { requiere_modulo!(:reuniones) }
   before_action :set_reunion, except: [:index, :new, :create, :desde_evento]
-  before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar]
+  before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar, :qr]
 
   def index
     visibles = Reunion.where(logia_id: logia_ids_de_reuniones).includes(:logia)
@@ -99,6 +99,32 @@ class ReunionesController < ApplicationController
     redirect_to reunion_path(@reunion), notice: "Asistencia guardada: quórum del #{@reunion.quorum} %."
   end
 
+  # El QR que se enseña en la reunión: cada convocado lo escanea y marca su asistencia desde su teléfono.
+  def qr
+    @reunion.regenerate_codigo_asistencia if @reunion.codigo_asistencia.blank?
+    @url = presente_reunion_url(@reunion, codigo: @reunion.codigo_asistencia)
+    @qr = RQRCode::QRCode.new(@url).as_svg(module_size: 6, use_path: true, viewbox: true, standalone: true)
+  end
+
+  # Lo que abre el QR: confirmar con un botón (un GET no registra nada).
+  def presente
+    @mi_ficha = @reunion.convocados.find_by(id: current_miembro&.id)
+    @codigo_valido = codigo_de_asistencia_valido?
+    @ya_esta = @mi_ficha && @reunion.reunion_asistencias.exists?(miembro_id: @mi_ficha.id)
+  end
+
+  def marcar_presente
+    ficha = @reunion.convocados.find_by(id: current_miembro&.id)
+    unless ficha && codigo_de_asistencia_valido?
+      return redirect_to reunion_path(@reunion), alert: "No se pudo registrar: el código no vale o la #{@reunion.logia.t_reunion.downcase} no está en curso."
+    end
+
+    @reunion.reunion_asistencias.find_or_create_by!(miembro_id: ficha.id)
+    redirect_to reunion_path(@reunion), notice: "Quedó registrada tu asistencia."
+  rescue ActiveRecord::RecordNotUnique
+    redirect_to reunion_path(@reunion), notice: "Quedó registrada tu asistencia."
+  end
+
   def publicar_acta
     return redirect_to(reunion_path(@reunion), alert: "Primero registra la asistencia.") unless @reunion.celebrada?
     return redirect_to(reunion_path(@reunion), alert: "El acta está vacía.") if @reunion.acta.blank?
@@ -141,6 +167,11 @@ class ReunionesController < ApplicationController
 
   def set_reunion
     @reunion = Reunion.where(logia_id: logia_ids_de_reuniones).find(params[:id])
+  end
+
+  def codigo_de_asistencia_valido?
+    @reunion.codigo_asistencia.present? && @reunion.asistencia_abierta? &&
+      ActiveSupport::SecurityUtils.secure_compare(@reunion.codigo_asistencia, params[:codigo].to_s)
   end
 
   def exigir_gestion

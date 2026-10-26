@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_195839) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -909,7 +909,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "serie"
+    t.string "codigo_asistencia"
     t.index ["calendario_evento_id"], name: "index_reuniones_on_calendario_evento_id"
+    t.index ["codigo_asistencia"], name: "index_reuniones_on_codigo_asistencia", unique: true
     t.index ["logia_id", "inicio"], name: "index_reuniones_on_logia_id_and_inicio"
     t.index ["logia_id"], name: "index_reuniones_on_logia_id"
     t.index ["serie", "inicio"], name: "index_reuniones_on_serie_and_inicio"

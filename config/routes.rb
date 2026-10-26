@@ -272,6 +272,9 @@ Rails.application.routes.draw do
       get  :asistencia
       post :asistencia, action: :registrar_asistencia, as: :registrar_asistencia
       post :publicar_acta
+      get  :qr
+      get  :presente
+      post :presente, action: :marcar_presente, as: :marcar_presente
       post :cancelar
     end
     resources :votaciones, controller: "reunion_votaciones", only: [:create] do

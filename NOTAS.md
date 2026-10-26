@@ -451,6 +451,20 @@ No hecho o no comprobado:
   28-oct sale «Llevar como tenida (esta y las 23 siguientes)», solo con su grupo (1). 0 reuniones, 0 errores.
   Las tenidas siguen como eventos hasta que alguien pulse el botón.
 
+## Asistencia con QR (26-oct, en la rama feat/asistencia-qr, sin desplegar)
+
+- Quien gestiona la reunión pulsa «QR de asistencia» y lo enseña en la sala (pantalla o teléfono). Cada
+  convocado lo escanea con la cámara, pulsa «Estoy aquí» y queda en la lista; quien gestiona la revisa en
+  «Registrar asistencia» (ya marcados) y al guardarla la da por celebrada, como antes. La app se abre en cada
+  tenida y el quórum se arma solo.
+- Solo vale con el código de esa reunión (24 caracteres, uno por reunión), desde una hora antes hasta una hora
+  después, para sus convocados y si no está cancelada. Abrir el enlace no registra nada: hace falta el botón.
+- Sin sesión, el QR lleva al login y de vuelta al botón: el login ahora vuelve a la página de la que se venía
+  (`stored_location_for`), también para los enlaces de los avisos.
+- Gema `rqrcode` (SVG en el servidor, sin JavaScript). Migración 20261026195839 (`reuniones.codigo_asistencia`,
+  índice único); las reuniones de antes reciben su código al enseñar el QR.
+- `test/integration/asistencia_qr_test.rb` (4 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

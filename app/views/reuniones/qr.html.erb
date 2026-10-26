@@ -1,0 +1,27 @@
+<% content_for(:title, "QR de asistencia: #{@reunion.titulo}") %>
+<% presentes = @reunion.reunion_asistencias.count %>
+
+<div class="container text-center" style="max-width:480px;">
+  <div class="text-muted small"><%= @reunion.logia.t_reunion %> · <%= I18n.l(@reunion.inicio, format: "%-d %b %Y, %H:%M") %></div>
+  <h4 class="fw-bold mb-3"><%= @reunion.titulo %></h4>
+
+  <%# El SVG lo genera rqrcode a partir de la URL de la reunión; fondo blanco para que se lea también en modo oscuro. %>
+  <div class="bg-white p-3 rounded shadow-sm mx-auto mb-3" style="max-width:340px;">
+    <%= raw @qr %>
+  </div>
+
+  <p class="mb-1">Escanea con la cámara del teléfono y pulsa <strong>«Estoy aquí»</strong>.</p>
+  <% if @reunion.asistencia_abierta? %>
+    <p class="text-muted small">Vale hasta las <%= (@reunion.fin + 1.hour).strftime("%H:%M") %>.</p>
+  <% else %>
+    <p class="text-warning-emphasis small">Funciona desde una hora antes (<%= I18n.l(@reunion.inicio - 1.hour, format: "%-d %b, %H:%M") %>) hasta una hora después.</p>
+  <% end %>
+
+  <div class="fs-4 fw-bold"><%= presentes %> <span class="fs-6 fw-normal text-muted">de <%= @reunion.convocados.count %> ya marcaron</span></div>
+
+  <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+    <%= link_to qr_reunion_path(@reunion), class: "btn btn-sm btn-outline-secondary" do %><i class="bi bi-arrow-clockwise me-1"></i>Actualizar<% end %>
+    <%= link_to asistencia_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %><i class="bi bi-list-check me-1"></i>Revisar la lista<% end %>
+    <%= link_to "Volver", reunion_path(@reunion), class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+</div>

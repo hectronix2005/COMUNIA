@@ -213,8 +213,9 @@ class ApplicationController < ActionController::Base
 
   def after_sign_in_path_for(resource)
     # dashboard_path respeta request.script_name automáticamente, por lo que
-    # si el login fue en /t/:slug/login, el redirect será /t/:slug/dashboard.
-    dashboard_path
+    # si el login fue en /t/:slug/login, el redirect será /t/:slug/dashboard. Si se llegó desde un enlace (el QR
+    # de asistencia, un aviso), Devise guardó esa ruta y se vuelve a ella.
+    stored_location_for(resource) || dashboard_path
   end
 
   # Tras cerrar sesión, si el usuario estaba dentro de un tenant

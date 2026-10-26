@@ -11,6 +11,9 @@ class Reunion < ApplicationRecord
 
   enum :estado, { convocada: 0, celebrada: 1, cancelada: 2 }
 
+  # Código del QR con el que cada convocado marca su asistencia en la reunión.
+  has_secure_token :codigo_asistencia, length: 24, on: :create # al guardar: las copias de una serie no lo heredan
+
   REPETICIONES = {
     "semanal"   => "Cada semana",
     "quincenal" => "Cada dos semanas",
@@ -89,6 +92,9 @@ class Reunion < ApplicationRecord
   end
 
   def acta_publicada? = acta_publicada_at.present?
+
+  # El QR vale desde una hora antes hasta una hora después.
+  def asistencia_abierta? = !cancelada? && (inicio - 1.hour..fin + 1.hour).cover?(Time.current)
   def nombre = "#{logia.t_reunion}: #{titulo}"
 
   private

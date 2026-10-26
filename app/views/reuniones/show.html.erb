@@ -9,6 +9,9 @@
           <div class="text-muted small"><%= @reunion.logia.t_reunion %> · <%= @reunion.logia.nombre_display %></div>
           <h4 class="fw-bold mb-1"><%= @reunion.titulo %></h4>
           <%= render "reuniones/estado", reunion: @reunion %>
+          <% if @mi_ficha && @reunion.reunion_asistencias.exists?(miembro_id: @mi_ficha.id) %>
+            <span class="badge bg-success-subtle text-success-emphasis ms-1"><i class="bi bi-person-check me-1"></i>Asististe</span>
+          <% end %>
         </div>
         <% if gestiona_reunion?(@reunion) && !@reunion.cancelada? %>
           <%= link_to edit_reunion_path(@reunion), class: "btn btn-sm btn-outline-secondary", title: "Editar" do %><i class="bi bi-pencil"></i><% end %>
@@ -86,6 +89,9 @@
 
   <% if gestiona_reunion?(@reunion) && !@reunion.cancelada? %>
     <div class="d-flex flex-wrap gap-2 mb-3">
+      <%= link_to qr_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>
+        <i class="bi bi-qr-code me-1"></i>QR de asistencia
+      <% end %>
       <%= link_to asistencia_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>
         <i class="bi bi-list-check me-1"></i>Registrar asistencia
       <% end %>
