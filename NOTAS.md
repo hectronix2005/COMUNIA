@@ -198,8 +198,9 @@ No hecho o no comprobado:
   `logia_ids_accesibles`. Los admins de una logia hija siguen viendo solo la suya. Comprobado en
   producción: el admin de la 6 ve 662 cobros, el de la 1 ve 662 y el de la 7 ve 0.
 - ✅ Las logias solo tienen dos niveles; se valida al cambiar el padre.
-- ⏳ En producción la logia 4 cuelga de la 1, que ya es hija de la 6 (tres niveles). Está vacía
-  (0 usuarios, miembros y eventos). Decidir: moverla bajo la 6 o borrarla.
+- ✅ La logia 4 (vacía) colgaba de la 1, que ya es hija de la 6: tres niveles. Por decisión de Héctor
+  pasó a ser hija de la 6, con el código LOG003 (el suyo, LOG002, ya lo tenía la 9 en la misma
+  organización). Copia previa: `comunia-20261025-1832`. Ya no queda ninguna logia en tres niveles.
 - ✅ CI: el lint fallaba desde el 13-jul (892 corchetes sin espacios, el estilo de todo el
   proyecto); `.rubocop.yml` lo acepta y el resto se autocorrigió (solo espacios, un `return` y unas
   comillas). Trabajo nuevo `test` con Postgres 17: los 4 trabajos en verde y 194 pruebas en GitHub.
@@ -208,13 +209,13 @@ No hecho o no comprobado:
   es el mismo salvo la notación de algunos colores. Desplegado.
 - Análisis: brakeman, bundle-audit, importmap audit, yarn audit y rubocop sin avisos.
 
-## Monitor de disponibilidad y errores (25-oct, rama `monitor`, SIN desplegar)
+## Monitor de disponibilidad y errores (25-oct, desplegado: 272e98b)
 
-- 🔄 `/salud`: como `/up`, pero además pregunta a la base; si no llega, 503 sin detalle.
-- 🔄 `.github/workflows/disponibilidad.yml`: cada 15 min, desde GitHub (fuera de asus), tres intentos
+- ✅ `/salud`: como `/up`, pero además pregunta a la base; si no llega, 503 sin detalle.
+- ✅ `.github/workflows/disponibilidad.yml`: cada 15 min, desde GitHub (fuera de asus), tres intentos
   a `/salud`. Si falla, la ejecución sale en rojo y GitHub avisa al dueño del repo. Solo corre
-  desde `main`. GitHub apaga las programaciones tras 60 días sin actividad en el repo.
-- 🔄 Errores 500 de peticiones y trabajos en `errores_app`, agrupados por huella, sin parámetros ni
+  desde `main`; la primera ejecución (a mano, 25-oct 18:34) salió en verde. GitHub apaga las programaciones tras 60 días sin actividad en el repo.
+- ✅ Errores 500 de peticiones y trabajos en `errores_app`, agrupados por huella, sin parámetros ni
   ruta. Página `/errores` en el panel de plataforma (con contador en el menú). La primera vez de cada
   huella, o si vuelve tras «Resuelto», notificación a los superadmins. De DENUNCIAPP no se guarda
   el mensaje.
