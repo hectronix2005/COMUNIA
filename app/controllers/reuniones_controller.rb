@@ -15,6 +15,7 @@ class ReunionesController < ApplicationController
     @mi_respuesta = @reunion.respuesta_de(current_user)
     @confirmados = @reunion.confirmaciones.confirmados.count
     @rechazados = @reunion.confirmaciones.rechazados.count
+    @mi_ficha = @reunion.convocados.find_by(id: current_miembro&.id)
   end
 
   def new

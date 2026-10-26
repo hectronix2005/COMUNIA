@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -865,6 +865,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_030000) do
     t.index ["reunion_id"], name: "index_reunion_asistencias_on_reunion_id"
   end
 
+  create_table "reunion_votaciones", force: :cascade do |t|
+    t.bigint "reunion_id", null: false
+    t.bigint "user_id", null: false
+    t.string "pregunta", null: false
+    t.boolean "secreta", default: true, null: false
+    t.integer "estado", default: 0, null: false
+    t.datetime "cerrada_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reunion_id"], name: "index_reunion_votaciones_on_reunion_id"
+    t.index ["user_id"], name: "index_reunion_votaciones_on_user_id"
+  end
+
+  create_table "reunion_votos", force: :cascade do |t|
+    t.bigint "reunion_votacion_id", null: false
+    t.bigint "miembro_id", null: false
+    t.integer "opcion", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["miembro_id"], name: "index_reunion_votos_on_miembro_id"
+    t.index ["reunion_votacion_id", "miembro_id"], name: "index_reunion_votos_on_reunion_votacion_id_and_miembro_id", unique: true
+    t.index ["reunion_votacion_id"], name: "index_reunion_votos_on_reunion_votacion_id"
+  end
+
   create_table "reuniones", force: :cascade do |t|
     t.bigint "logia_id", null: false
     t.bigint "user_id", null: false
@@ -1034,6 +1058,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_030000) do
   add_foreign_key "red_resenas", "users", column: "sujeto_id"
   add_foreign_key "reunion_asistencias", "miembros"
   add_foreign_key "reunion_asistencias", "reuniones"
+  add_foreign_key "reunion_votaciones", "reuniones"
+  add_foreign_key "reunion_votaciones", "users"
+  add_foreign_key "reunion_votos", "miembros"
+  add_foreign_key "reunion_votos", "reunion_votaciones"
   add_foreign_key "reuniones", "calendario_eventos", on_delete: :nullify
   add_foreign_key "reuniones", "logias"
   add_foreign_key "reuniones", "users"

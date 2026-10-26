@@ -303,6 +303,15 @@ No hecho o no comprobado:
 - Para desplegar: fusionar la rama en main, copia previa y `bin/deploy`. Las migraciones corren solas.
   El primer recordatorio llegaría en la hora siguiente a desplegar, y solo si alguien ya convocó.
 
+## Votaciones en las reuniones (26-oct, rama `feat/votaciones`, SIN desplegar)
+
+- Dentro de una reunión, quien la gestiona abre una pregunta de sí / no / abstención y se avisa a los
+  convocados. Votan solo los convocados, un voto por persona; se puede cambiar mientras está abierta.
+- Mientras está abierta solo se ve cuántos votaron y la participación, para no arrastrar el voto. Al
+  cerrarla salen los totales y «Aprobada» si hay más sí que no. Es secreta por defecto; si no lo es, se ve
+  quién votó qué.
+- Tablas `reunion_votaciones` y `reunion_votos` (migración 20261026080000).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

@@ -7,6 +7,7 @@ class Reunion < ApplicationRecord
   belongs_to :calendario_evento, optional: true
   has_many :reunion_asistencias, dependent: :delete_all
   has_many :asistentes, through: :reunion_asistencias, source: :miembro
+  has_many :reunion_votaciones, -> { order(:created_at) }, dependent: :destroy
 
   enum :estado, { convocada: 0, celebrada: 1, cancelada: 2 }
 

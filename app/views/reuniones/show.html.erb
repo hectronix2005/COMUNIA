@@ -68,6 +68,8 @@
     </div>
   </div>
 
+  <%= render "reuniones/votaciones", reunion: @reunion, mi_ficha: @mi_ficha %>
+
   <% if gestiona_reunion?(@reunion) && !@reunion.cancelada? %>
     <div class="d-flex flex-wrap gap-2 mb-3">
       <%= link_to asistencia_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>

@@ -269,6 +269,12 @@ Rails.application.routes.draw do
       post :publicar_acta
       post :cancelar
     end
+    resources :votaciones, controller: "reunion_votaciones", only: [:create] do
+      member do
+        post :votar
+        post :cerrar
+      end
+    end
   end
 
   # ── RSVP Eventos ───────────────────────────────────────────

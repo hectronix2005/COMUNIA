@@ -1,0 +1,72 @@
+<%# Votaciones de la reunión. Mientras está abierta solo se ve cuántos votaron, para no arrastrar el voto;
+    al cerrarla, los totales y, si no es secreta, quién votó qué. %>
+<% gestiona = gestiona_reunion?(reunion) %>
+<% etiquetas = { "si" => "Sí", "no" => "No", "abstencion" => "Me abstengo" } %>
+<% if reunion.reunion_votaciones.any? || (gestiona && !reunion.cancelada?) %>
+  <div class="card border-0 shadow-sm mb-3" id="votaciones">
+    <div class="card-body p-4">
+      <h6 class="fw-bold small text-muted text-uppercase mb-3"><i class="bi bi-check2-square me-1"></i>Votaciones</h6>
+
+      <% reunion.reunion_votaciones.each do |v| %>
+        <div class="border rounded p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div class="fw-semibold"><%= v.pregunta %></div>
+            <div class="flex-shrink-0">
+              <% if v.abierta? %><span class="badge bg-primary">Abierta</span>
+              <% elsif v.aprobada? %><span class="badge bg-success">Aprobada</span>
+              <% else %><span class="badge bg-secondary">No aprobada</span><% end %>
+              <% if v.secreta? %><span class="badge bg-light text-dark ms-1"><i class="bi bi-incognito me-1"></i>Secreta</span><% end %>
+            </div>
+          </div>
+
+          <% if v.abierta? %>
+            <% if mi_ficha %>
+              <% mi_voto = v.voto_de(mi_ficha) %>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <% etiquetas.each do |opcion, texto| %>
+                  <%= button_to texto, votar_reunion_votacion_path(reunion, v, opcion: opcion),
+                                class: "btn btn-sm #{mi_voto == opcion ? 'btn-primary' : 'btn-outline-primary'}" %>
+                <% end %>
+              </div>
+              <div class="text-muted small mb-2"><%= mi_voto ? "Votaste «#{etiquetas[mi_voto]}». Puedes cambiarlo hasta que se cierre." : "Aún no has votado." %></div>
+            <% end %>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><%= v.reunion_votos.count %> votos · participación del <%= v.participacion %> %</span>
+              <% if gestiona %>
+                <%= button_to "Cerrar votación", cerrar_reunion_votacion_path(reunion, v), class: "btn btn-sm btn-outline-secondary",
+                              form: { data: { turbo_confirm: "Al cerrarla se ven los resultados y ya no se puede votar. ¿Cerrar?" } } %>
+              <% end %>
+            </div>
+          <% else %>
+            <% totales = v.totales %>
+            <div class="d-flex flex-wrap gap-3 small mb-1">
+              <span><strong><%= totales["si"] %></strong> sí</span>
+              <span><strong><%= totales["no"] %></strong> no</span>
+              <span><strong><%= totales["abstencion"] %></strong> abstenciones</span>
+              <span class="text-muted">participación del <%= v.participacion %> %</span>
+            </div>
+            <% unless v.secreta? %>
+              <% v.reunion_votos.includes(miembro: :user).group_by(&:opcion).each do |opcion, votos| %>
+                <div class="small text-muted"><%= etiquetas[opcion] %>: <%= votos.map { _1.miembro.user.nombre_corto }.sort.join(", ") %></div>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if gestiona && !reunion.cancelada? %>
+        <%= form_with model: ReunionVotacion.new, url: reunion_votaciones_path(reunion), class: "mt-2" do |f| %>
+          <div class="input-group input-group-sm mb-2">
+            <%= f.text_field :pregunta, class: "form-control", required: true, maxlength: 300, placeholder: "¿Se aprueba la cuota extraordinaria de diciembre?" %>
+            <%= f.submit "Abrir votación", class: "btn btn-primary",
+                         data: { turbo_confirm: "Se avisará a todos los convocados para que voten. ¿Abrir?" } %>
+          </div>
+          <div class="form-check small">
+            <%= f.check_box :secreta, class: "form-check-input", checked: true %>
+            <%= f.label :secreta, "Secreta (solo se ven los totales)", class: "form-check-label" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

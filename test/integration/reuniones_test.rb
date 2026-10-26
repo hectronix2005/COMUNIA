@@ -194,6 +194,50 @@ class ReunionesTest < ActionDispatch::IntegrationTest
     assert_no_match "/reuniones", response.body
   end
 
+  test "votación: abre quien gestiona, votan los convocados una vez y se ven los totales al cerrar" do
+    reunion = convocar(@suv)
+    base = "/t/#{@mercedes.slug}/reuniones/#{reunion.id}"
+    sign_in @socio
+    post "#{base}/votaciones", params: { reunion_votacion: { pregunta: "¿Intruso?" } }
+    assert_equal 0, reunion.reunion_votaciones.count, "un socio raso no abre votaciones"
+
+    sign_in @admin
+    perform_enqueued_jobs do
+      post "#{base}/votaciones", params: { reunion_votacion: { pregunta: "¿Se aprueba la ruta de diciembre?", secreta: "1" } }
+    end
+    votacion = reunion.reunion_votaciones.last
+    assert votacion.secreta?
+    assert_equal 2, Notificacion.where(tipo: "reunion_votacion").count
+
+    sign_in @socio
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "no" }
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "si" }
+    sign_in @otro_socio
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "si" }
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "trampa" }
+    assert_response :unprocessable_entity
+    sign_in @vecino_grupo
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "no" }
+    assert_response :not_found, "otro grupo no ve la reunión ni vota"
+
+    assert_equal({ "si" => 2, "no" => 0, "abstencion" => 0 }, votacion.totales, "un voto por persona, el último cuenta")
+    sign_in @socio
+    get base
+    assert_match "2 votos", response.body
+    assert_no_match "<strong>2</strong> sí", response.body, "mientras está abierta no se ven los totales"
+
+    sign_in @admin
+    post "#{base}/votaciones/#{votacion.id}/cerrar"
+    assert votacion.reload.cerrada?
+    assert votacion.aprobada?
+    sign_in @otro_socio
+    post "#{base}/votaciones/#{votacion.id}/votar", params: { opcion: "no" }
+    assert_equal 2, votacion.totales["si"], "cerrada no admite votos"
+    get base
+    assert_match "Aprobada", response.body
+    assert_no_match @socio.nombre_corto, response.body.split("Votaciones").last, "secreta: no se ve quién votó qué"
+  end
+
   test "el plural sale en español" do
     assert_equal %w[Reuniones Tenidas Encuentros Asambleas Sesiones Peces],
                  %w[Reunión Tenida Encuentro Asamblea Sesión Pez].map { Logia.plural(_1) }
