@@ -475,7 +475,7 @@ No hecho o no comprobado:
   y los superadmins; los socios, no.
 - Prueba nueva en `test/integration/evento_a_reunion_test.rb`.
 
-## Puntos para el orden del día (26-oct, en la rama feat/puntos-orden-del-dia, sin desplegar)
+## Puntos para el orden del día (26-oct, desplegado: f737799, aprobado por Héctor)
 
 - Mientras la reunión está convocada y no ha empezado, cada convocado puede proponer un punto (hasta 500
   caracteres; como mucho 3 esperando respuesta por persona y reunión). Se avisa a quien la convocó.
