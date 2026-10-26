@@ -521,6 +521,18 @@ No hecho o no comprobado:
 - Los socios siguen viendo solo los totales.
 - Sin migraciones. `test/integration/quien_viene_test.rb` (1 prueba).
 
+## Activar avisos desde el panel (26-oct, en la rama feat/activar-avisos, sin desplegar)
+
+- En producción no había ningún dispositivo suscrito a los avisos (0 en `push_subscriptions`) y ninguna de las
+  1069 notificaciones se había leído: las convocatorias y los recordatorios se quedaban en la campana.
+- Tarjeta «Activa los avisos en este teléfono» arriba en el panel (miembro y admin), para quien no tiene avisos en
+  ningún dispositivo. Pide el permiso con un toque. En iPhone sin la app instalada explica cómo instalarla; si
+  están bloqueados, cómo desbloquearlos; con permiso, no sale. «Ahora no» la esconde dos semanas en ese navegador.
+- Se quita la petición automática de permiso a los 2 s de cargar: sin un toque no funciona en iPhone y Chrome la
+  acaba silenciando. Ahora solo se pide desde la bienvenida o la tarjeta.
+- Probada en Chrome sin ventana con el servidor de desarrollo (sale, activa, «Ahora no», vista de móvil).
+- Sin migraciones. `test/integration/activar_avisos_test.rb` (1 prueba).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

@@ -51,23 +51,9 @@ export default class extends Controller {
   async initPush() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return
 
-    if (Notification.permission === "granted") {
-      // Already granted — subscribe silently on every page load
-      await this.subscribeToPush()
-    } else if (Notification.permission === "default") {
-      // Only prompt once per browser session to avoid annoying the user
-      if (sessionStorage.getItem("push_prompted")) return
-      sessionStorage.setItem("push_prompted", "1")
-
-      // Wait a moment then prompt
-      setTimeout(async () => {
-        const result = await Notification.requestPermission()
-        if (result === "granted") {
-          await this.subscribeToPush()
-        }
-      }, 2000)
-    }
-    // If "denied" — do nothing, respect the user's choice
+    // Con permiso, se suscribe en cada carga. El permiso se pide solo con un toque (bienvenida o la tarjeta del
+    // panel): pedirlo sin él no funciona en iPhone y Chrome acaba silenciándolo.
+    if (Notification.permission === "granted") await this.subscribeToPush()
   }
 
   async subscribeToPush() {
