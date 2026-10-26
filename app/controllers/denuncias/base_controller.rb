@@ -1,65 +1,43 @@
 module Denuncias
-  # Base de todo lo que se sirve en el host de DENUNCIAPP. A propósito NO hereda de
-  # ApplicationController: nada de current_user, Devise de COMUNIA, last_seen_at, tenants ni
-  # analítica. La IP solo se usa en memoria para el límite de intentos (Limitador).
-  class BaseController < ActionController::Base
-    protect_from_forgery with: :exception
-    layout false
+  # Base de DENUNCIAPP dentro de COMUNIA. El muro, los términos y las fotos son públicos; denunciar y
+  # «Mis denuncias» piden sesión y ficha activa (ReportesController).
+  class BaseController < ::ApplicationController
+    layout "denuncias"
 
-    before_action :solo_en_su_host
-    after_action { response.headers["Referrer-Policy"] = "no-referrer" }
+    skip_before_action :authenticate_user!
+    # Una cuenta solo de la red también puede ver el muro (no denunciar).
+    skip_before_action :confinar_cuenta_red
+    # El muro es uno para todas las comunidades: sin el prefijo /t/<slug> que pondría un enlace de dentro.
+    before_action :sin_prefijo_de_comunidad
 
-    content_security_policy do |p|
-      p.default_src :self
-      p.script_src :self, "https://challenges.cloudflare.com"
-      p.frame_src "https://challenges.cloudflare.com"
-      p.connect_src :self
-      p.img_src :self, :blob
-      p.style_src :self
-      p.object_src :none
-      p.base_uri :none
-      p.frame_ancestors :none
-      p.form_action :self
-    end
-
-    rescue_from ActionController::InvalidAuthenticityToken do
-      render json: { error: "La sesión de la página venció; recárgala" }, status: :unprocessable_content
-    end
+    helper_method :disponible?, :captcha_site_key
 
     private
 
-    def solo_en_su_host
-      head :not_found unless Denuncias.host?(request)
+    def sin_prefijo_de_comunidad
+      return if request.script_name.blank? || !request.get?
+      redirect_to "#{request.path_info}#{"?#{request.query_string}" if request.query_string.present?}"
     end
 
-    # Para el límite en memoria; nunca se guarda ni se registra.
-    def ip_efimera = request.remote_ip.to_s
+    def limite?(accion, llave) = Limitador.global.permitir(accion, llave)
 
-    def limite!(accion, llave = ip_efimera)
-      return true if Limitador.global.permitir(accion, llave)
-      render json: { error: "Demasiados intentos; espera una hora" }, status: :too_many_requests
-      false
-    end
+    def captcha_site_key = Denuncias.turnstile_site_key
 
-    # Rutas que actúan con la cookie de la cuenta de alias: la petición tiene que venir del sitio.
-    def mismo_origen?
-      origen = request.headers["Origin"].presence or return false
-      URI(origen).host.to_s.casecmp?(request.host)
-    rescue URI::InvalidURIError
-      false
-    end
-
-    def cuenta_actual
-      return nil unless Denuncias.cuentas?
-      c = current_cuenta
-      c if c&.email_verificado
-    end
-
-    # En producción, sin clave maestra o sin Turnstile no se aceptan denuncias (regla de seguridad).
+    # En producción, sin clave maestra o sin Turnstile (el retiro de terceros es público) no se
+    # aceptan denuncias.
     def disponible?
       Cripto.clave_maestra && (Captcha.configurado? || Rails.env.local?)
     rescue Cripto::ClaveInvalida
       false
+    end
+
+    def no_encontrado = render("denuncias/shared/no_encontrado", status: :not_found)
+
+    # Solo escalares, recortados.
+    def texto(v, min, max)
+      return nil unless v.is_a?(String)
+      t = v.strip
+      t if t.length.between?(min, max)
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -215,17 +215,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
     t.index ["logia_id"], name: "index_corte_conciliaciones_on_logia_id"
   end
 
-  create_table "denuncias_cuentas", id: :string, force: :cascade do |t|
-    t.string "alias"
-    t.string "email_hash", null: false
-    t.text "email_cif", null: false
-    t.datetime "email_verificado"
-    t.datetime "current_sign_in_at"
-    t.datetime "creado_en", null: false
-    t.index ["alias"], name: "index_denuncias_cuentas_on_alias", unique: true
-    t.index ["email_hash"], name: "index_denuncias_cuentas_on_email_hash", unique: true
-  end
-
   create_table "denuncias_eventos_custodia", primary_key: "n", force: :cascade do |t|
     t.string "reporte_id", null: false
     t.string "evidencia_id"
@@ -248,9 +237,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
     t.text "metadatos_cif"
     t.datetime "creado_en", null: false
     t.index ["reporte_id"], name: "index_denuncias_evidencias_on_reporte_id"
-  end
-
-  create_table "denuncias_pases_usados", primary_key: "sha256", id: :string, force: :cascade do |t|
   end
 
   create_table "denuncias_recompensas", id: :string, force: :cascade do |t|
@@ -280,16 +266,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
     t.string "localidad", null: false
     t.string "lugar", null: false
     t.string "recompensa_id"
-    t.string "cuenta_id"
-    t.string "codigo_hash", null: false
     t.text "texto_original_cif"
     t.boolean "verificada", default: false, null: false
-    t.boolean "sello_publico", default: false, null: false
     t.datetime "creado_en", null: false
-    t.index ["codigo_hash"], name: "index_denuncias_reportes_on_codigo_hash", unique: true
-    t.index ["cuenta_id"], name: "index_denuncias_reportes_on_cuenta_id"
+    t.bigint "user_id"
     t.index ["estado", "n"], name: "index_denuncias_reportes_on_estado_and_n"
     t.index ["n"], name: "index_denuncias_reportes_on_n", unique: true
+    t.index ["user_id"], name: "index_denuncias_reportes_on_user_id"
   end
 
   create_table "denuncias_solicitudes_retiro", id: :string, force: :cascade do |t|
@@ -585,13 +568,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
     t.index ["cobro_id"], name: "index_pagos_on_cobro_id"
     t.index ["numero_rc"], name: "index_pagos_on_numero_rc"
     t.index ["validado_por_id"], name: "index_pagos_on_validado_por_id"
-  end
-
-  create_table "pases_semanales", force: :cascade do |t|
-    t.bigint "miembro_id", null: false
-    t.date "semana", null: false
-    t.integer "cantidad", default: 0, null: false
-    t.index ["miembro_id", "semana"], name: "index_pases_semanales_on_miembro_id_and_semana", unique: true
   end
 
   create_table "periodo_cobros", force: :cascade do |t|
@@ -1030,6 +1006,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
   add_foreign_key "conceptos_cobros", "logias"
   add_foreign_key "corte_conciliaciones", "logias"
   add_foreign_key "corte_conciliaciones", "users", column: "creado_por_id"
+  add_foreign_key "denuncias_reportes", "users", on_delete: :nullify
   add_foreign_key "encuesta_opciones", "encuestas"
   add_foreign_key "encuesta_votos", "encuesta_opciones"
   add_foreign_key "encuesta_votos", "users"
@@ -1057,7 +1034,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
   add_foreign_key "notificaciones", "users"
   add_foreign_key "pagos", "cobros"
   add_foreign_key "pagos", "users", column: "validado_por_id"
-  add_foreign_key "pases_semanales", "miembros", on_delete: :cascade
   add_foreign_key "periodo_cobros", "logias", column: "tenant_id"
   add_foreign_key "periodo_cobros", "users", column: "creado_por_id"
   add_foreign_key "publicacion_comentarios", "publicaciones"

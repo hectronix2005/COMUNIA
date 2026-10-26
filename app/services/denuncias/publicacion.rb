@@ -1,28 +1,18 @@
 module Denuncias
-  # POST /api/reportes, en el mismo orden que DENUNCIAPP (traspaso, 2.2): se valida TODO antes de
-  # escribir nada. Ni la IP ni ningún dato de la sesión de COMUNIA llegan aquí.
+  # Publicar una denuncia, en el mismo orden que DENUNCIAPP (traspaso, 2.2): se valida TODO antes de
+  # escribir nada. La denuncia queda ligada a quien la publica (user); en el muro no se muestra.
   class Publicacion
-    Error = Class.new(StandardError) # mensaje para el ciudadano, siempre 400
+    Error = Class.new(StandardError) # mensaje para quien denuncia
 
-    Resultado = Data.define(:id, :codigo, :sello, :sello_publico)
-
-    def initialize(params, cuenta: nil, mismo_origen: false, pases: Pases.almacen_global)
+    def initialize(params, user:, verificada:)
       @p = params
-      @cuenta = cuenta
-      @mismo_origen = mismo_origen
-      @pases = pases
+      @user = user
+      @verificada = verificada
     end
 
+    # Devuelve el id de la denuncia publicada.
     def call
-      raise Error, "Captcha no válido" unless Captcha.valido?(@p["cf-turnstile-response"])
       raise Error, "Debes aceptar los términos" unless @p["acepto_terminos"] == "si"
-
-      # Por defecto, anónimo aunque haya sesión. Con alias solo si se pide.
-      cuenta_id = nil
-      if @p["publicar_como"] == "alias"
-        raise Error, "Para publicar con tu alias, entra y elige uno" unless @cuenta&.alias && @mismo_origen
-        cuenta_id = @cuenta.id
-      end
 
       categoria, localidad = @p["categoria"], @p["localidad"]
       originales = { titulo: texto(@p["titulo"], 5, 120), descripcion: texto(@p["descripcion"], 10, 3000),
@@ -47,14 +37,6 @@ module Denuncias
         raise Error, "Adjunta entre 1 y #{Catalogo::MAX_FOTOS} fotos"
       end
 
-      # Pase de COMUNIA: inválido → la denuncia entra igual, sin sello.
-      sello = nil
-      pase_hash = nil
-      if @p["pase"].present?
-        pase_hash = Pases.verificar(@p["pase"], @pases)
-        sello = "pase_invalido" unless pase_hash
-      end
-
       preparadas = fotos.each_with_index.map do |foto, i|
         raise Error, "Foto vacía o demasiado grande" unless foto.respond_to?(:read) && foto.size.between?(1, Catalogo::MAX_BYTES_FOTO)
         original = foto.read.b
@@ -67,20 +49,14 @@ module Denuncias
       end
 
       id = SecureRandom.uuid
-      codigo = Cripto.codigo_seguimiento
       creado_en = Cripto.hora_redondeada
       escritos = []
 
       Reporte.transaction do
-        sello = PaseUsado.marcar(pase_hash) ? "aplicado" : "pase_usado" if pase_hash
-        verificada = sello == "aplicado"
-        @sello_publico = verificada && @pases.sello_publico?
-
         Reporte.create!(
-          id:, categoria:, localidad:, recompensa_id:, cuenta_id:, verificada:, sello_publico: @sello_publico,
+          id:, categoria:, localidad:, recompensa_id:, user: @user, verificada: @verificada,
           creado_en:, estado: "publicado",
           titulo: filtrados[:titulo].first, descripcion: filtrados[:descripcion].first, lugar: filtrados[:lugar].first,
-          codigo_hash: Cripto.sha256_hex(Cripto.normalizar_codigo(codigo)),
           texto_original_cif: (Cripto.cifrar_b64(originales.to_json) if datos_ocultos.positive?)
         )
         Custodia.registrar(id, "datos_ocultados", { cantidad: datos_ocultos }) if datos_ocultos.positive?
@@ -101,10 +77,10 @@ module Denuncias
                              evidencia_id: ev_id)
         end
         Custodia.registrar(id, "reporte_publicado",
-                           { categoria:, fotos: preparadas.size, con_alias: cuenta_id.present?, verificada: })
+                           { categoria:, fotos: preparadas.size, verificada: @verificada })
       end
 
-      Resultado.new(id:, codigo:, sello:, sello_publico: @sello_publico)
+      id
     rescue Error
       raise
     rescue StandardError

@@ -2,7 +2,7 @@ require "prawn"
 
 module Denuncias
   # Paquete de remisión a una autoridad: PDF con los datos, el texto ORIGINAL sin filtrar, las fotos
-  # originales con su SHA-256, la verificación del sello (que en el PDF sale siempre) y la cadena de
+  # originales con su SHA-256, si quien denuncia es miembro activo (sin su identidad) y la cadena de
   # custodia verificada. Héctor lo descarga y lo envía a mano.
   module Paquete
     FUENTE = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
@@ -50,8 +50,7 @@ module Denuncias
 
         campo.("Identificador del reporte", r.id)
         campo.("Categoría", Catalogo::CATEGORIAS.fetch(r.categoria, r.categoria))
-        campo.("Denunciante", r.cuenta&.alias ? "Alias @#{r.cuenta.alias} (identidad bajo reserva del operador)" : "Anónimo")
-        campo.("Verificación", r.verificada ? "Denunciante verificado por una comunidad certificada. Lo acredita un pase anónimo de firma ciega (RFC 9474): el portal no conoce a la persona ni a su comunidad." : "Sin verificar.")
+        campo.("Denunciante", r.verificada ? "Miembro activo de una comunidad certificada en COMUNIA. El operador conserva su identidad y la entrega solo por requerimiento de autoridad competente." : "Usuario de COMUNIA sin comunidad verificada.")
         campo.("Fecha de recepción (redondeada a la hora, UTC)", r.creado_en.utc.iso8601)
         campo.("Localidad / lugar", "#{r.localidad} · #{t[:lugar]}")
         campo.("Título", t[:titulo])

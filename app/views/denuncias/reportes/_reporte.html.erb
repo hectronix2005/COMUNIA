@@ -1,0 +1,29 @@
+<%# Una denuncia en el muro. Nunca dice quién la publicó. %>
+<article class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="small text-muted mb-1">
+      <%= Denuncias::Catalogo::CATEGORIAS.fetch(reporte.categoria, reporte.categoria) %> · <%= reporte.localidad %> ·
+      <% dias = (Date.current - reporte.fecha).to_i %><%= dias <= 0 ? "hoy" : dias == 1 ? "ayer" : "hace #{dias} días" %>
+    </div>
+    <h2 class="h5 mb-1"><%= reporte.titulo %></h2>
+    <div class="small text-muted mb-2"><i class="bi bi-geo-alt" aria-hidden="true"></i> <%= reporte.lugar %></div>
+    <p class="mb-2" style="white-space: pre-wrap;"><%= reporte.descripcion %></p>
+    <div class="row g-2 denuncia-fotos mb-2">
+      <% reporte.fotos_publicas.each do |archivo| %>
+        <div class="col-6 col-md-3">
+          <%= link_to denuncias_foto_path(archivo), target: "_blank", rel: "noopener" do %>
+            <%= image_tag denuncias_foto_path(archivo), alt: "Foto de la denuncia", loading: "lazy" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <% if reporte.verificada %>
+        <span class="denuncia-sello"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Miembro de una comunidad certificada</span>
+      <% else %>
+        <span></span>
+      <% end %>
+      <%= link_to "Solicitar retiro", denuncias_retiro_path(reporte.id), class: "small text-muted" %>
+    </div>
+  </div>
+</article>

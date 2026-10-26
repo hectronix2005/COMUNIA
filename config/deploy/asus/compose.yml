@@ -1,6 +1,5 @@
 # Producción de COMUNIA en asus (WSL). Lo lanza bin/deploy desde el Air.
-# Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600) y las claves de los
-# pases en $PASES_DIR (~/.config/comunia-pases, 700). Las evidencias de DENUNCIAPP, en
+# Secretos fuera del repo: $SECRETS_DIR/{app,db,ts}.env (chmod 600). Las evidencias de DENUNCIAPP, en
 # $DENUNCIAS_DIR (~/services/denuncias-evidencia, 700): los originales van cifrados con
 # DENUNCIAS_CLAVE (app.env), que no está en git ni en Drive. Los adjuntos del servicio «local» de
 # ActiveStorage (los subidos antes de pasar a R2), en $STORAGE_DIR (~/services/comunia-storage).
@@ -26,14 +25,10 @@ services:
     env_file: ${SECRETS_DIR}/app.env
     environment:
       HTTP_PORT: "80"
-      PASES_DIR: /pases
       DENUNCIAS_DIR: /denuncias
-      # Thruster anota la IP y la hora de cada petición; en el host de DENUNCIAPP no puede
-      # quedar ninguna. Las de COMUNIA siguen en el log de Rails.
+      # Las peticiones ya quedan en el log de Rails; Thruster no las repite.
       THRUSTER_LOG_REQUESTS: "false"
     volumes:
-      # Claves de los pases de DENUNCIAPP; las genera config/deploy/asus/pases-claves.sh (cron).
-      - ${PASES_DIR}:/pases:ro
       - ${DENUNCIAS_DIR}:/denuncias
       # Sin este volumen, los blobs con service_name «local» no se abrían: /rails/storage está vacío.
       - ${STORAGE_DIR}:/rails/storage
@@ -56,27 +51,6 @@ services:
     depends_on:
       - web
 
-  # Nodo propio de DENUNCIAPP (https://denunciapp.tail0be41e.ts.net) hacia la misma web; el host
-  # separa el módulo. Solo arranca con el perfil «denunciapp», que bin/deploy activa si existe
-  # $SECRETS_DIR/ts-denunciapp.env (TS_AUTHKEY). Sin subida de logs a Tailscale.
-  ts-denunciapp:
-    image: tailscale/tailscale:v1.104.1
-    hostname: denunciapp
-    restart: unless-stopped
-    profiles: [denunciapp]
-    env_file: ${SECRETS_DIR}/ts-denunciapp.env
-    environment:
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: "true"
-      TS_SERVE_CONFIG: /config/serve.json
-      TS_TAILSCALED_EXTRA_ARGS: --no-logs-no-support
-    volumes:
-      - tsdenunciapp:/var/lib/tailscale
-      - ./serve.json:/config/serve.json:ro
-    depends_on:
-      - web
-
 volumes:
   pgdata:
   tsstate:
-  tsdenunciapp:

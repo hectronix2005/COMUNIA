@@ -22,12 +22,6 @@ class Denuncias::NucleoTest < ActiveSupport::TestCase
     assert_equal 32, C.importar_clave(Base64.strict_encode64("\1" * 32)).bytesize
   end
 
-  test "21. el código de seguimiento sobrevive a minúsculas y espacios" do
-    codigo = C.codigo_seguimiento
-    assert_match(/\A([0-9A-Z]{5}-){4}[0-9A-Z]{5}\z/, codigo)
-    assert_equal codigo, C.normalizar_codigo(" #{codigo.downcase.tr('-', ' ')} ")
-  end
-
   test "22. redondea la hora hacia abajo" do
     assert_equal Time.utc(2026, 10, 19, 18), C.hora_redondeada(Time.utc(2026, 10, 19, 18, 47, 12.345))
     # El día público es el de Bogotá: las 20:00 de Bogotá ya son «mañana» en UTC.

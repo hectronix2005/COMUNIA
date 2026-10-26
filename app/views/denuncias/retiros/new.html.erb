@@ -1,0 +1,27 @@
+<% content_for :title, "Solicitar retiro" %>
+<h1 class="h4 fw-bold">Solicitar retiro</h1>
+<p>Si esta publicación te afecta o es falsa, cuéntanos por qué. El operador revisa cada solicitud; si una
+  publicación acumula <%= Denuncias::Retiro::UMBRAL_OCULTAR %>, se oculta hasta que se revise.</p>
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="small text-muted">Publicación</div>
+    <div class="fw-semibold"><%= @reporte.titulo %></div>
+  </div>
+</div>
+
+<%= form_with url: denuncias_retiro_path(@reporte.id), class: "card border-0 shadow-sm" do |f| %>
+  <div class="card-body">
+    <% if @error %><div class="alert alert-danger py-2" role="alert"><%= @error %></div><% end %>
+    <div class="mb-3">
+      <%= f.label :motivo, "Motivo", class: "form-label" %>
+      <%= f.text_area :motivo, value: params[:motivo].is_a?(String) ? params[:motivo] : nil, required: true, minlength: 10, maxlength: 2000, rows: 4, class: "form-control" %>
+    </div>
+    <div class="mb-3">
+      <%= f.label :contacto, "Contacto (opcional, se guarda cifrado)", class: "form-label" %>
+      <%= f.text_field :contacto, value: params[:contacto].is_a?(String) ? params[:contacto] : nil, maxlength: 200, class: "form-control" %>
+    </div>
+    <%= render "red/shared/captcha" unless user_signed_in? %>
+    <%= f.submit "Enviar solicitud", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", denuncias_muro_path, class: "btn btn-link" %>
+  </div>
+<% end %>

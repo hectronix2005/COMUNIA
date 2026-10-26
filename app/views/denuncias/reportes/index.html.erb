@@ -1,0 +1,33 @@
+<% content_for :title, "Muro" %>
+<div class="alert alert-light border small">
+  Piloto. Lo que ves aquí lo publicaron miembros de comunidades de COMUNIA y <strong>no ha sido verificado</strong>
+  por nadie. En una emergencia llama al <strong>123</strong>; por extorsión o secuestro, al GAULA <strong>165</strong>.
+</div>
+
+<% if @recompensas.any? %>
+  <h2 class="h6 fw-bold text-muted text-uppercase mt-3">Recompensas oficiales</h2>
+  <div class="row g-3 mb-3">
+    <% @recompensas.each do |r| %>
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="small text-muted"><%= r.entidad %></div>
+            <h3 class="h6 fw-bold"><%= r.titulo %></h3>
+            <p class="small mb-2">Recompensa: <%= r.monto_texto %> ·
+              <%= link_to "Fuente oficial", r.fuente_url, target: "_blank", rel: "noopener noreferrer" %></p>
+            <%= link_to "Tengo información", denuncias_nueva_path(recompensa: r.id), class: "btn btn-sm btn-outline-primary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<h2 class="h6 fw-bold text-muted text-uppercase mt-3">Denuncias recientes</h2>
+<% if @reportes.empty? %>
+  <p class="text-muted">Aún no hay denuncias publicadas.</p>
+<% end %>
+<%= render partial: "reporte", collection: @reportes %>
+<% if @mas %>
+  <%= link_to "Ver más", denuncias_muro_path(antes: @mas), class: "btn btn-outline-secondary" %>
+<% end %>

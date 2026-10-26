@@ -3,7 +3,7 @@ module Denuncias
   # una clave aleatoria que se descarta en cada ventana, junto con todos los contadores.
   # (rack-attack y rate_limit guardan la IP en claro en Solid Cache, que es una tabla de Postgres.)
   class Limitador
-    MAXIMOS = { reporte: 5, retiro: 10, retiro_reporte: 1, seguimiento: 30, entrar: 5 }.freeze
+    MAXIMOS = { reporte: 5, retiro: 10, retiro_reporte: 1 }.freeze
 
     def self.global = @global ||= new(MAXIMOS)
 

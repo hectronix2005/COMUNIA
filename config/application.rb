@@ -51,9 +51,5 @@ module GranLogiaDeColombia
     # automáticamente sin tener que modificar todas las rutas o helpers.
     require_relative "../app/middleware/tenant_path_prefix"
     config.middleware.use TenantPathPrefix
-
-    # Host de DENUNCIAPP: solo sus rutas y sin logs (ver app/middleware/denuncias_frontera.rb).
-    require_relative "../app/middleware/denuncias_frontera"
-    config.middleware.insert_before 0, DenunciasFrontera
   end
 end

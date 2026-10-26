@@ -1,0 +1,67 @@
+<% content_for :title, "Denunciar" %>
+<h1 class="h4 fw-bold">Nueva denuncia</h1>
+
+<div class="alert alert-light border small">
+  <strong>Se publica tal cual, con sus fotos, apenas la envíes.</strong> En el muro no sale tu nombre, pero la
+  denuncia queda ligada a tu cuenta de COMUNIA y el operador puede saber quién la publicó. A las fotos les
+  quitamos la ubicación y los datos del teléfono, y las cédulas y teléfonos que escribas se ocultan. Aun así,
+  <strong>el lugar y lo que muestra la foto pueden delatarte</strong>: piénsalo antes de publicar.
+</div>
+
+<% if !disponible? %>
+  <p class="alert alert-warning">El módulo de denuncias aún no está recibiendo publicaciones.</p>
+<% else %>
+  <% recompensas = Denuncias::Recompensa.publicadas.to_a %>
+  <%= form_with url: denuncias_muro_path, multipart: true, class: "card border-0 shadow-sm",
+                data: { controller: "denuncia", action: "submit->denuncia#enviar",
+                       denuncia_max_fotos_value: Denuncias::Catalogo::MAX_FOTOS, denuncia_max_bytes_value: Denuncias::Catalogo::MAX_BYTES_FOTO } do |f| %>
+    <div class="card-body">
+      <% if @error %><div class="alert alert-danger py-2" role="alert"><%= @error %></div><% end %>
+
+      <div class="mb-3">
+        <%= f.label :categoria, "Categoría", class: "form-label" %>
+        <%= f.select :categoria, Denuncias::Catalogo::CATEGORIAS.invert, { include_blank: "Elige…", selected: @valores["categoria"] },
+                     required: true, class: "form-select", data: { denuncia_target: "categoria", action: "denuncia#cambiarCategoria" } %>
+      </div>
+      <div class="alert alert-danger small" data-denuncia-target="urgente" hidden>
+        Si la extorsión está en curso o hay peligro, llama primero al GAULA <strong>165</strong> o al <strong>123</strong>.
+      </div>
+      <div class="mb-3" data-denuncia-target="recompensa" hidden>
+        <%= f.label :recompensa_id, "Recompensa oficial", class: "form-label" %>
+        <%= f.select :recompensa_id, recompensas.map { ["#{_1.titulo} (#{_1.entidad})", _1.id] },
+                     { include_blank: "Elige…", selected: @valores["recompensa_id"] }, class: "form-select" %>
+      </div>
+      <div class="mb-3">
+        <%= f.label :titulo, "Título", class: "form-label" %>
+        <%= f.text_field :titulo, value: @valores["titulo"], required: true, minlength: 5, maxlength: 120, class: "form-control" %>
+      </div>
+      <div class="mb-3">
+        <%= f.label :descripcion, "Qué pasó", class: "form-label" %>
+        <%= f.text_area :descripcion, value: @valores["descripcion"], required: true, minlength: 10, maxlength: 3000, rows: 4, class: "form-control" %>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-5">
+          <%= f.label :localidad, "Localidad", class: "form-label" %>
+          <%= f.select :localidad, Denuncias::Catalogo::LOCALIDADES, { include_blank: "Elige…", selected: @valores["localidad"] }, required: true, class: "form-select" %>
+        </div>
+        <div class="col-md-7">
+          <%= f.label :lugar, "Lugar (barrio, calle o referencia)", class: "form-label" %>
+          <%= f.text_field :lugar, value: @valores["lugar"], required: true, minlength: 3, maxlength: 200, class: "form-control" %>
+        </div>
+      </div>
+      <div class="mb-3">
+        <%= f.label :fotos, "Fotos (1 a #{Denuncias::Catalogo::MAX_FOTOS}, JPEG o PNG, hasta 10 MB cada una)", class: "form-label" %>
+        <%= f.file_field :fotos, multiple: true, include_hidden: false, required: true, accept: "image/jpeg,image/png", class: "form-control",
+                         data: { denuncia_target: "fotos" } %>
+        <div class="form-text">Si las vuelves a elegir tras un error, tienes que adjuntarlas otra vez.</div>
+      </div>
+      <div class="form-check mb-3">
+        <%= f.check_box :acepto_terminos, { required: true, class: "form-check-input", checked: false }, "si", nil %>
+        <label class="form-check-label" for="acepto_terminos">
+          Acepto los <%= link_to "términos", denuncias_terminos_path, target: "_blank" %> y entiendo que respondo por lo que publico.
+        </label>
+      </div>
+      <%= f.submit "Publicar denuncia", class: "btn btn-primary", data: { denuncia_target: "boton" } %>
+    </div>
+  <% end %>
+<% end %>

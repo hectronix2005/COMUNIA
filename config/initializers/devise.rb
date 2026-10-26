@@ -326,8 +326,4 @@ Devise.setup do |config|
   rescue StandardError
     # Non-critical
   end
-
-  # ==> Enlace mágico (devise-passwordless) para las cuentas con alias de DENUNCIAPP.
-  # Token cifrado y con caducidad; cada modelo fija su vigencia (Denuncias::Cuenta: 15 min, un uso).
-  config.passwordless_tokenizer = "MessageEncryptorTokenizer"
 end

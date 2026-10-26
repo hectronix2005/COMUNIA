@@ -544,6 +544,24 @@ No hecho o no comprobado:
 - `bundle-audit`: la gema `mcp` 0.25.0 (GHSA-4m5j-jjfc-97gx), que trae rubocop 1.85, tiene un aviso; no viene de
   este cambio. Rubocop 1.92 ya no depende de ella: desplegado con 5898350; bundle-audit sin avisos.
 
+## DENUNCIAPP con el login de COMUNIA (26-oct, pendiente de aprobación)
+
+- Decisión de Héctor: DENUNCIAPP es un módulo de COMUNIA y usa su login. Vive en `/denuncias` (sin host ni
+  servicio de Tailscale propios; un enlace con `/t/<slug>` redirige a `/denuncias`). El muro es público; denuncian
+  solo los miembros con ficha activa, con su sesión.
+- La denuncia queda ligada al usuario (`denuncias_reportes.user_id`, se anula si se borra la cuenta). En el muro
+  no sale quién fue, solo «✓ Miembro de una comunidad certificada»; lo ven el autor («Mis denuncias», donde la
+  retira) y el operador (panel). El PDF para la autoridad dice que es miembro activo, sin su identidad.
+- El retiro de terceros (Ley 1581) sigue abierto a cualquiera; sin sesión pide captcha. Con 5 se oculta sola.
+- Se quedan: EXIF fuera, original cifrado, custodia, filtro de cédulas y teléfonos, límites en memoria, panel.
+- Se van: la frontera de host, los pases anónimos (firma ciega), las cuentas con alias y su enlace por correo,
+  la gema `devise-passwordless`, `@cloudflare/blindrsa-ts`, `ts-denunciapp` y el cron `pases-claves.sh`.
+  Migración: quita `cuenta_id`, `codigo_hash` y `sello_publico`, y las tablas `denuncias_cuentas`,
+  `denuncias_pases_usados` y `pases_semanales` (en producción, las tres vacías).
+- Términos reescritos («La denuncia no es anónima»). Encender en producción sigue pidiendo Turnstile.
+- Probada en Chrome sin ventana con el servidor de desarrollo: entrar, publicar con foto, muro sin nombre,
+  retirar, panel. `test/denuncias/api_test.rb` (14 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
@@ -567,10 +585,8 @@ No hecho o no comprobado:
 
 ### Arrastrado de antes
 
-- DENUNCIAPP (apagada; 0 denuncias): claves de Turnstile, DENUNCIAS_CONTACTO, revisión legal. Después, la clave
-  de Tailscale en `ts-denunciapp.env`, DENUNCIAPP_URL y `bin/deploy`. Sin servicio de correo arranca sin cuentas
-  con alias. El aspecto ya usa la paleta de COMUNIA (`app/denuncias_web/estilo.css`). HEIC/WebP: el vips de
-  producción los lee (26-oct), pero hoy solo se admiten JPEG y PNG.
+- DENUNCIAPP (apagada; 0 denuncias): claves de Turnstile, DENUNCIAS_CONTACTO y revisión legal de los términos.
+  HEIC/WebP: el vips de producción los lee (26-oct), pero hoy solo se admiten JPEG y PNG.
 - client_id de Drive: proyecto «rclone-copias» en la cuenta personal (encargado a Tmux, sin
   respuesta). Después, un remoto con `drive.file` y pasar a él COMUNIA, Rival y Prestandonos.
 - Borrar el proyecto «rclone-hector» de Picap. Avisar a los usuarios de la URL nueva.

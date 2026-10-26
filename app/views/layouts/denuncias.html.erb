@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title><%= content_for?(:title) ? "#{yield(:title)} · Denuncias" : "Denuncias · Bogotá" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#1B2A4A">
+    <meta name="referrer" content="same-origin">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <style>
+      body.denuncias { background: #f5f6f8; }
+      /* Los avisos de COMUNIA son flex (icono + texto); aquí llevan texto con negritas y enlaces. */
+      body.denuncias .alert { display: block; }
+      .denuncias-barra { background: #1B2A4A; }
+      .denuncias-barra .navbar-brand, .denuncias-barra .nav-link { color: #fff; white-space: nowrap; }
+      .denuncias-barra .nav-link:hover, .denuncias-barra .nav-link:focus { color: rgba(255,255,255,.85); }
+      .denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
+      .denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #d1e7dd; color: #0a3622; }
+    </style>
+  </head>
+
+  <body class="denuncias d-flex flex-column min-vh-100">
+    <nav class="navbar denuncias-barra" aria-label="Principal">
+      <div class="container flex-wrap gap-2" style="max-width: 960px;">
+        <%= link_to denuncias_muro_path, class: "navbar-brand fw-bold" do %>
+          <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>Denuncias
+        <% end %>
+        <div class="d-flex align-items-center gap-2 gap-sm-3">
+          <% if user_signed_in? %>
+            <%= link_to "Mis denuncias", denuncias_mias_path, class: "nav-link" %>
+            <% unless current_user.solo_red? %>
+              <%= link_to "COMUNIA", root_path, class: "nav-link", data: { turbo: false } %>
+            <% end %>
+          <% else %>
+            <%= link_to "Entrar", new_user_session_path, class: "nav-link" %>
+          <% end %>
+          <%= link_to "Denunciar", denuncias_nueva_path, class: "btn btn-light btn-sm fw-semibold" %>
+        </div>
+      </div>
+    </nav>
+
+    <main id="contenido" class="flex-grow-1 py-3">
+      <div class="container" style="max-width: 960px;">
+        <% flash.each do |tipo, mensaje| %>
+          <div class="alert <%= tipo.to_s == 'alert' ? 'alert-warning' : 'alert-success' %> py-2" role="<%= tipo.to_s == 'alert' ? 'alert' : 'status' %>"><%= mensaje %></div>
+        <% end %>
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="py-4 text-center small text-muted">
+      <%= link_to "Términos y tratamiento de datos", denuncias_terminos_path, class: "text-muted" %>
+      · En una emergencia, 123 · Extorsión o secuestro, GAULA 165
+    </footer>
+  </body>
+</html>

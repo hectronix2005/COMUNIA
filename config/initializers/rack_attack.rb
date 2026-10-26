@@ -9,12 +9,6 @@ class Rack::Attack
     req.path.start_with?("/up", "/assets/")
   end
 
-  # El host de DENUNCIAPP no pasa por aquí: rack-attack guarda la IP en claro en Rails.cache (Solid
-  # Cache = tabla de Postgres, que viaja en las copias). Allí limita Denuncias::Limitador, en memoria.
-  Rack::Attack.safelist("denunciapp") do |req|
-    req.env["denuncias.host"]
-  end
-
   ### Throttles ###
 
   # 1) POST /login (también /t/:slug/login). Máx 8 intentos / 5 min por IP.

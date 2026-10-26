@@ -19,24 +19,31 @@ module DenunciasPrueba
 
   def contiene(datos, texto) = datos.to_s.b.include?(texto.b)
 
-  # Entorno aislado: host del módulo, carpeta de evidencia temporal, captcha y límites limpios,
-  # y un almacén de claves de pases propio (con o sin claves).
-  def preparar_denuncias(captcha: true, claves_json: nil)
-    @env_antes = ENV.to_h.slice("DENUNCIAPP_URL", "DENUNCIAS_DIR")
+  # Entorno aislado: carpeta de evidencia temporal, captcha y límites limpios.
+  def preparar_denuncias(captcha: true)
+    @dir_antes = ENV["DENUNCIAS_DIR"]
     @dir_evidencia = Dir.mktmpdir("denuncias")
-    ENV["DENUNCIAPP_URL"] = ORIGEN
     ENV["DENUNCIAS_DIR"] = @dir_evidencia
     Denuncias::Captcha.verificador = ->(_token) { captcha }
     Denuncias::Limitador.global.reiniciar!
-    json = claves_json || { "claves" => [], "sello_publico" => false }
-    Denuncias::Pases.almacen = Denuncias::Pases::Almacen.new(fuente: -> { json })
   end
 
   def limpiar_denuncias
-    @env_antes&.each { |k, v| ENV[k] = v }
+    ENV["DENUNCIAS_DIR"] = @dir_antes
     Denuncias::Captcha.verificador = nil
-    Denuncias::Pases.almacen = nil
     FileUtils.remove_entry(@dir_evidencia) if @dir_evidencia && File.exist?(@dir_evidencia)
+  end
+
+  # Usuario de COMUNIA con ficha en una comunidad (activa salvo que se diga otro estado).
+  def vecino(nombre = "Ana", estado: :activo, rol: "miembro")
+    rol_ref = Rol.find_or_create_by!(codigo: rol) { _1.nombre = rol.humanize }
+    logia = Logia.create!(nombre: "Barrio #{SecureRandom.hex(3)}", slug: "barrio-#{SecureRandom.hex(4)}",
+                          codigo: "L#{SecureRandom.hex(3).upcase}")
+    user = User.create!(nombre: nombre, apellido: "Prueba", email: "#{nombre.parameterize}_#{SecureRandom.hex(4)}@correo.co",
+                        password: "password123", logia: logia, rol_ref: rol_ref)
+    Miembro.create!(user: user, logia: logia, numero_miembro: "N#{SecureRandom.hex(3)}",
+                    cedula: SecureRandom.hex(4), estado: estado, estado_desde: (Date.current unless estado == :activo))
+    user
   end
 
   def foto(bytes = DenunciasPrueba.jpeg_con_exif, nombre = "f.jpg", tipo = "image/jpeg")
@@ -46,23 +53,17 @@ module DenunciasPrueba
     Rack::Test::UploadedFile.new(archivo.path, tipo, true, original_filename: nombre)
   end
 
+  # Como el navegador: el file_field múltiple manda antes un valor vacío.
   def formulario(campos = {}, fotos: [DenunciasPrueba.jpeg_con_exif], hashes: nil)
     { categoria: "hurto_rina_vandalismo", titulo: "Robo en la esquina", descripcion: "Dos personas robaron un celular.",
       localidad: "Chapinero", lugar: "Calle 60 con 7", acepto_terminos: "si" }.merge(campos)
-      .merge(fotos: fotos.map { foto(_1) }, hashes: hashes || fotos.map { Denuncias::Cripto.sha256_hex(_1) })
+      .merge(fotos: ["", *fotos.map { foto(_1) }], hashes: hashes || fotos.map { Denuncias::Cripto.sha256_hex(_1) })
   end
 
-  # publicar(titulo: "x") o publicar({ titulo: "x" }, ip: "1.2.3.4"): los campos sueltos van al formulario.
-  def publicar(campos = {}, ip: "9.9.9.9", headers: {}, fotos: [DenunciasPrueba.jpeg_con_exif], hashes: nil, **resto)
-    host! HOST
-    post "/api/reportes", params: formulario(campos.merge(resto), fotos: fotos, hashes: hashes),
-                          headers: headers, env: { "REMOTE_ADDR" => ip }
-    response
-  end
-
-  def muro
-    host! HOST
-    get "/api/reportes"
-    JSON.parse(response.body)
+  # Publica con la sesión que haya (publicar(titulo: "x")); devuelve la última denuncia creada, o nil.
+  def publicar(campos = {}, fotos: [DenunciasPrueba.jpeg_con_exif], hashes: nil, **resto)
+    antes = Denuncias::Reporte.maximum(:n).to_i
+    post "/denuncias", params: formulario(campos.merge(resto), fotos: fotos, hashes: hashes)
+    Denuncias::Reporte.where("n > ?", antes).order(:n).last
   end
 end

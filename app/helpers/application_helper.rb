@@ -1,10 +1,4 @@
 module ApplicationHelper
-  # URL pública de DENUNCIAPP (servicio aparte). Sin ella no sale la entrada «Denuncias».
-  def url_denunciapp
-    url = ENV["DENUNCIAPP_URL"].to_s.strip
-    url if url.start_with?("https://") || (Rails.env.local? && url.start_with?("http://"))
-  end
-
   def pesos(amount)
     number_to_currency(amount, unit: "$", delimiter: ".", separator: ",", precision: 0)
   end

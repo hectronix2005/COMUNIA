@@ -1,36 +1,4 @@
 Rails.application.routes.draw do
-  # ── DENUNCIAPP: solo existe en su propio host (DENUNCIAPP_URL) ──────────────
-  # La frontera (app/middleware/denuncias_frontera.rb) da 404 en ese host a todo lo demás.
-  constraints(->(req) { Denuncias.host?(req) }) do
-    scope module: :denuncias, as: :denuncias do
-      get  "/",        to: "paginas#muro", as: :muro
-      get  "nuevo",    to: "paginas#nuevo"
-      get  "cuenta",   to: "paginas#cuenta"
-      get  "entrar",   to: "paginas#entrar"
-      get  "terminos", to: "paginas#terminos"
-      get  "estaticos/:archivo", to: "paginas#estatico", constraints: { archivo: /[a-z]+\.(js|css)/ }, format: false
-
-      get  "api/config",                to: "api#config_publica"
-      get  "api/reportes",              to: "api#reportes"
-      post "api/reportes",              to: "api#crear_reporte"
-      get  "api/recompensas",           to: "api#recompensas"
-      post "api/seguimiento",           to: "api#seguimiento"
-      post "api/reportes/:id/retiro",   to: "api#solicitar_retiro"
-      get  "media/publicas/:archivo",   to: "api#media", constraints: { archivo: /[0-9a-f-]+\.(jpg|png)/ }, format: false
-
-      get  "api/cuenta",                     to: "cuentas#estado"
-      post "api/cuenta/enlace",              to: "cuentas#pedir_enlace"
-      post "api/cuenta/alias",               to: "cuentas#elegir_alias"
-      get  "api/cuenta/reportes",            to: "cuentas#mis_reportes"
-      post "api/cuenta/reportes/:id/retirar", to: "cuentas#retirar"
-      post "api/cuenta/salir",               to: "cuentas#salir"
-    end
-    devise_for :cuentas, class_name: "Denuncias::Cuenta", path: "cuenta/auth", skip: [:sessions],
-                         controllers: { magic_links: "denuncias/magic_links" }
-    # Adonde Devise manda un enlace vencido o inválido.
-    get "cuenta/auth/fallo", to: redirect("/entrar?error=1"), as: :new_cuenta_session
-  end
-
   get "up" => "rails/health#show", as: :rails_health_check
   # /up y además la base, para el monitor externo (.github/workflows/disponibilidad.yml).
   get "salud" => "salud#show"
@@ -40,10 +8,6 @@ Rails.application.routes.draw do
   get "service-worker" => "pwa#service_worker", as: :pwa_service_worker
 
   root "dashboard#index"
-
-  # ── Pases anónimos de DENUNCIAPP (firmas ciegas, RFC 9474) ───
-  get  "pases/claves", to: "pases#claves", as: :pases_claves, defaults: { format: "json" }
-  post "pases/firmar", to: "pases#firmar", as: :pases_firmar
 
   # Entrada/salida de contexto de tenant. El middleware TenantPathPrefix
   # reescribe /t/:slug/<resto> → /<resto> con SCRIPT_NAME=/t/:slug, por lo
@@ -79,6 +43,19 @@ Rails.application.routes.draw do
     post "evidencias/:id/original",    action: :original,          as: :denuncias_admin_original
     post "recompensas",                action: :crear_recompensa,  as: :denuncias_admin_recompensas
     post "recompensas/:id/vencer",     action: :vencer_recompensa, as: :denuncias_admin_vencer
+  end
+
+  # ── DENUNCIAPP: el muro es público; denuncian los miembros activos con su sesión ──
+  scope "denuncias", module: :denuncias, as: :denuncias, constraints: { id: /[0-9a-f-]{36}/ } do
+    get  "/",                   to: "reportes#index",  as: :muro
+    post "/",                   to: "reportes#create"
+    get  "nueva",               to: "reportes#new",    as: :nueva
+    get  "mias",                to: "reportes#mias",   as: :mias
+    post ":id/retirar",         to: "reportes#retirar", as: :retirar
+    get  ":id/retiro",          to: "retiros#new",     as: :retiro
+    post ":id/retiro",          to: "retiros#create"
+    get  "terminos",            to: "paginas#terminos", as: :terminos
+    get  "fotos/:archivo",      to: "reportes#foto",   as: :foto, constraints: { archivo: /[0-9a-f-]+\.(jpg|png)/ }, format: false
   end
 
   # ── Red de comunidades certificadas (app/models/red.rb) ─────────

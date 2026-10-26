@@ -1,53 +1,49 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Términos · DENUNCIAPP</title>
-  <%= csrf_meta_tags %>
-  <link rel="stylesheet" href="/estaticos/estilo.css">
-</head>
-<body>
-  <header class="barra"><a class="marca" href="/">DENUNCIAPP</a></header>
-  <main class="texto">
-    <h1>Términos de uso y tratamiento de datos</h1>
-    <p class="aviso">Borrador del piloto, pendiente de revisión legal.</p>
+<% content_for :title, "Términos" %>
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h1 class="h4 fw-bold">Términos de uso y tratamiento de datos</h1>
+    <p class="alert alert-light border small">Borrador del piloto, pendiente de revisión legal.</p>
 
-    <h2>Qué es DENUNCIAPP</h2>
-    <p>Un muro ciudadano y gratuito donde cualquier persona publica denuncias con fotos sobre hechos en
-      Bogotá. <strong>DENUNCIAPP no verifica las publicaciones antes de mostrarlas</strong> y no es una
-      autoridad: publicar aquí no reemplaza la denuncia ante la Policía o la Fiscalía.</p>
+    <h2 class="h6 fw-bold mt-4">Qué es</h2>
+    <p>Un muro de denuncias con fotos sobre hechos en Bogotá, dentro de COMUNIA. Cualquiera puede verlo; solo
+      publican los miembros activos de una comunidad de COMUNIA, con su cuenta. <strong>Nadie verifica las
+      publicaciones antes de mostrarlas</strong> y COMUNIA no es una autoridad: publicar aquí no reemplaza la
+      denuncia ante la Policía o la Fiscalía.</p>
 
-    <h2>Tu responsabilidad</h2>
+    <h2 class="h6 fw-bold mt-4">Tu responsabilidad</h2>
     <ul>
-      <li>Respondes por lo que publicas. Acusar falsamente a alguien puede constituir injuria, calumnia o
-        falsa denuncia (Código Penal, artículos 220, 221 y 435).</li>
+      <li>Respondes por lo que publicas. Acusar falsamente a alguien puede constituir injuria, calumnia o falsa
+        denuncia (Código Penal, artículos 220, 221 y 435).</li>
       <li>No publiques datos de menores de edad, ni contenido sexual o gráficamente violento.</li>
       <li>En una emergencia llama al 123. Por extorsión o secuestro, al GAULA 165.</li>
     </ul>
 
-    <h2>Qué datos guardamos</h2>
+    <h2 class="h6 fw-bold mt-4">Quién sabe que publicaste</h2>
     <ul>
-      <li>No pedimos tu nombre ni creamos cuentas para denunciar. No guardamos tu IP ni datos de tu navegador.</li>
+      <li><strong>La denuncia no es anónima.</strong> Queda ligada a tu cuenta de COMUNIA. En el muro no sale tu
+        nombre ni tu comunidad: solo el sello «Miembro de una comunidad certificada».</li>
+      <li>Saben quién la publicó tú (en «Mis denuncias») y el operador del portal. El operador solo entrega tu
+        identidad a una autoridad que la pida por los cauces legales.</li>
+      <li>Como en el resto de COMUNIA, el servidor registra técnicamente las visitas (dirección IP y hora).</li>
+    </ul>
+
+    <h2 class="h6 fw-bold mt-4">Qué datos guardamos</h2>
+    <ul>
       <li>A las fotos les quitamos los metadatos (ubicación GPS, fecha y modelo del teléfono) antes de
         publicarlas. El archivo original y esos metadatos se guardan <strong>cifrados</strong>, como evidencia,
         para entregarlos a una autoridad que los solicite.</li>
-      <li>Las cédulas y los números de teléfono escritos en una denuncia se ocultan en el muro; el texto
-        original se guarda cifrado como evidencia.</li>
+      <li>Las cédulas y los números de teléfono escritos en una denuncia se ocultan en el muro; el texto original
+        se guarda cifrado como evidencia.</li>
       <li>La hora de cada publicación se guarda redondeada a la hora; en público solo se muestra el día.</li>
-      <li>Si entras con tu correo para publicar con un alias, el correo se guarda cifrado y nunca se muestra.
-        Lo que publiques como anónimo no queda ligado a tu cuenta.</li>
-      <li>DENUNCIAPP funciona dentro de COMUNIA, pero en una dirección aparte: tu sesión de COMUNIA no viaja
-        con la denuncia y el muro no sabe de qué comunidad vienes. El sello de «denunciante verificado» lo
-        da un pase anónimo de firma ciega que no identifica a la persona ni a su comunidad.</li>
     </ul>
 
-    <h2>Retiro de publicaciones (Ley 1581 de 2012)</h2>
-    <p>Si una publicación te afecta, usa el botón «Solicitar retiro» en la publicación. El operador revisa
-      cada solicitud; si una publicación acumula varias solicitudes, se oculta hasta que se revise. Quien publicó puede retirar su denuncia en cualquier momento con su código de
-      seguimiento.</p>
-    <p id="contacto"></p>
-  </main>
-  <script type="module" src="/estaticos/terminos.js"></script>
-</body>
-</html>
+    <h2 class="h6 fw-bold mt-4">Retiro de publicaciones (Ley 1581 de 2012)</h2>
+    <p>Si una publicación te afecta, usa «Solicitar retiro» en la publicación; no necesitas cuenta. El operador
+      revisa cada solicitud; si una publicación acumula <%= Denuncias::Retiro::UMBRAL_OCULTAR %> solicitudes, se
+      oculta hasta que se revise. Quien publicó puede retirar su denuncia en cualquier momento desde «Mis
+      denuncias».</p>
+    <% if Denuncias.contacto %>
+      <p>Contacto del responsable del tratamiento: <%= mail_to Denuncias.contacto %></p>
+    <% end %>
+  </div>
+</div>

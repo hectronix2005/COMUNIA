@@ -1,13 +1,13 @@
 module Denuncias
-  # Panel del operador de DENUNCIAPP, en el host de COMUNIA y SOLO para el superadmin (nunca para los
-  # admins de logia). Aquí sí hay sesión de COMUNIA: es la del operador, no la de quien denuncia.
+  # Panel del operador de DENUNCIAPP, SOLO para el superadmin (nunca para los admins de logia). Es el único
+  # sitio, junto con «Mis denuncias» del propio autor, donde se ve quién publicó cada denuncia.
   class AdminController < ::ApplicationController
     before_action :solo_superadmin
 
     def index
       @pendientes = SolicitudRetiro.pendientes.includes(:reporte).order(:creado_en)
-      @ocultos = Reporte.where(estado: "oculto").order(n: :desc)
-      @recientes = Reporte.publicados.order(n: :desc).limit(50)
+      @ocultos = Reporte.where(estado: "oculto").includes(:user).order(n: :desc)
+      @recientes = Reporte.publicados.includes(:user).order(n: :desc).limit(50)
       @recompensas = Recompensa.order(creado_en: :desc).limit(50)
     end
 

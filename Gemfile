@@ -53,8 +53,6 @@ gem "web-push", "~> 3.0"
 
 # Authentication
 gem "devise", "~> 5.0", ">= 5.0.4"
-# Cuentas con alias de DENUNCIAPP: enlace mágico por correo (sin contraseñas)
-gem "devise-passwordless", "~> 1.1"
 # Invitaciones de un solo uso para los miembros que crea un admin (el enlace se manda por WhatsApp)
 gem "devise_invitable", "~> 2.0", ">= 2.0.14"
 
