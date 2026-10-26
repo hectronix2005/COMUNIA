@@ -401,7 +401,7 @@ No hecho o no comprobado:
 - Prueba en producción como el admin del grupo (cuenta 48, `last_seen_at` guardado y restaurado): «4 de 28 …
   · 0 esta semana», 0 invitados, 24 sin invitar, con el botón; 0 errores.
 
-## Bienvenida con la primera acción (26-oct, en la rama feat/bienvenida-primera-accion, sin desplegar)
+## Bienvenida con la primera acción (26-oct, desplegado: 034a253, aprobado por Héctor)
 
 - Quien acepta la invitación llega a `/bienvenida`: avisos e instalar la app, y nada que hacer dentro. Ahora
   añade «3. Las fechas en tu calendario» (botón «Ver en mi teléfono») y, debajo, la próxima reunión y los
@@ -409,8 +409,10 @@ No hecho o no comprobado:
   su calendario, que le recuerda sin push ni correo.
 - «Novedades de la logia» pasa a «de tu comunidad».
 - Sin migraciones. Prueba en `invitaciones_test.rb`.
+- Prueba en producción como un miembro (cuenta 34, `last_seen_at` guardado y restaurado): sale la tenida con
+  «Asistiré» y «Ver en mi teléfono» lleva a `/t/freemasons/calendario/suscripcion`.
 
-## Recordatorio de los eventos del calendario (26-oct, en la rama feat/recordatorio-eventos, sin desplegar)
+## Recordatorio de los eventos del calendario (26-oct, desplegado: d6ae0e2, aprobado por Héctor)
 
 - Las tenidas de «Propagadores de la Luz» son eventos del calendario, no reuniones, así que nadie recibía el
   «Mañana: …» que sí tienen las reuniones. `RecordatorioEventosJob` (cada hora, minuto 25): a los eventos que
@@ -421,15 +423,16 @@ No hecho o no comprobado:
   sigue recordando la reunión.
 - Columna `calendario_eventos.recordatorio_enviado_at` (migración 20261026140000); se vacía si cambia el inicio.
 - En producción, la primera la recibirían los 28 miembros activos (todos en el grupo 1) el 27-oct hacia las
-  18:25, para la tenida del 28; sin push activado, solo la verán en la campana al entrar.
+  18:25, para la tenida del 28; sin push activado, solo la verán en la campana al entrar. Desplegado: `recordatorio_eventos` programado (cada hora, minuto 25);
+  la tenida del 28-oct a las 18:00 aún sin recordatorio, como se esperaba.
 
-## Índices únicos que faltaban (26-oct, en la rama fix/indices-unicos, sin desplegar)
+## Índices únicos que faltaban (26-oct, desplegado: 3abceda, aprobado por Héctor)
 
 - Cuatro validaciones de unicidad no tenían índice único, así que un doble clic o un reintento podía crear el
   duplicado: `miembros.user_id` (una persona con dos fichas: `user.miembro` cogería una cualquiera),
   `negocio_reportes` (anuncio, usuario), `conceptos_cobros` (logia, nombre) y `red_comunidades` lower(nombre).
 - Migración 20261026150000. En producción no había duplicados (comprobado el 26-oct), así que crea los índices
-  sin tocar datos.
+  sin tocar datos. Desplegado y comprobado: los 4 índices en producción, 0 errores.
 - `test/models/indices_unicos_test.rb` revisa todos los modelos: una validación de unicidad nueva sin su índice
   hace fallar la suite.
 
