@@ -105,6 +105,20 @@ class ApplicationController < ActionController::Base
     Logia.where(id: Array(current_user.logia_ids_accesibles))
   end
 
+  # Logias cuya tesorería se muestra (cobros, reportes): las accesibles del usuario; para el superadmin, las de
+  # la organización en la que está, o todas (nil) en el panel de plataforma.
+  def logia_ids_tesoreria
+    return current_user.logia_ids_accesibles unless current_user.rol_ref&.es_super_admin?
+    logia_ids_de_la_organizacion unless platform_admin_context?
+  end
+
+  # Logias para el filtro de tesorería: vacío si solo hay una.
+  def logias_tesoreria
+    ids = logia_ids_tesoreria
+    logias = ids ? Logia.where(id: ids).ordenadas : Logia.ordenadas
+    logias.many? ? logias : Logia.none
+  end
+
   # Periodos de cobro que se ofrecen: los de la organización actual; en el panel de plataforma, todos.
   def periodos_visibles
     periodos = policy_scope(PeriodoCobro)

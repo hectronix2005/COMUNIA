@@ -251,6 +251,12 @@ No hecho o no comprobado:
   la de su creador). En producción, los 28 periodos van a la Gran Logia de Colombia (6). Simulado
   antes con una consulta de solo lectura.
 - También se tocaron el desplegable de periodos en Cobros, `sync_pagos_sheets` y los seeds.
+- Tesorería y reportes (`logia_ids_tesoreria`): dentro de una comunidad, el superadmin solo ve la
+  tesorería de esa comunidad (todas, solo en el panel de plataforma). El filtro por logia aparece
+  cuando hay más de una, así que el admin de la raíz puede filtrar por sus grupos. Si en
+  Recaudación se escribe una fecha mal en la URL, se usa la fecha por defecto en vez de dar un 500.
+- Héctor (25-oct): COMUNIA es para comunidades de todo tipo (Club Mercedez, Club BMW, egresados,
+  vecinos), no solo logias. Los textos nuevos usan «comunidad» y «grupo».
 
 ## Pendiente de Héctor
 

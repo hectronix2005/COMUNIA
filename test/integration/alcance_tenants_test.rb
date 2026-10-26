@@ -186,6 +186,30 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "en tesorería el superadmin ve solo la organización en la que está, y el admin filtra por sus hijas" do
+    _, ficha_hija = persona("Hija", @a_hija)
+    Cobro.create!(periodo_cobro: periodo_de(@a, @yo), miembro: ficha_hija, monto: 10)
+    Cobro.create!(periodo_cobro: periodo_de(@b, @otro), miembro: @ficha_b, monto: 10)
+
+    rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
+    sign_in User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", rol_ref: rol)
+    post "/tenants/#{@a.id}/preview"
+    %w[/reportes/cartera /cobros].each do |ruta|
+      get ruta
+      assert_response :ok, ruta
+      assert_match "Hija", response.body, ruta
+      assert_no_match "Secreto", response.body, ruta
+      assert_no_match @b.nombre, response.body, ruta
+    end
+
+    sign_in admin_de(@a)
+    get "/reportes/cartera"
+    assert_select "select[name=logia_id] option", text: @a_hija.nombre
+    get "/reportes/recaudacion", params: { fecha_desde: "no-es-fecha" }
+    assert_response :ok
+  end
+
   test "las logias tienen dos niveles: organización y logia" do
     assert_raises(ActiveRecord::RecordInvalid) { logia("Nieta", tenant: @a_hija) }
     assert_not @a.update(tenant: @b), "una organización con logias no pasa a ser hija"
@@ -254,7 +278,7 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
 
   def admin_de(logia)
     rol = Rol.find_or_create_by!(codigo: "admin_logia") { _1.nombre = "Admin de logia" }
-    { "cobros" => %w[index show], "reportes" => %w[recibo], "logias" => %w[show gestionar_conceptos],
+    { "cobros" => %w[index show], "reportes" => %w[recibo cartera recaudacion], "logias" => %w[show gestionar_conceptos],
       "conceptos" => %w[index], "miembros" => %w[index show update], "periodos" => %w[index show] }.each do |recurso, acciones|
       acciones.each do |accion|
         permiso = Permiso.find_or_create_by!(recurso: recurso, accion: accion)

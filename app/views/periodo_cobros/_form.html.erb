@@ -14,15 +14,15 @@
 
   <% if @periodo.new_record? && current_user.rol_ref&.es_super_admin? %>
     <div class="col-12">
-      <%= f.label :tenant_id, "Organización", class: "form-label" %>
+      <%= f.label :tenant_id, "Comunidad", class: "form-label" %>
       <%= f.select :tenant_id,
             Logia.tenants_raiz.ordenadas.map { |l| [l.nombre, l.id] },
             {},
             class: "form-select", required: true %>
-      <div class="form-text">Los cobros se generan para los miembros de esta organización y de sus logias.</div>
+      <div class="form-text">Los cobros se generan para los miembros de esta comunidad y de sus grupos.</div>
     </div>
   <% elsif @periodo.tenant %>
-    <div class="col-12 text-muted">Organización: <strong><%= @periodo.tenant.nombre %></strong></div>
+    <div class="col-12 text-muted">Comunidad: <strong><%= @periodo.tenant.nombre %></strong></div>
   <% end %>
 
   <div class="col-md-6">

@@ -7,6 +7,7 @@ class CobrosController < ApplicationController
                 .includes(:periodo_cobro, :pago, miembro: [:user, :logia])
                 .joins(:periodo_cobro, miembro: [:user, :logia])
                 .left_joins(:pago)
+    @cobros = @cobros.por_logia(logia_ids_tesoreria) if logia_ids_tesoreria
     @cobros = @cobros.por_estado(params[:estado]) if params[:estado].present?
     @cobros = @cobros.por_logia(params[:logia_id]) if params[:logia_id].present?
     @cobros = @cobros.where(periodo_cobro_id: params[:periodo_id]) if params[:periodo_id].present?
@@ -18,8 +19,8 @@ class CobrosController < ApplicationController
 
     @cobros = @cobros.order(orden_sql).page(params[:page])
 
-    @logias = current_user.tiene_permiso?("logias", "index") ? Logia.ordenadas : []
-    logia_scope = current_user.logia_ids_accesibles
+    @logias = logias_tesoreria
+    logia_scope = logia_ids_tesoreria
     @periodos = periodos_visibles.recientes
     @miembros = Miembro.includes(:user)
                        .then { |q| logia_scope ? q.where(logia_id: logia_scope) : q }

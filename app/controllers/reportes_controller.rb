@@ -5,7 +5,7 @@ class ReportesController < ApplicationController
     @cobros = cobros_scope.pendiente.includes(:periodo_cobro, miembro: [:user, :logia])
     @cobros = @cobros.por_logia(params[:logia_id]) if params[:logia_id].present?
     @total = @cobros.sum(:monto)
-    @logias = logias_para_filtro
+    @logias = logias_tesoreria
 
     respond_to do |format|
       format.html { @cobros = @cobros.page(params[:page]) }
@@ -14,8 +14,8 @@ class ReportesController < ApplicationController
   end
 
   def recaudacion
-    @fecha_desde = params[:fecha_desde].present? ? Date.parse(params[:fecha_desde]) : Date.current.beginning_of_month
-    @fecha_hasta = params[:fecha_hasta].present? ? Date.parse(params[:fecha_hasta]) : Date.current
+    @fecha_desde = fecha_param(:fecha_desde) || Date.current.beginning_of_month
+    @fecha_hasta = fecha_param(:fecha_hasta) || Date.current
 
     @pagos = Pago.validados
                  .where(validado_at: @fecha_desde.beginning_of_day..@fecha_hasta.end_of_day)
@@ -25,12 +25,12 @@ class ReportesController < ApplicationController
       @pagos = @pagos.joins(cobro: :miembro).where(miembros: { logia_id: params[:logia_id] })
     end
 
-    if (ids = current_user.logia_ids_accesibles)
+    if (ids = logia_ids_tesoreria)
       @pagos = @pagos.joins(cobro: :miembro).where(miembros: { logia_id: ids })
     end
 
     @total = @pagos.sum(:monto_pagado)
-    @logias = logias_para_filtro
+    @logias = logias_tesoreria
 
     respond_to do |format|
       format.html { @pagos = @pagos.recientes.page(params[:page]) }
@@ -42,7 +42,7 @@ class ReportesController < ApplicationController
     @cobros = cobros_scope.vencido.includes(:periodo_cobro, miembro: [:user, :logia])
     @cobros = @cobros.por_logia(params[:logia_id]) if params[:logia_id].present?
     @total = @cobros.sum(:monto)
-    @logias = logias_para_filtro
+    @logias = logias_tesoreria
 
     respond_to do |format|
       format.html { @cobros = @cobros.page(params[:page]) }
@@ -61,11 +61,14 @@ class ReportesController < ApplicationController
   end
 
   def cobros_scope
-    ids = current_user.logia_ids_accesibles
+    ids = logia_ids_tesoreria
     ids.nil? ? Cobro.all : Cobro.por_logia(ids)
   end
 
-  def logias_para_filtro
-    current_user.tiene_permiso?("logias", "index") ? Logia.ordenadas : []
+  # Una fecha mal escrita en la URL vale como vacía, en vez de dar un 500.
+  def fecha_param(clave)
+    Date.iso8601(params[clave].to_s) if params[clave].present?
+  rescue Date::Error
+    nil
   end
 end
