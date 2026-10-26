@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.date "recurrencia_hasta"
     t.integer "recurrencia_count", default: 10
     t.bigint "serie_id"
+    t.datetime "recordatorio_enviado_at"
     t.index ["inicio"], name: "index_calendario_eventos_on_inicio"
     t.index ["logia_id", "inicio"], name: "index_calendario_eventos_on_logia_id_and_inicio"
     t.index ["logia_id"], name: "index_calendario_eventos_on_logia_id"
