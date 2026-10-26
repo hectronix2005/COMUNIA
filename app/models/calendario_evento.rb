@@ -36,9 +36,9 @@ class CalendarioEvento < ApplicationRecord
   validates :fin,    presence: true
   validate  :fin_posterior_al_inicio
 
-  scope :en_rango,   ->(desde, hasta) { where("inicio < ? AND fin > ?", hasta, desde) }
+  scope :en_rango,   ->(desde, hasta) { where("#{table_name}.inicio < ? AND #{table_name}.fin > ?", hasta, desde) }
   scope :de_logias,  ->(ids) { where(logia_id: Array(ids)) }
-  scope :ordenados,  -> { order(:inicio) }
+  scope :ordenados,  -> { order(arel_table[:inicio]) }
   scope :maestros,   -> { where(serie_id: nil) }  # parent or non-recurring
 
   after_create_commit :generar_instancias, if: :recurrente?

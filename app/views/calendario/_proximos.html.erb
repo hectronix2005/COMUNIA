@@ -1,0 +1,38 @@
+<%# Próximos eventos del calendario en el panel, con la respuesta a un clic. Las reuniones van en su tarjeta. %>
+<% if proximos_eventos.any? %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+      <span class="fw-semibold"><i class="bi bi-calendar-event me-2"></i>Próximos eventos</span>
+      <%= link_to calendario_suscripcion_path, class: "small text-decoration-none" do %>
+        <i class="bi bi-phone me-1"></i>Ver en mi teléfono
+      <% end %>
+    </div>
+    <ul class="list-group list-group-flush">
+      <% proximos_eventos.each do |evento, respuesta| %>
+        <li class="list-group-item d-flex flex-wrap align-items-center gap-3">
+          <div class="text-center flex-shrink-0" style="width:56px;">
+            <div class="fw-bold fs-5 lh-1"><%= evento.inicio.day %></div>
+            <div class="text-muted text-uppercase" style="font-size:.7rem;"><%= I18n.l(evento.inicio, format: "%b") %></div>
+          </div>
+          <div class="flex-grow-1 min-w-0">
+            <%= link_to evento.titulo, calendario_path(evento), class: "fw-semibold text-decoration-none d-block text-truncate" %>
+            <div class="text-muted small">
+              <%= evento.todo_el_dia ? I18n.l(evento.inicio.to_date, format: "%A") : I18n.l(evento.inicio, format: "%A %H:%M") %><%= " · #{evento.ubicacion}" if evento.ubicacion.present? %>
+            </div>
+          </div>
+          <div class="d-flex gap-2 flex-shrink-0">
+            <% if respuesta.in?(%w[confirmado rechazado]) %>
+              <span class="badge <%= respuesta == 'confirmado' ? 'bg-success' : 'bg-secondary' %> align-self-center">
+                <%= respuesta == "confirmado" ? "Vas a ir" : "No vas" %>
+              </span>
+              <%= link_to "Cambiar", calendario_path(evento), class: "btn btn-sm btn-link" %>
+            <% else %>
+              <%= button_to "Asistiré", calendario_evento_confirmaciones_path(evento, estado: "confirmado"), class: "btn btn-sm btn-success" %>
+              <%= button_to "No puedo", calendario_evento_confirmaciones_path(evento, estado: "rechazado"), class: "btn btn-sm btn-outline-secondary" %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

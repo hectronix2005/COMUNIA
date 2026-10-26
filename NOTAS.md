@@ -375,6 +375,16 @@ No hecho o no comprobado:
   porque `/t/` solo admite raíces. Arreglado y desplegado (69c80ea, aprobado por Héctor): usa el slug de la
   raíz.
 
+## Próximos eventos en el panel (26-oct, en la rama feat/proximos-eventos-panel, sin desplegar)
+
+- El panel solo enseñaba la próxima reunión; las tenidas de «Propagadores de la Luz» son eventos del
+  calendario y no salían al entrar. Ahora, bajo la próxima reunión, «Próximos eventos»: hasta 3 de los
+  próximos 30 días, con «Asistiré / No puedo» a un clic (o «Vas a ir / No vas» y «Cambiar»), y un enlace a
+  «Ver en mi teléfono». En el panel del miembro y en el del admin.
+- Alcance: el de las reuniones (`logia_ids_de_reuniones`: su grupo, la raíz y los grupos que gestiona), sin
+  los eventos de reuniones (`where.missing(:reunion)`), que ya tienen su tarjeta.
+- `CalendarioEvento.en_rango` y `ordenados` califican la tabla para poder unirse con `reuniones`.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

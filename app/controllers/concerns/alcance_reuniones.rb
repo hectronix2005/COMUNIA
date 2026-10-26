@@ -5,7 +5,7 @@ module AlcanceReuniones
   extend ActiveSupport::Concern
 
   included do
-    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion
+    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion, :proximos_eventos
   end
 
   private
@@ -32,5 +32,17 @@ module AlcanceReuniones
   def proxima_reunion
     return @proxima_reunion if defined?(@proxima_reunion)
     @proxima_reunion = (Reunion.where(logia_id: logia_ids_de_reuniones).proximas.first if current_logia.modulo?(:reuniones))
+  end
+
+  # Los próximos eventos del calendario (no las reuniones, que tienen su tarjeta) en el mismo alcance: el grupo
+  # de la persona, la raíz de su comunidad y los grupos que gestiona. Con la respuesta de cada quien.
+  def proximos_eventos
+    @proximos_eventos ||= begin
+      eventos = CalendarioEvento.de_logias(logia_ids_de_reuniones).where.missing(:reunion)
+                                .en_rango(Time.current, 30.days.from_now).includes(:logia).ordenados.limit(3).to_a
+      respuestas = EventoConfirmacion.where(user: current_user, calendario_evento_id: eventos.map(&:id))
+                                     .pluck(:calendario_evento_id, :estado).to_h
+      eventos.map { [_1, respuestas[_1.id]] }
+    end
   end
 end
