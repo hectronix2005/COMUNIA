@@ -303,7 +303,7 @@ No hecho o no comprobado:
 - Para desplegar: fusionar la rama en main, copia previa y `bin/deploy`. Las migraciones corren solas.
   El primer recordatorio llegaría en la hora siguiente a desplegar, y solo si alguien ya convocó.
 
-## Votaciones en las reuniones (26-oct, rama `feat/votaciones`, SIN desplegar)
+## Votaciones en las reuniones (26-oct, desplegado: bbc6e08, aprobado por Héctor)
 
 - Dentro de una reunión, quien la gestiona abre una pregunta de sí / no / abstención y se avisa a los
   convocados. Votan solo los convocados, un voto por persona; se puede cambiar mientras está abierta.
