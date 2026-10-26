@@ -544,7 +544,7 @@ No hecho o no comprobado:
 - `bundle-audit`: la gema `mcp` 0.25.0 (GHSA-4m5j-jjfc-97gx), que trae rubocop 1.85, tiene un aviso; no viene de
   este cambio. Rubocop 1.92 ya no depende de ella: desplegado con 5898350; bundle-audit sin avisos.
 
-## DENUNCIAPP con el login de COMUNIA (26-oct, pendiente de aprobación)
+## DENUNCIAPP con el login de COMUNIA (26-oct, desplegado: b49fadb, aprobado por Héctor)
 
 - Decisión de Héctor: DENUNCIAPP es un módulo de COMUNIA y usa su login. Vive en `/denuncias` (sin host ni
   servicio de Tailscale propios; un enlace con `/t/<slug>` redirige a `/denuncias`). El muro es público; denuncian
