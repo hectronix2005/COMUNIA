@@ -12,7 +12,7 @@ class CumpleanosNotificacionJob < ApplicationJob
       cumpleaneros = []
       miembros.each do |m|
         m.familiares.con_cumpleanos.each do |f|
-          next unless f.fecha_nacimiento.month == hoy.month && f.fecha_nacimiento.day == hoy.day
+          next unless f.proximo_cumpleanos(hoy) == hoy
           cumpleaneros << { familiar: f, miembro: m }
         end
       end

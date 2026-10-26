@@ -77,12 +77,7 @@ class HospitaliaController < ApplicationController
 
     @miembros_logia.each do |m|
       m.familiares.con_cumpleanos.each do |f|
-        begin
-          cumple = f.fecha_nacimiento.change(year: hoy.year)
-        rescue Date::Error
-          next
-        end
-        cumple = cumple.change(year: hoy.year + 1) if cumple < hoy
+        cumple = f.proximo_cumpleanos(hoy)
         dias   = (cumple - hoy).to_i
         @proximos << { nombre: f.nombre_completo, tipo: "Familiar",
                        parentesco: f.parentesco, miembro: m,

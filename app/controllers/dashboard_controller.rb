@@ -126,11 +126,7 @@ class DashboardController < ApplicationController
                                .where(logias: { id: ids })
                                .con_cumpleanos
                                .to_a
-                               .select { |f|
-                                 cumple = f.fecha_nacimiento.change(year: hoy.year)
-                                 cumple = cumple.change(year: hoy.year + 1) if cumple < hoy
-                                 (cumple - hoy).to_i <= 30
-                               }.count
+                               .count { |f| (f.proximo_cumpleanos(hoy) - hoy).to_i <= 30 }
 
     @negocios_count = NegocioAnuncio.where(logia_id: ids).activos.count
   rescue => e

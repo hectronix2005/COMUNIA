@@ -10,6 +10,17 @@ class MiembroFamiliar < ApplicationRecord
 
   scope :con_cumpleanos, -> { where.not(fecha_nacimiento: nil) }
 
+  # Siguiente cumpleaños desde `desde` (incluido). Quien nació un 29 de febrero lo celebra el 28 los
+  # años que no son bisiestos; antes esos cumpleaños no salían nunca.
+  def proximo_cumpleanos(desde = Date.current)
+    return unless fecha_nacimiento
+    [desde.year, desde.year + 1].each do |anio|
+      mes, dia = fecha_nacimiento.month, fecha_nacimiento.day
+      fecha = Date.valid_date?(anio, mes, dia) ? Date.new(anio, mes, dia) : Date.new(anio, 2, 28)
+      return fecha if fecha >= desde
+    end
+  end
+
   def cumpleanos_este_anio
     return nil unless fecha_nacimiento
     fecha_nacimiento.change(year: Date.current.year)
@@ -18,11 +29,7 @@ class MiembroFamiliar < ApplicationRecord
   end
 
   def cumpleanos_proximo?
-    return false unless fecha_nacimiento
-    hoy = Date.current
-    cumple = cumpleanos_este_anio
-    return false unless cumple
-    cumple = cumple.change(year: hoy.year + 1) if cumple < hoy
-    (cumple - hoy).to_i.between?(0, 30)
+    cumple = proximo_cumpleanos or return false
+    (cumple - Date.current).to_i <= 30
   end
 end
