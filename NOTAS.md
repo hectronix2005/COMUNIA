@@ -222,15 +222,15 @@ No hecho o no comprobado:
 - ⏳ Los dos superadmins de producción tienen 0 suscripciones push: el aviso solo se ve al entrar,
   hasta que activen las notificaciones en el móvil.
 
-## Resumen semanal de cumpleaños (25-oct, rama `cumpleanos-semana`, SIN desplegar)
+## Resumen semanal de cumpleaños (25-oct, desplegado: 8552f68)
 
-- 🔄 `CumpleanosSemanaJob`, los lunes a las 7:05: a cada miembro activo, una notificación con los
+- ✅ `CumpleanosSemanaJob`, los lunes a las 7:05: a cada miembro activo, una notificación con los
   cumpleaños de familiares de su organización en los próximos 7 días (nombre, parentesco, de quién
   y día). Nada de otras organizaciones. Enlaza a `/hospitalia/cumpleanos?rango=7`. El aviso del
   mismo día sigue igual. En producción solo cuentan los familiares de miembros activos (59 de 67): el
   primer resumen con contenido sería el lunes 16-nov (1 cumpleaños, a los 28 activos de la logia 1);
   antes no se envía nada.
-- 🔄 29 de febrero: `MiembroFamiliar#proximo_cumpleanos` lo pasa al 28 en años no bisiestos. Antes
+- ✅ 29 de febrero: `MiembroFamiliar#proximo_cumpleanos` lo pasa al 28 en años no bisiestos. Antes
   la página de cumpleaños y el aviso diario lo saltaban, y el dashboard se quedaba sin ningún dato
   de módulos (el `Date::Error` lo tragaba el `rescue`). Hoy no hay ninguno en producción.
 
