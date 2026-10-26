@@ -19,6 +19,12 @@
             <div class="text-muted small">
               <%= evento.todo_el_dia ? I18n.l(evento.inicio.to_date, format: "%A") : I18n.l(evento.inicio, format: "%A %H:%M") %><%= " · #{evento.ubicacion}" if evento.ubicacion.present? %>
             </div>
+            <%# Quien lo gestiona ve el atajo: en el evento se explica qué cambia y se confirma. %>
+            <% if puede_llevar_a_reunion?(evento) %>
+              <%= link_to calendario_path(evento), class: "small text-decoration-none" do %>
+                <i class="bi bi-people me-1"></i>Llevar como <%= current_logia.t_reunion.downcase %> (orden del día, quórum y QR)
+              <% end %>
+            <% end %>
           </div>
           <div class="d-flex gap-2 flex-shrink-0">
             <% if respuesta.in?(%w[confirmado rechazado]) %>

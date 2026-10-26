@@ -465,6 +465,16 @@ No hecho o no comprobado:
   índice único); las reuniones de antes reciben su código al enseñar el QR.
 - `test/integration/asistencia_qr_test.rb` (4 pruebas).
 
+## Llevar como reunión desde el panel (26-oct, en la rama feat/llevar-desde-el-panel, sin desplegar)
+
+- En «Próximos eventos» del panel, quien puede llevar un evento como reunión (quien lo creó o gestiona su
+  grupo, con un grupo que se convoca) ve «Llevar como tenida (orden del día, quórum y QR)». Lleva a la página
+  del evento, que explica qué cambia y pide confirmación; desde el panel no se crea nada.
+- Por qué: en producción hay 0 reuniones, porque las tenidas siguen como eventos de la serie del calendario y
+  el botón solo estaba dentro del evento. La del 28 la creó el admin de Propagadores (cuenta 48): lo verán él
+  y los superadmins; los socios, no.
+- Prueba nueva en `test/integration/evento_a_reunion_test.rb`.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

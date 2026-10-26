@@ -106,6 +106,24 @@ class EventoAReunionTest < ActionDispatch::IntegrationTest
     assert_equal 1, Reunion.count
   end
 
+  test "el panel de quien gestiona lleva al evento para pasarlo a reunión; el de un socio no" do
+    suelto = evento(@suv)
+    sign_in @admin
+    get "/t/#{@mercedes.slug}/dashboard"
+    assert_includes response.body, "Llevar como encuentro (orden del día, quórum y QR)"
+    assert_includes response.body, "/calendario/#{suelto.id}"
+
+    sign_in @socio
+    get "/t/#{@mercedes.slug}/dashboard"
+    assert_includes response.body, "/calendario/#{suelto.id}"
+    assert_not_includes response.body, "Llevar como"
+
+    sign_in @admin
+    post "/t/#{@mercedes.slug}/reuniones/desde_evento", params: { evento_id: suelto.id, logia_id: @suv.id }
+    get "/t/#{@mercedes.slug}/dashboard"
+    assert_not_includes response.body, "Llevar como"
+  end
+
   test "una serie demasiado larga no se lleva" do
     diaria = evento(@suv, recurrencia_tipo: "diaria", recurrencia_intervalo: 1, recurrencia_fin: "ocurrencias",
                           recurrencia_count: Reunion::MAX_DESDE_EVENTOS + 5)
