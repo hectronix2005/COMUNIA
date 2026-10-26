@@ -533,7 +533,7 @@ No hecho o no comprobado:
 - Probada en Chrome sin ventana con el servidor de desarrollo (sale, activa, «Ahora no», vista de móvil).
 - Sin migraciones. `test/integration/activar_avisos_test.rb` (1 prueba).
 
-## Acuerdos de la reunión (26-oct)
+## Acuerdos de la reunión (26-oct, desplegado: c797d6f, aprobado por Héctor)
 
 - En la reunión, desde que empieza, quien la gestiona apunta acuerdos: qué se hará, quién se encarga (un convocado,
   o nadie) y para cuándo. Quien se encarga recibe un aviso y lo ve en su panel («Te encargas de», con «Hecho»).
@@ -542,7 +542,7 @@ No hecho o no comprobado:
   la opción recomendada: son trabajo del grupo, no parte del acta en borrador).
 - Solo quien gestiona apunta y borra; hasta 30 por reunión, 500 caracteres. Migración nueva: `reunion_acuerdos`.
 - `bundle-audit`: la gema `mcp` 0.25.0 (GHSA-4m5j-jjfc-97gx), que trae rubocop 1.85, tiene un aviso; no viene de
-  este cambio. Rubocop 1.92 ya no depende de ella: va en un PR aparte.
+  este cambio. Rubocop 1.92 ya no depende de ella: desplegado con 5898350; bundle-audit sin avisos.
 
 ## Pendiente de Héctor
 
