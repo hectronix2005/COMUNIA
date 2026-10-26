@@ -8,7 +8,7 @@ class SuscripcionCalendarioController < ActionController::Base
     user = User.por_token_de_calendario(params[:token])
     return head(:not_found) unless user && vigente?(user)
 
-    tenant = "/t/#{user.logia.slug}"
+    tenant = "/t/#{user.logia.organizacion.slug}" # /t/<slug> solo admite la raíz de una comunidad
     eventos = CalendarioEvento.de_logias(CalendarioSincronizacion.logia_ids_visibles_para(user.logia))
                               .en_rango(1.month.ago, 1.year.from_now).includes(:reunion).ordenados.limit(500)
     datos = eventos.map do |e|

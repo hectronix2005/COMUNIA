@@ -361,7 +361,7 @@ No hecho o no comprobado:
 - De paso, el filtro del calendario dice «Mi <grupo>» y «Toda la comunidad» en vez de «Mi Logia» y «Todo el
   Tenant».
 
-## Calendario: lo de la raíz llega a sus grupos (26-oct, en la rama fix/calendario-comunidad-raiz, sin desplegar)
+## Calendario: lo de la raíz llega a sus grupos (26-oct, desplegado: c17b8ab, aprobado por Héctor)
 
 - Al probar el feed en producción salió vacío para los 28 miembros: están en el grupo 1 y los 24 eventos
   futuros (serie «Tenida Propagadores de la Luz») están en la raíz, el grupo 6. Dentro de la app sí los ven
@@ -370,6 +370,10 @@ No hecho o no comprobado:
   (`CalendarioSincronizacion.logia_ids_visibles_para(logia)`). Los grupos hermanos siguen sin verse, y desde
   un grupo «Toda la comunidad» es el grupo y la raíz.
 - No se mueven los eventos al grupo 1: dentro de la app (contexto de la raíz) dejarían de verse en «Mi grupo».
+- Comprobado en producción: el feed de un miembro del grupo 1 trae las 28 tenidas (24 próximas y 4 del último
+  mes). Ahí salió que el enlace de cada evento usaba `/t/<slug del grupo>`, que da «Tenant no encontrado»
+  porque `/t/` solo admite raíces. Arreglado en la rama fix/enlace-feed-raiz (sin desplegar): usa el slug de la
+  raíz.
 
 ## Pendiente de Héctor
 

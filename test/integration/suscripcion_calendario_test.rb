@@ -64,6 +64,7 @@ class SuscripcionCalendarioTest < ActionDispatch::IntegrationTest
     conductor.renovar_calendario!
     get "/calendario/feed.ics", params: { token: conductor.calendario_token }
     assert_includes response.body, "Asado de fin de año", "lo de la raíz llega a sus grupos"
+    assert_match %r{URL:http://www\.example\.com/t/#{@club.slug}/calendario/\d+}, response.body, "el enlace entra por la raíz"
     assert_not_includes response.body, "Lavado de sedanes"
 
     # Sin /t/<slug> el calendario de la app parte de su grupo, y también ve lo de la raíz.
