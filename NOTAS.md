@@ -385,7 +385,19 @@ No hecho o no comprobado:
   los eventos de reuniones (`where.missing(:reunion)`), que ya tienen su tarjeta.
 - `CalendarioEvento.en_rango` y `ordenados` califican la tabla para poder unirse con `reuniones`.
 - Prueba en producción: un miembro del grupo 1 ve las tenidas del 28-oct, 4-nov y 11-nov con sus botones; panel 200,
-  0 errores, sin crear confirmaciones.
+  0 errores, sin crear confirmaciones. Ojo: la visita simulada marcó su `last_seen_at` (lo hace
+  `touch_last_seen!`); estaba vacío en la copia de las 13:20 y se devolvió a vacío.
+
+## Quién usa la app, en el panel del admin (26-oct, en la rama feat/adopcion-panel-admin, sin desplegar)
+
+- Producción, 26-oct: de 28 miembros activos, 4 han entrado alguna vez (el último en mayo) y el admin del
+  grupo no entra desde junio; 0 invitaciones usadas. Las mejoras no sirven si nadie entra, y quien lleva el
+  grupo no lo ve en ningún sitio.
+- Tarjeta «Quién usa la app» bajo los próximos eventos, solo en el panel del admin: «N de M han entrado
+  alguna vez · K esta semana», barra de progreso, invitados sin entrar y los que faltan por invitar (o con la
+  invitación caducada), y el botón «Invitar a quienes faltan» (`/miembros/acceso`) si puede invitar.
+- Cuenta los miembros activos del mismo alcance que «activos» del panel (`ids_tenant`), con `User#acceso`.
+  Sin migraciones.
 
 ## Pendiente de Héctor
 

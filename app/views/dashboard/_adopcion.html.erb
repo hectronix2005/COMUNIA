@@ -1,0 +1,29 @@
+<%# Quién usa la app: lo primero que necesita quien lleva el grupo para que la comunidad entre. %>
+<% a = @adopcion %>
+<% if a && a[:total].positive? %>
+  <% pct = (100.0 * a[:entraron] / a[:total]).round %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h6 class="fw-bold mb-0 me-auto"><i class="bi bi-phone me-1"></i>Quién usa la app</h6>
+        <% if (a[:faltan] + a[:invitados]).positive? && policy(Miembro).invitar_en_bloque? %>
+          <%= link_to acceso_miembros_path, class: "btn btn-sm btn-primary" do %>
+            <i class="bi bi-send me-1"></i>Invitar a quienes faltan
+          <% end %>
+        <% end %>
+      </div>
+      <p class="mb-2">
+        <strong><%= a[:entraron] %> de <%= a[:total] %></strong>
+        <%= Logia.plural(@logia.t_miembro).downcase %> activos han entrado alguna vez
+        · <%= a[:semana] %> esta semana
+      </p>
+      <div class="progress mb-2" style="height:6px;" role="progressbar" aria-label="Han entrado" aria-valuenow="<%= pct %>" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-success" style="width:<%= pct %>%"></div>
+      </div>
+      <div class="d-flex flex-wrap gap-3 small text-muted">
+        <span><i class="bi bi-envelope-open me-1"></i><%= a[:invitados] %> invitados sin entrar</span>
+        <span><i class="bi bi-person-dash me-1"></i><%= a[:faltan] %> sin invitar o con la invitación caducada</span>
+      </div>
+    </div>
+  </div>
+<% end %>

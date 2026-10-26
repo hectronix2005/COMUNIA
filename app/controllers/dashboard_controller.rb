@@ -67,6 +67,7 @@ class DashboardController < ApplicationController
     # miembros están asignados a las logias hijas).
     ids = ids_tenant(logia)
     @miembros_activos = Miembro.activos.where(logia_id: ids).count
+    @adopcion = adopcion_de(ids)
     cobros = Cobro.joins(:miembro).where(miembros: { logia_id: ids })
     @pendientes      = cobros.pendiente.count
     @soporte_adjunto = cobros.soporte_adjunto.count
@@ -143,5 +144,15 @@ class DashboardController < ApplicationController
       ids += root.logias.pluck(:id) if root
     end
     ids.uniq
+  end
+
+  # Quién usa la app entre los miembros activos: los que entraron, los invitados que aún no y los que faltan
+  # por invitar (o con la invitación caducada), más los que entraron en los últimos 7 días.
+  def adopcion_de(ids)
+    usuarios = User.where(id: Miembro.activos.where(logia_id: ids).select(:user_id))
+    estados = usuarios.map(&:acceso).tally
+    { total: usuarios.size, entraron: estados[:entro].to_i, invitados: estados[:invitado].to_i,
+      faltan: estados[:nunca].to_i + estados[:invitacion_caducada].to_i,
+      semana: usuarios.count { _1.last_seen_at&.after?(7.days.ago) } }
   end
 end
