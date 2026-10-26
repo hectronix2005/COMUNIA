@@ -489,7 +489,7 @@ No hecho o no comprobado:
   igual). Límite de 10 envíos por minuto y persona.
 - `test/integration/puntos_orden_del_dia_test.rb` (3 pruebas).
 
-## Constancia de asistencia (26-oct, en la rama feat/constancia-asistencia, sin desplegar)
+## Constancia de asistencia (26-oct, desplegado: 0fa2cdb, aprobado por Héctor)
 
 - Quien gestiona un grupo tiene «Constancia» junto a «Convocar» en Reuniones: los miembros activos de sus grupos
   con «X de N», la fecha de la última a la que vino y el %, ordenados de menos a más. Si alguien lleva 3 o más
