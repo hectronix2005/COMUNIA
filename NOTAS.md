@@ -465,7 +465,7 @@ No hecho o no comprobado:
   índice único); las reuniones de antes reciben su código al enseñar el QR.
 - `test/integration/asistencia_qr_test.rb` (4 pruebas).
 
-## Llevar como reunión desde el panel (26-oct, en la rama feat/llevar-desde-el-panel, sin desplegar)
+## Llevar como reunión desde el panel (26-oct, desplegado: d03b5d0, aprobado por Héctor)
 
 - En «Próximos eventos» del panel, quien puede llevar un evento como reunión (quien lo creó o gestiona su
   grupo, con un grupo que se convoca) ve «Llevar como tenida (orden del día, quórum y QR)». Lleva a la página
