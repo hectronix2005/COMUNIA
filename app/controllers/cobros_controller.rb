@@ -1,4 +1,5 @@
 class CobrosController < ApplicationController
+  before_action -> { requiere_modulo!(:tesoreria) }
   before_action :require_tesorero!
   before_action :set_cobro, only: [:show, :adjuntar_soporte, :subir_soporte, :validar, :confirmar_pago, :rechazar_pago]
 

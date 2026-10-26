@@ -114,6 +114,21 @@ User.where(rol_ref_id: nil).find_each do |u|
 end
 puts "  Usuarios migrados a roles dinamicos"
 
+# === CATEGORÍAS DE COMUNIDAD === (las mismas que crea la migración 20261026020000)
+todos = Categoria::MODULOS.keys
+[
+  ["Masonería",   "bank",        "Hermano",  "Logia",    "Cuota",  "Tenida",    "Hospitalía",      "Planchas",   todos],
+  ["Club",        "car-front",   "Socio",    "Grupo",    "Cuota",  "Encuentro", "Fondo social",    "Documentos", todos - %w[grados]],
+  ["Barrio",      "houses",      "Vecino",   "Conjunto", "Cuota",  "Asamblea",  "Fondo común",     "Actas",      todos - %w[grados biblioteca]],
+  ["Universidad", "mortarboard", "Egresado", "Cohorte",  "Aporte", "Encuentro", "Fondo solidario", "Documentos", todos - %w[grados]]
+].each do |nombre, icono, miembro, logia, cobro, reunion, ayuda, documentos, modulos|
+  Categoria.find_or_create_by!(nombre: nombre) do |c|
+    c.assign_attributes(icono: icono, termino_miembro: miembro, termino_logia: logia, termino_cobro: cobro,
+                        termino_reunion: reunion, termino_ayuda: ayuda, termino_documentos: documentos, modulos: modulos)
+  end
+end
+puts "  #{Categoria.count} categorías"
+
 # === LOGIAS ===
 logias_data = [
   { nombre: "Logia Luz del Oriente", codigo: "LOG001" },

@@ -1,4 +1,4 @@
-<% content_for(:title, "Planchas") %>
+<% content_for(:title, current_logia.t_documentos) %>
 
 <div class="container py-4">
   <div class="mb-3">
@@ -9,20 +9,21 @@
 
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-      <h4 class="mb-0 fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Planchas</h4>
-      <p class="text-muted small mb-0">Documentos por grado masónico</p>
+      <h4 class="mb-0 fw-bold"><i class="bi bi-file-earmark-text me-2"></i><%= current_logia.t_documentos %></h4>
+      <% if @con_grados %><p class="text-muted small mb-0">Documentos por grado</p><% end %>
     </div>
     <% if action_name == "index" %>
       <% grado_usuario = current_user.miembro&.grado %>
       <% if controller.send(:puede_gestionar?) %>
         <%= link_to new_biblioteca_plancha_path, class: "btn btn-primary btn-sm" do %>
-          <i class="bi bi-plus-lg me-1"></i>Nueva Plancha
+          <i class="bi bi-plus-lg me-1"></i>Subir documento
         <% end %>
       <% end %>
     <% end %>
   </div>
 
   <%# Filtro por grado %>
+  <% if @con_grados %>
   <div class="mb-4 d-flex gap-2 flex-wrap">
     <%= link_to "Todos", biblioteca_planchas_path,
           class: "btn btn-sm #{@grado_filtro.nil? ? 'btn-dark' : 'btn-outline-secondary'}" %>
@@ -31,18 +32,21 @@
             class: "btn btn-sm #{@grado_filtro == g ? 'btn-dark' : 'btn-outline-secondary'}" %>
     <% end %>
   </div>
+  <% end %>
 
   <% if @planchas.empty? %>
     <div class="text-center text-muted py-5">
       <i class="bi bi-file-earmark-text display-4 opacity-25"></i>
-      <p class="mt-3">No hay planchas disponibles<% if @grado_filtro.present? %> para <%= @grado_filtro %><% end %>.</p>
+      <p class="mt-3">No hay documentos disponibles<% if @grado_filtro.present? %> para <%= @grado_filtro %><% end %>.</p>
     </div>
   <% else %>
-    <%# Group by grado %>
-    <% @planchas.group_by(&:grado).each do |grado, grupo| %>
+    <%# Agrupadas por grado; sin grados, una sola lista %>
+    <% (@con_grados ? @planchas.group_by(&:grado) : { nil => @planchas }).each do |grado, grupo| %>
+      <% if grado %>
       <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-1">
         <i class="bi bi-bookmark-star me-1"></i><%= grado %>
       </h6>
+      <% end %>
       <div class="row g-3 mb-4">
         <% grupo.each do |plancha| %>
           <div class="col-12 col-md-6 col-lg-4">

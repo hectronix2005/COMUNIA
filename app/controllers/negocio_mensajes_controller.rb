@@ -1,4 +1,6 @@
 class NegocioMensajesController < ApplicationController
+  before_action -> { requiere_modulo!(:negocios) }
+
   def create
     conv = NegocioConversacion.find(params[:negocio_conversacion_id])
     unless [conv.comprador_id, conv.vendedor_id].include?(current_user.id)

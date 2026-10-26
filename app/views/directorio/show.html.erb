@@ -29,7 +29,7 @@
             <% end %>
             <div class="mt-1">
               <span class="badge bg-light text-dark"><%= @miembro.logia.nombre %></span>
-              <% if @miembro.grado.present? %>
+              <% if @miembro.grado.present? && current_logia.modulo?(:grados) %>
                 <span class="badge bg-light text-dark"><%= @miembro.grado %></span>
               <% end %>
             </div>

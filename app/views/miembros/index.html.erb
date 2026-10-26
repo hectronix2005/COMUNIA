@@ -174,7 +174,7 @@
         <th>Nombre</th>
         <th>Cedula</th>
         <th>Logia</th>
-        <th>Grado</th>
+        <% if current_logia.modulo?(:grados) %><th>Grado</th><% end %>
         <th>Estado</th>
         <th>App</th>
         <th>Acciones</th>
@@ -187,7 +187,7 @@
           <td><%= miembro.nombre_completo %></td>
           <td><%= miembro.cedula %></td>
           <td><%= miembro.logia.nombre %></td>
-          <td><%= miembro.grado %></td>
+          <% if current_logia.modulo?(:grados) %><td><%= miembro.grado %></td><% end %>
           <td><%= render "shared/estado_badge", estado: miembro.estado %></td>
           <td><%= acceso_badge(miembro.user) %></td>
           <td>

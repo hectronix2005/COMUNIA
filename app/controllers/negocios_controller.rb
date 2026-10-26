@@ -1,4 +1,5 @@
 class NegociosController < ApplicationController
+  before_action -> { requiere_modulo!(:negocios) }
   before_action :set_anuncio, only: [:show, :edit, :update, :destroy, :toggle_favorito, :remove_imagen]
   before_action :verificar_propietario, only: [:edit, :update, :destroy, :remove_imagen]
 

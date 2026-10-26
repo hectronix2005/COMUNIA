@@ -1,4 +1,5 @@
 class TarifasController < ApplicationController
+  before_action -> { requiere_modulo!(:tesoreria) }
   before_action :set_logia
   before_action :set_tarifa, only: [:edit, :update, :destroy]
 

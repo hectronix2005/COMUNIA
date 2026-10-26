@@ -54,6 +54,18 @@
   </div>
 
   <% if logia.tenant_id.nil? %>
+    <%# ── Categoría: qué tipo de comunidad es (solo tenants raíz) ── %>
+    <div class="row g-3 mb-4">
+      <div class="col-md-5">
+        <%= f.label :categoria_id, "Categoría", class: "form-label fw-semibold" %>
+        <%= f.select :categoria_id,
+              options_from_collection_for_select(Categoria.ordenadas, :id, :nombre, logia.categoria_id),
+              { include_blank: "— Sin categoría (todos los módulos) —" },
+              class: "form-select" %>
+        <div class="form-text">Club, Barrio, Universidad… Fija las palabras y los módulos. Se configuran en <%= link_to "Categorías", categorias_path %>.</div>
+      </div>
+    </div>
+
     <%# ── Branding / White-label (solo para tenants raíz) ──── %>
     <div class="card border-secondary mb-4">
       <div class="card-header bg-light">
@@ -138,7 +150,7 @@
         <hr class="my-3">
         <h6 class="text-muted small mb-3">
           Terminología personalizada
-          <span class="fw-normal">(dejar vacío usa el término por defecto del sistema)</span>
+          <span class="fw-normal">(vacío usa el de la categoría)</span>
         </h6>
         <div class="row g-3">
           <div class="col-md-4">

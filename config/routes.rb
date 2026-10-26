@@ -163,6 +163,7 @@ Rails.application.routes.draw do
   get   "errores/:id",          to: "errores#show",     as: :error_registrado
   patch "errores/:id/resolver", to: "errores#resolver", as: :resolver_error
 
+  resources :categorias, except: :show
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do
       post :preview

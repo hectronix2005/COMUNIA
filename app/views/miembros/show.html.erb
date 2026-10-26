@@ -19,8 +19,10 @@
         <dt class="col-sm-3">Cedula</dt>
         <dd class="col-sm-9"><%= @miembro.cedula %></dd>
 
+        <% if current_logia.modulo?(:grados) %>
         <dt class="col-sm-3">Grado</dt>
         <dd class="col-sm-9"><%= @miembro.grado %></dd>
+        <% end %>
 
         <dt class="col-sm-3">Fecha de ingreso</dt>
         <dd class="col-sm-9">

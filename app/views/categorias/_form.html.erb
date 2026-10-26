@@ -1,0 +1,51 @@
+<%= form_with(model: categoria) do |f| %>
+  <% if categoria.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% categoria.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <%= f.label :nombre, "Nombre", class: "form-label fw-semibold" %>
+      <%= f.text_field :nombre, class: "form-control", maxlength: 60, required: true, placeholder: "Ej: Club, Barrio, Universidad" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :icono, "Icono", class: "form-label fw-semibold" %>
+      <%= f.text_field :icono, class: "form-control", maxlength: 40, placeholder: "Ej: car-front, houses, mortarboard" %>
+      <div class="form-text">Nombre de un icono de <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener">Bootstrap Icons</a>, sin «bi-».</div>
+    </div>
+  </div>
+
+  <h6 class="fw-semibold">Cómo se llaman las cosas</h6>
+  <p class="text-muted small">Vacío usa la palabra por defecto. Cada comunidad puede cambiar la suya en su configuración.</p>
+  <div class="row g-3 mb-4">
+    <% Categoria::TERMINOS.each do |clave| %>
+      <div class="col-md-4">
+        <%= f.label :"termino_#{clave}", Categoria::ETIQUETAS_TERMINOS[clave], class: "form-label" %>
+        <%= f.text_field :"termino_#{clave}", class: "form-control", maxlength: 40, placeholder: Logia::TERMINOS_POR_DEFECTO[clave.to_sym] %>
+      </div>
+    <% end %>
+  </div>
+
+  <h6 class="fw-semibold">Módulos</h6>
+  <p class="text-muted small">Lo que no se marque desaparece del menú de sus comunidades. Muro, chat, encuestas, directorio, calendario y cumpleaños están siempre.</p>
+  <%= hidden_field_tag "categoria[modulos][]", "" %>
+  <div class="row g-2 mb-4">
+    <% Categoria::MODULOS.each do |clave, etiqueta| %>
+      <div class="col-md-4">
+        <div class="form-check">
+          <%= check_box_tag "categoria[modulos][]", clave, categoria.modulo?(clave), id: "modulo_#{clave}", class: "form-check-input" %>
+          <%= label_tag "modulo_#{clave}", etiqueta, class: "form-check-label" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= f.submit "Guardar", class: "btn btn-primary" %>
+  <%= link_to "Cancelar", categorias_path, class: "btn btn-outline-secondary ms-2" %>
+<% end %>

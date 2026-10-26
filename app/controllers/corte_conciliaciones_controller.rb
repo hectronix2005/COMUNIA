@@ -1,4 +1,5 @@
 class CorteConciliacionesController < ApplicationController
+  before_action -> { requiere_modulo!(:tesoreria) }
   before_action :require_tesorero!
   before_action :set_logia
   before_action :set_corte, only: [:show, :destroy]

@@ -57,7 +57,7 @@
           <% end %>
           <div class="mt-1">
             <span class="badge bg-light text-dark" style="font-size:.68rem;"><%= m.logia.nombre %></span>
-            <% if m.grado.present? %>
+            <% if m.grado.present? && current_logia.modulo?(:grados) %>
               <span class="badge bg-light text-dark" style="font-size:.68rem;"><%= m.grado %></span>
             <% end %>
           </div>

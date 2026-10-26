@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -136,6 +136,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_010000) do
     t.datetime "updated_at", null: false
     t.index ["logia_id", "nombre"], name: "index_cargos_on_logia_id_and_nombre", unique: true
     t.index ["logia_id"], name: "index_cargos_on_logia_id"
+  end
+
+  create_table "categorias", force: :cascade do |t|
+    t.string "nombre", null: false
+    t.string "icono"
+    t.string "termino_miembro"
+    t.string "termino_logia"
+    t.string "termino_cobro"
+    t.string "termino_reunion"
+    t.string "termino_ayuda"
+    t.string "termino_documentos"
+    t.string "modulos", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((nombre)::text)", name: "index_categorias_on_lower_nombre", unique: true
   end
 
   create_table "chat_mensajes", force: :cascade do |t|
@@ -390,6 +405,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_010000) do
     t.string "termino_cobro"
     t.string "slug"
     t.bigint "tenant_id"
+    t.bigint "categoria_id"
+    t.index ["categoria_id"], name: "index_logias_on_categoria_id"
     t.index ["slug"], name: "index_logias_on_slug", unique: true
     t.index ["tenant_id", "codigo"], name: "index_logias_on_tenant_id_and_codigo", unique: true
     t.index ["tenant_id"], name: "index_logias_on_tenant_id"
@@ -932,6 +949,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_010000) do
   add_foreign_key "encuestas", "users"
   add_foreign_key "evento_confirmaciones", "calendario_eventos"
   add_foreign_key "evento_confirmaciones", "users"
+  add_foreign_key "logias", "categorias"
   add_foreign_key "logias", "logias", column: "tenant_id"
   add_foreign_key "miembro_cargos", "cargos"
   add_foreign_key "miembro_cargos", "miembros"

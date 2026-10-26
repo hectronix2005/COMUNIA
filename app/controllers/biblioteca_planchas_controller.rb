@@ -1,9 +1,12 @@
 class BibliotecaPlanchasController < ApplicationController
+  before_action -> { requiere_modulo!(:documentos) }
   before_action :set_plancha, only: [:show, :edit, :update, :destroy]
   before_action :verificar_gestion, only: [:new, :create, :edit, :update, :destroy]
 
   def index
-    @grado_filtro = params[:grado].in?(BibliotecaPlancha::GRADOS) ? params[:grado] : nil
+    # Sin el módulo de grados (un club, un barrio) todos ven todo y no se filtra por grado.
+    @con_grados = current_logia.modulo?(:grados)
+    @grado_filtro = @con_grados && params[:grado].in?(BibliotecaPlancha::GRADOS) ? params[:grado] : nil
     @grado_usuario = current_user.miembro&.grado
 
     scope = BibliotecaPlancha
@@ -12,7 +15,7 @@ class BibliotecaPlanchasController < ApplicationController
               .includes(:user)
               .ordenadas
 
-    scope = scope.visibles_para(@grado_usuario) if @grado_usuario.present? && !puede_gestionar?
+    scope = scope.visibles_para(@grado_usuario) if @con_grados && @grado_usuario.present? && !puede_gestionar?
     scope = scope.de_grado(@grado_filtro)       if @grado_filtro.present?
 
     @planchas = scope
@@ -66,7 +69,7 @@ class BibliotecaPlanchasController < ApplicationController
 
   def verificar_acceso_grado!
     grado_usuario = current_user.miembro&.grado
-    return if puede_gestionar?
+    return if puede_gestionar? || !current_logia.modulo?(:grados)
     return unless grado_usuario.present?
 
     nivel_usuario = BibliotecaPlancha::GRADO_NIVEL[grado_usuario].to_i

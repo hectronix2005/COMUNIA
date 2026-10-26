@@ -1,4 +1,5 @@
 class NegocioConversacionesController < ApplicationController
+  before_action -> { requiere_modulo!(:negocios) }
   before_action :set_conversacion, only: [:show]
 
   def index

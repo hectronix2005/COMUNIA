@@ -5,7 +5,7 @@
     <%= link_to biblioteca_planchas_path, class: "btn btn-sm btn-outline-secondary" do %>
       <i class="bi bi-arrow-left"></i>
     <% end %>
-    <span class="badge bg-secondary"><%= @plancha.grado %></span>
+    <% if current_logia.modulo?(:grados) %><span class="badge bg-secondary"><%= @plancha.grado %></span><% end %>
   </div>
 
   <div class="card border-0 shadow-sm">

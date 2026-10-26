@@ -1,0 +1,61 @@
+<% content_for(:title, "COMUNIA — Categorías") %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0"><i class="bi bi-tags me-2"></i>Categorías</h1>
+    <small class="text-muted">El tipo de cada comunidad: cómo se llaman las cosas y qué módulos usa. Ej.: Club · Mercedes Benz · SUV</small>
+  </div>
+  <%= link_to new_categoria_path, class: "btn btn-primary" do %>
+    <i class="bi bi-plus-circle me-1"></i>Nueva categoría
+  <% end %>
+</div>
+
+<div class="row g-3">
+  <% @categorias.each do |categoria| %>
+    <% comunidades = @comunidades[categoria.id] || [] %>
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-<%= categoria.icono.presence || "tag" %>"></i>
+          <strong><%= categoria.nombre %></strong>
+          <span class="badge bg-secondary ms-auto"><%= pluralize(comunidades.size, "comunidad", plural: "comunidades") %></span>
+        </div>
+        <div class="card-body small">
+          <dl class="row mb-2">
+            <% Categoria::TERMINOS.each do |clave| %>
+              <dt class="col-5 text-muted fw-normal"><%= Categoria::ETIQUETAS_TERMINOS[clave] %></dt>
+              <dd class="col-7 mb-1"><%= categoria.public_send(:"termino_#{clave}").presence || content_tag(:span, Logia::TERMINOS_POR_DEFECTO[clave.to_sym], class: "text-muted") %></dd>
+            <% end %>
+          </dl>
+          <div class="d-flex flex-wrap gap-1 mb-2">
+            <% Categoria::MODULOS.each do |clave, etiqueta| %>
+              <span class="badge <%= categoria.modulo?(clave) ? "bg-success" : "bg-light text-muted text-decoration-line-through" %>"><%= etiqueta %></span>
+            <% end %>
+          </div>
+          <% if comunidades.any? %>
+            <div class="text-muted">Comunidades: <%= comunidades.map(&:nombre_display).to_sentence %></div>
+          <% end %>
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-1">
+          <%= link_to edit_categoria_path(categoria), class: "btn btn-sm btn-outline-primary flex-fill" do %>
+            <i class="bi bi-pencil"></i> Configurar
+          <% end %>
+          <% if comunidades.empty? %>
+            <%= button_to categoria_path(categoria), method: :delete, class: "btn btn-sm btn-outline-danger",
+                  form: { data: { turbo_confirm: "¿Eliminar la categoría «#{categoria.nombre}»?" } } do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<% if @sin_categoria.any? %>
+  <div class="alert alert-warning mt-4 small">
+    <i class="bi bi-exclamation-triangle me-1"></i>
+    Sin categoría (ven todos los módulos): <%= @sin_categoria.map(&:nombre_display).to_sentence %>.
+    Se asigna en <%= link_to "Tenants", tenants_path %> → Configurar.
+  </div>
+<% end %>

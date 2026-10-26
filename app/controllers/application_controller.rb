@@ -203,6 +203,13 @@ class ApplicationController < ActionController::Base
     require_cargo!("Hospitalario")
   end
 
+  # Cierra un módulo que la categoría de la comunidad no usa (un barrio no tiene biblioteca). En el panel de
+  # plataforma no hay comunidad, así que no se cierra nada.
+  def requiere_modulo!(clave)
+    return if platform_admin_context? || current_logia.modulo?(clave)
+    redirect_to dashboard_path, alert: "Este módulo no está activo en tu comunidad."
+  end
+
   def after_sign_in_path_for(resource)
     # dashboard_path respeta request.script_name automáticamente, por lo que
     # si el login fue en /t/:slug/login, el redirect será /t/:slug/dashboard.

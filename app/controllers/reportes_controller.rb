@@ -1,4 +1,5 @@
 class ReportesController < ApplicationController
+  before_action -> { requiere_modulo!(:tesoreria) }
   before_action :authorize_reportes
 
   def cartera

@@ -258,6 +258,28 @@ No hecho o no comprobado:
 - Héctor (25-oct): COMUNIA es para comunidades de todo tipo (Club Mercedez, Club BMW, egresados,
   vecinos), no solo logias. Los textos nuevos usan «comunidad» y «grupo».
 
+## Categorías de comunidad (25-oct)
+
+- Héctor (25-oct): «Categoría Club, Grupo Mercedes Benz, Nombre SUV»; «Categoría Barrio, Grupo
+  Cedritos, Nombre Alborada 140»; «Categoría Universidad, Grupo Egresados, Nombre Cohorte 2023-2».
+  Lo configura el superadmin por tipología.
+- En el código: Categoría = modelo `Categoria`; Grupo = la comunidad raíz (`Logia` sin `tenant_id`);
+  Nombre = la logia hija. La categoría solo se asigna a la raíz y sus grupos la heredan.
+- Una categoría fija seis palabras (persona, grupo, cobro, reunión, fondo de ayuda, documentos) y
+  qué módulos se ven: tesorería, documentos, biblioteca, fondo de ayuda, negocios y grados. Muro,
+  chat, encuestas, directorio, calendario y cumpleaños están siempre.
+- Cada palabra sale del grupo; si no la tiene, de la comunidad; si no, de la categoría; y si no, la
+  de por defecto (`Logia::TERMINOS_POR_DEFECTO`). Una comunidad sin categoría ve todos los módulos.
+- Un módulo apagado desaparece del menú y de los paneles, y su ruta lleva al panel
+  (`requiere_modulo!`). Sin grados no se ve el grado en miembros y directorio, y todos ven todos
+  los documentos.
+- Pantalla: Panel de plataforma → Categorías (`/categorias`). La categoría de cada comunidad se
+  elige en Tenants → Configurar.
+- La migración 20261026020000 crea Masonería, Club, Barrio y Universidad. Asigna Club a las
+  comunidades cuyo nombre empieza por «club» y Masonería a las demás. Vacía «Logias» como palabra de
+  grupo, que era un plural puesto a mano. Los seeds crean las mismas cuatro.
+- Lo que cambia en producción: el Club Mercedez deja de ver grados; la Gran Logia sigue igual.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

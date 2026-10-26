@@ -1,4 +1,5 @@
 class PeriodoCobrosController < ApplicationController
+  before_action -> { requiere_modulo!(:tesoreria) }
   before_action :require_tesorero!
   before_action :set_periodo, only: [:show, :edit, :update, :destroy, :generar_cobros]
 

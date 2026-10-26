@@ -119,7 +119,7 @@
         <th><%= link_to "Numero#{sort_icon_for.call('numero_miembro')}".html_safe, logia_path(@logia, sort: "numero_miembro", dir: sort_dir_for.call("numero_miembro"), estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
         <th><%= link_to "Nombre#{sort_icon_for.call('nombre')}".html_safe,         logia_path(@logia, sort: "nombre",         dir: sort_dir_for.call("nombre"),         estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
         <th><%= link_to "Cedula#{sort_icon_for.call('cedula')}".html_safe,         logia_path(@logia, sort: "cedula",         dir: sort_dir_for.call("cedula"),         estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
-        <th><%= link_to "Grado#{sort_icon_for.call('grado')}".html_safe,           logia_path(@logia, sort: "grado",          dir: sort_dir_for.call("grado"),          estado: @estado_filtro), class: "text-white text-decoration-none" %></th>
+        <% if current_logia.modulo?(:grados) %><th><%= link_to "Grado#{sort_icon_for.call('grado')}".html_safe,           logia_path(@logia, sort: "grado",          dir: sort_dir_for.call("grado"),          estado: @estado_filtro), class: "text-white text-decoration-none" %></th><% end %>
         <th>Estado</th>
       </tr>
     </thead>
@@ -129,7 +129,7 @@
           <td><%= miembro.numero_miembro %></td>
           <td><%= link_to miembro.nombre_completo, miembro_path(miembro) %></td>
           <td><%= miembro.cedula %></td>
-          <td><%= miembro.grado %></td>
+          <% if current_logia.modulo?(:grados) %><td><%= miembro.grado %></td><% end %>
           <td><%= render "shared/estado_badge", estado: miembro.estado %></td>
         </tr>
       <% end %>

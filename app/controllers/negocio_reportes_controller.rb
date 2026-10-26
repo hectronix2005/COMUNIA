@@ -1,4 +1,6 @@
 class NegocioReportesController < ApplicationController
+  before_action -> { requiere_modulo!(:negocios) }
+
   def create
     anuncio = NegocioAnuncio.where(logia_id: logia_ids_visibles).find_by_slug_or_id(params[:negocio_id])
     reporte = anuncio.reportes.new(

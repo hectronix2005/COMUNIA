@@ -6,7 +6,7 @@
   <div class="page-header mb-4">
     <div>
       <h1 class="h3 fw-bold"><%= @logia.icono_display %> <%= @logia.nombre_display %></h1>
-      <p class="text-muted mb-0">Panel de control <span class="badge bg-secondary ms-1"><%= @logia.codigo %></span></p>
+      <p class="text-muted mb-0"><%= @logia.ruta_comunidad %> <span class="badge bg-secondary ms-1"><%= @logia.codigo %></span></p>
     </div>
     <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
   </div>
@@ -20,7 +20,7 @@
             <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-people-fill"></i></div>
             <div class="ms-3">
               <h3 class="mb-0 fw-bold text-white"><%= @miembros_activos %></h3>
-              <span class="text-white-50 small text-uppercase">Miembros Activos</span>
+              <span class="text-white-50 small text-uppercase"><%= @logia.t_miembro.pluralize %> activos</span>
             </div>
           </div>
         </div>
@@ -402,6 +402,7 @@
     })();
   </script>
 
+  <% if current_logia.modulo?(:documentos) || current_logia.modulo?(:biblioteca) %>
   <%# ====================================================== %>
   <%# ---- MÓDULO BIBLIOTECA ----------------------------- %>
   <%# ====================================================== %>
@@ -412,7 +413,7 @@
       <i class="bi bi-book-half fs-4"></i>
       <div class="flex-grow-1">
         <h5 class="mb-0 fw-bold text-white">Biblioteca</h5>
-        <small class="opacity-75">Planchas · Libros · Recursos masónicos</small>
+        <small class="opacity-75"><%= [(current_logia.t_documentos if current_logia.modulo?(:documentos)), ("Libros" if current_logia.modulo?(:biblioteca))].compact.join(" · ") %></small>
       </div>
       <i class="bi bi-chevron-down ms-auto" id="bibliotecaChevron" style="transition:transform .25s"></i>
     </div>
@@ -422,6 +423,7 @@
           <i class="bi bi-bar-chart me-1"></i>Resumen
         </h6>
         <div class="row g-3 mb-4">
+          <% if current_logia.modulo?(:documentos) %>
           <div class="col-6 col-xl-3">
             <%= link_to biblioteca_planchas_path, class: "text-decoration-none" do %>
               <div class="card h-100" style="background:#4c1d95;cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
@@ -429,12 +431,14 @@
                   <div class="stat-icon bg-white bg-opacity-15" style="color:rgba(255,255,255,.8)"><i class="bi bi-file-earmark-text"></i></div>
                   <div class="ms-3">
                     <h3 class="mb-0 fw-bold" style="color:#fff"><%= @biblioteca_planchas_count || 0 %></h3>
-                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase">Planchas</span>
+                    <span style="color:rgba(255,255,255,.6);font-size:.72rem;" class="text-uppercase"><%= current_logia.t_documentos %></span>
                   </div>
                 </div>
               </div>
             <% end %>
           </div>
+          <% end %>
+          <% if current_logia.modulo?(:biblioteca) %>
           <div class="col-6 col-xl-3">
             <%= link_to biblioteca_libros_path, class: "text-decoration-none" do %>
               <div class="card h-100" style="background:#6d28d9;cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
@@ -448,28 +452,35 @@
               </div>
             <% end %>
           </div>
+          <% end %>
         </div>
         <h6 class="text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em;color:rgba(255,255,255,.6)">
           <i class="bi bi-lightning me-1"></i>Acciones Rápidas
         </h6>
         <div class="d-flex gap-2 flex-wrap">
-          <%= link_to biblioteca_planchas_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-file-earmark-text me-1"></i>Ver Planchas
+          <% if current_logia.modulo?(:documentos) %>
+            <%= link_to biblioteca_planchas_path, class: "btn btn-outline-light" do %>
+              <i class="bi bi-file-earmark-text me-1"></i>Ver <%= current_logia.t_documentos %>
+            <% end %>
+            <%= link_to new_biblioteca_plancha_path, class: "btn btn-outline-light" do %>
+              <i class="bi bi-plus-lg me-1"></i>Subir documento
+            <% end %>
           <% end %>
-          <%= link_to new_biblioteca_plancha_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-plus-lg me-1"></i>Nueva Plancha
-          <% end %>
-          <%= link_to biblioteca_libros_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-book me-1"></i>Ver Libros
-          <% end %>
-          <%= link_to new_biblioteca_libro_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-plus-lg me-1"></i>Agregar Libro
+          <% if current_logia.modulo?(:biblioteca) %>
+            <%= link_to biblioteca_libros_path, class: "btn btn-outline-light" do %>
+              <i class="bi bi-book me-1"></i>Ver Libros
+            <% end %>
+            <%= link_to new_biblioteca_libro_path, class: "btn btn-outline-light" do %>
+              <i class="bi bi-plus-lg me-1"></i>Agregar Libro
+            <% end %>
           <% end %>
         </div>
       </div>
     </div>
   </div>
+  <% end %>
 
+  <% if current_logia.modulo?(:ayuda) %>
   <%# ====================================================== %>
   <%# ---- MÓDULO HOSPITALIA ----------------------------- %>
   <%# ====================================================== %>
@@ -479,7 +490,7 @@
          data-bs-toggle="collapse" data-bs-target="#hospitaliaBody" aria-expanded="false">
       <i class="bi bi-heart-pulse fs-4"></i>
       <div class="flex-grow-1">
-        <h5 class="mb-0 fw-bold text-white">Hospitalia</h5>
+        <h5 class="mb-0 fw-bold text-white"><%= current_logia.t_ayuda %></h5>
         <small class="opacity-75">Fondo de apoyo mutuo · Cumpleaños · Familiares</small>
       </div>
       <i class="bi bi-chevron-down ms-auto" id="hospitaliaChevron" style="transition:transform .25s"></i>
@@ -563,7 +574,9 @@
       </div>
     </div>
   </div>
+  <% end %>
 
+  <% if current_logia.modulo?(:negocios) %>
   <%# ====================================================== %>
   <%# ---- MÓDULO NEGOCIOS ------------------------------- %>
   <%# ====================================================== %>
@@ -574,7 +587,7 @@
       <i class="bi bi-briefcase fs-4"></i>
       <div class="flex-grow-1">
         <h5 class="mb-0 fw-bold text-white">Negocios</h5>
-        <small class="opacity-75">Servicios · Productos · Empleos del Tenant</small>
+        <small class="opacity-75">Servicios · Productos · Empleos de la comunidad</small>
       </div>
       <i class="bi bi-chevron-down ms-auto" id="negociosChevron" style="transition:transform .25s"></i>
     </div>
@@ -622,6 +635,7 @@
       </div>
     </div>
   </div>
+  <% end %>
 
   <script>
     (function() {

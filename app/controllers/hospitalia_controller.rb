@@ -1,4 +1,5 @@
 class HospitaliaController < ApplicationController
+  before_action -> { requiere_modulo!(:ayuda) }, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar]
   include ActionView::Helpers::NumberHelper
   before_action :require_hospitalario!, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar]
 

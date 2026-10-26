@@ -4,6 +4,8 @@ class Logia < ApplicationRecord
   # ── Jerarquía Tenant → Logia ────────────────────────────────
   belongs_to :tenant, class_name: "Logia", optional: true
   has_many :logias, class_name: "Logia", foreign_key: :tenant_id, dependent: :destroy
+  # Tipo de comunidad (Club, Barrio, Masonería…): solo en la raíz; sus grupos la heredan.
+  belongs_to :categoria, optional: true
 
   has_many :users, dependent: :nullify
   has_many :miembros, dependent: :destroy
@@ -20,6 +22,7 @@ class Logia < ApplicationRecord
     errors.add(:tenant, "no se puede asignar: esta logia ya tiene logias propias") if tenant && logias.exists?
     errors.add(:tenant, "no puede ser la propia logia") if tenant_id && tenant_id == id
   end
+  validate { errors.add(:categoria, "se asigna a la comunidad, no a uno de sus grupos") if categoria_id && tenant_id }
   validates :codigo, presence: true,
             uniqueness: { scope: :tenant_id, message: "ya existe en este tenant" },
             format: { with: /\A[A-Z0-9]+\z/, message: "solo letras mayusculas y numeros" }
@@ -43,9 +46,36 @@ class Logia < ApplicationRecord
   def lema_display    = lema.presence || ""
   def color_display   = color_primario.presence || "#1B2A4A"
 
-  def t_miembro = termino_miembro.presence || "Miembro"
-  def t_logia   = termino_logia.presence   || "Logia"
-  def t_cobro   = termino_cobro.presence   || "Cobro"
+  # ── Palabras y módulos ────────────────────────────────────────
+  # Cada palabra sale de la propia logia, si no de su comunidad, si no de la categoría de la comunidad, y si
+  # no de aquí. Las logias solo guardan miembro, logia y cobro; el resto viene de la categoría.
+  TERMINOS_POR_DEFECTO = {
+    miembro: "Miembro", logia: "Grupo", cobro: "Cobro",
+    reunion: "Reunión", ayuda: "Fondo de ayuda", documentos: "Documentos"
+  }.freeze
+
+  def termino(clave)
+    [self, organizacion, organizacion.categoria].compact.uniq
+      .map { _1.try(:"termino_#{clave}") }.find(&:present?) || TERMINOS_POR_DEFECTO.fetch(clave)
+  end
+
+  def t_miembro    = termino(:miembro)
+  def t_logia      = termino(:logia)
+  def t_cobro      = termino(:cobro)
+  def t_reunion    = termino(:reunion)
+  def t_ayuda      = termino(:ayuda)
+  def t_documentos = termino(:documentos)
+
+  # Una comunidad sin categoría tiene todos los módulos.
+  def modulo?(clave)
+    categoria = organizacion.categoria
+    categoria.nil? || categoria.modulo?(clave)
+  end
+
+  # «Club · Mercedes Benz · SUV»: categoría, comunidad y, si es un grupo, su nombre.
+  def ruta_comunidad
+    [organizacion.categoria&.nombre, organizacion.nombre, (nombre if tenant_id)].compact.join(" · ")
+  end
 
   def siguiente_rc!
     with_lock do

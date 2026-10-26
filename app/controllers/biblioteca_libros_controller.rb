@@ -1,4 +1,5 @@
 class BibliotecaLibrosController < ApplicationController
+  before_action -> { requiere_modulo!(:biblioteca) }
   before_action :set_libro,       only: [:show, :edit, :update, :destroy, :calificar]
   before_action :verificar_gestion, only: [:new, :create, :edit, :update, :destroy]
 

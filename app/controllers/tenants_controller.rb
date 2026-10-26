@@ -3,7 +3,7 @@ class TenantsController < ApplicationController
   before_action :require_super_admin!, only: [:exit_preview]
 
   def index
-    @tenants = Logia.tenants_raiz.order(:codigo).with_attached_logo
+    @tenants = Logia.tenants_raiz.order(:codigo).includes(:categoria).with_attached_logo
     # Counts agrupados para evitar N+1 (`tenant.logias.count` por card).
     @logias_count = Logia.where.not(tenant_id: nil).group(:tenant_id).count
   end
@@ -145,7 +145,7 @@ class TenantsController < ApplicationController
   end
 
   def tenant_params
-    params.require(:logia).permit(:nombre, :codigo, :slug, :tenant_id,
+    params.require(:logia).permit(:nombre, :codigo, :slug, :tenant_id, :categoria_id,
                                   :nombre_app, :icono, :lema, :color_primario,
                                   :termino_miembro, :termino_logia, :termino_cobro,
                                   :logo)

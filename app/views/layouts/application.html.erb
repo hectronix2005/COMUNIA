@@ -74,6 +74,11 @@
                   <% end %>
                 </li>
                 <li class="nav-item">
+                  <%= link_to categorias_path, class: "nav-link #{'active' if request.path.start_with?('/categorias')}" do %>
+                    <i class="bi bi-tags"></i> Categorías
+                  <% end %>
+                </li>
+                <li class="nav-item">
                   <%= link_to errores_path, class: "nav-link #{'active' if request.path.start_with?('/errores')}" do %>
                     <i class="bi bi-bug"></i> Errores
                     <% if (abiertos = ErrorApp.abiertos.count) > 0 %><span class="badge bg-danger"><%= abiertos %></span><% end %>
@@ -117,7 +122,7 @@
                   _puede_cartera   = current_user.tiene_permiso?("reportes", "cartera")
                   _puede_recaud    = current_user.tiene_permiso?("reportes", "recaudacion")
                   _puede_morosos   = current_user.tiene_permiso?("reportes", "morosos")
-                  _tiene_tesoreria = _puede_cobros || _puede_periodos || _puede_conceptos || _puede_cartera || _puede_recaud || _puede_morosos
+                  _tiene_tesoreria = current_logia.modulo?(:tesoreria) && (_puede_cobros || _puede_periodos || _puede_conceptos || _puede_cartera || _puede_recaud || _puede_morosos)
                   _tesoreria_activa = ["/cobros", "/periodos", "/conceptos", "/reportes"].any? { |p| request.path.start_with?(p) }
                 %>
                 <% if _tiene_tesoreria %>
@@ -198,30 +203,37 @@
                 </li>
 
                 <%# ── Biblioteca ── %>
+                <% if current_logia.modulo?(:documentos) || current_logia.modulo?(:biblioteca) %>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/biblioteca') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-book-half"></i> Biblioteca
                   </a>
                   <ul class="dropdown-menu">
+                    <% if current_logia.modulo?(:documentos) %>
                     <li>
                       <%= link_to biblioteca_planchas_path, class: "dropdown-item #{'active' if request.path.start_with?('/biblioteca/planchas')}" do %>
-                        <i class="bi bi-file-earmark-text me-2"></i>Planchas
+                        <i class="bi bi-file-earmark-text me-2"></i><%= current_logia.t_documentos %>
                       <% end %>
                     </li>
+                    <% end %>
+                    <% if current_logia.modulo?(:biblioteca) %>
                     <li>
                       <%= link_to biblioteca_libros_path, class: "dropdown-item #{'active' if request.path.start_with?('/biblioteca/libros')}" do %>
                         <i class="bi bi-book me-2"></i>Libros
                       <% end %>
                     </li>
+                    <% end %>
                   </ul>
                 </li>
+                <% end %>
 
-                <%# ── Hospitalia ── %>
+                <%# ── Hospitalia (fondo de ayuda) ── %>
+                <% if current_logia.modulo?(:ayuda) %>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/hospitalia') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-heart-pulse"></i> Hospitalia
+                    <i class="bi bi-heart-pulse"></i> <%= current_logia.t_ayuda %>
                   </a>
                   <ul class="dropdown-menu">
                     <li>
@@ -247,13 +259,16 @@
                     </li>
                   </ul>
                 </li>
+                <% end %>
 
                 <%# ── Negocios ── %>
+                <% if current_logia.modulo?(:negocios) %>
                 <li class="nav-item">
                   <%= link_to negocios_path, class: "nav-link #{'active' if request.path.start_with?('/negocios')}" do %>
                     <i class="bi bi-briefcase"></i> Negocios
                   <% end %>
                 </li>
+                <% end %>
 
                 <% if current_user.tiene_permiso?("roles", "index") %>
                   <li class="nav-item">
