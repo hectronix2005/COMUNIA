@@ -173,11 +173,11 @@
       <div class="cal-sb-label">Vista</div>
       <%= link_to calendario_index_path(fecha: @fecha.iso8601, vista: @vista, filtro: "logia"),
             class: "cal-filter-btn #{'active' if @filtro == 'logia'}" do %>
-        <i class="bi bi-building me-2"></i>Mi Logia
+        <i class="bi bi-building me-2"></i>Mi <%= current_logia.t_logia.downcase %>
       <% end %>
       <%= link_to calendario_index_path(fecha: @fecha.iso8601, vista: @vista, filtro: "tenant"),
             class: "cal-filter-btn #{'active' if @filtro == 'tenant'}" do %>
-        <i class="bi bi-globe2 me-2"></i>Todo el Tenant
+        <i class="bi bi-globe2 me-2"></i>Toda la comunidad
       <% end %>
     </div>
 
@@ -189,6 +189,12 @@
           <span class="cal-legend-dot" style="background:<%= l.color_display %>;"></span>
           <span class="text-truncate" title="<%= l.nombre %>"><%= l.nombre_display %></span>
         </div>
+      <% end %>
+    </div>
+
+    <div class="cal-sb-section">
+      <%= link_to calendario_suscripcion_path, class: "cal-filter-btn" do %>
+        <i class="bi bi-phone me-2"></i>Ver en mi teléfono
       <% end %>
     </div>
 

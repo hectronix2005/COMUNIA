@@ -51,6 +51,12 @@ class CalendarioEvento < ApplicationRecord
     serie_id.present?
   end
 
+  # Lo que lleva el evento al calendario del teléfono (Ics.vevento).
+  def datos_ics(url)
+    { uid: "evento-#{id}@comunia", titulo: titulo, inicio: inicio, fin: fin, todo_el_dia: todo_el_dia,
+      ubicacion: ubicacion, descripcion: descripcion, url: url }
+  end
+
   def multidia?
     fin.to_date > inicio.to_date
   end

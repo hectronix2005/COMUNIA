@@ -79,6 +79,27 @@ class User < ApplicationRecord
     last_seen_at.present? && last_seen_at > 5.minutes.ago
   end
 
+  # Suscripción al calendario desde el teléfono: su app de calendario pide la dirección cada pocas horas, sin
+  # sesión. La dirección lleva una semilla aleatoria y su firma con la clave de la app, así que la base de datos
+  # sola no basta para fabricarla; cambiar la semilla anula la dirección anterior.
+  def calendario_token
+    calendario_semilla && calendario_semilla + User.firma_calendario(calendario_semilla)
+  end
+
+  def renovar_calendario! = update_column(:calendario_semilla, SecureRandom.hex(12))
+  def anular_calendario!  = update_column(:calendario_semilla, nil)
+
+  def self.por_token_de_calendario(token)
+    return unless token.is_a?(String) && token.match?(/\A\h{64}\z/)
+    user = find_by(calendario_semilla: token[0, 24]) or return
+    user if ActiveSupport::SecurityUtils.secure_compare(token[24..], firma_calendario(user.calendario_semilla))
+  end
+
+  def self.firma_calendario(semilla)
+    clave = Rails.application.key_generator.generate_key("calendario-suscripcion")
+    OpenSSL::HMAC.hexdigest("SHA256", clave, semilla)[0, 40]
+  end
+
   # Primer nombre + primer apellido ("Hector Andrey Neira Duque" → "Hector Neira")
   def nombre_corto
     primer_nombre   = nombre.to_s.strip.split(/\s+/).first

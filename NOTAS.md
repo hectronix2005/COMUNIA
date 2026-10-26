@@ -343,6 +343,24 @@ No hecho o no comprobado:
     enlace. Se genera sin gema (`app/services/ics.rb`), con el texto escapado y las líneas plegadas.
 - Solo lo baja quien ve el evento (mismo alcance de organización), con `no-store`. Sin migraciones.
 
+## Calendario en el teléfono (26-oct, en la rama feat/calendario-suscripcion, sin desplegar)
+
+- Añadir evento por evento no escala con las series. Cada quien crea en «Calendario → Ver en mi teléfono»
+  (`/calendario/suscripcion`) su dirección personal y se suscribe una vez: Google Calendar (`?cid=webcal://…`),
+  iPhone/Mac/Outlook (`webcal://`) o copiar la URL. Su app la pide sola (`REFRESH-INTERVAL` 4 h) y las
+  reuniones nuevas, cambiadas o canceladas aparecen o desaparecen solas.
+- Lleva lo mismo que esa persona ve en el calendario de la app (su grupo y los sincronizados), desde un mes
+  atrás hasta un año adelante, máximo 500. Nada de otra comunidad.
+- La dirección: `/calendario/feed.ics?token=<semilla 24 hex + HMAC 40 hex>`. La semilla va en
+  `users.calendario_semilla` (migración 20261026120000, índice único); la firma sale de `secret_key_base`, así
+  que la base de datos sola no basta para fabricarla. «Cambiar la dirección» anula la anterior; «Dejar de
+  compartir» la borra. La llave va en la query para que el log la muestre como `[FILTERED]`.
+- El controlador del feed hereda de `ActionController::Base` (los calendarios no son navegadores modernos ni
+  tienen sesión), con `rate_limit` 30/min y `no-store`. Deja de responder (404) si la cuenta está bloqueada, es
+  solo de la red o el miembro hoy no está activo.
+- De paso, el filtro del calendario dice «Mi <grupo>» y «Toda la comunidad» en vez de «Mi Logia» y «Todo el
+  Tenant».
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

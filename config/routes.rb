@@ -298,6 +298,11 @@ Rails.application.routes.draw do
   get   "calendario/sincronizaciones",        to: "calendario#sincronizaciones",  as: :calendario_sincronizaciones
   post  "calendario/sincronizaciones",        to: "calendario#solicitar_sync",    as: :calendario_solicitar_sync
   patch "calendario/sincronizaciones/:id",    to: "calendario#responder_sync",    as: :calendario_responder_sync
+  get    "calendario/suscripcion", to: "calendario#suscripcion",         as: :calendario_suscripcion
+  post   "calendario/suscripcion", to: "calendario#renovar_suscripcion"
+  delete "calendario/suscripcion", to: "calendario#anular_suscripcion"
+  # La que pide el teléfono: sin sesión ni /t/<slug>; la llave va en ?token= para que el log la filtre.
+  get    "calendario/feed.ics",    to: "suscripcion_calendario#show", as: :calendario_feed, format: false
   resources :calendario, only: [:index, :show, :new, :create, :edit, :update, :destroy]
 
   # ── Biblioteca ────────────────────────────────────────────

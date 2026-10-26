@@ -40,14 +40,30 @@ class CalendarioController < ApplicationController
     @sync_pendientes = CalendarioSincronizacion.para_logia(current_logia.id).pendientes.count
   end
 
+  # ── Suscripción desde el teléfono ─────────────────────────────
+  # Cada quien gestiona solo la suya. La página lleva la dirección secreta: que no la guarde ninguna caché.
+  def suscripcion
+    response.set_header("Cache-Control", "private, no-store")
+    @token = current_user.calendario_token
+  end
+
+  def renovar_suscripcion
+    current_user.renovar_calendario!
+    redirect_to calendario_suscripcion_path, notice: "Listo. Si tenías otra dirección, ya no funciona."
+  end
+
+  def anular_suscripcion
+    current_user.anular_calendario!
+    redirect_to calendario_suscripcion_path, notice: "Dirección anulada. El calendario del teléfono dejará de actualizarse."
+  end
+
   # ── CRUD ──────────────────────────────────────────────────────
   def show
     respond_to do |format|
       format.html
       format.ics do
         url = @evento.reunion ? reunion_url(@evento.reunion) : calendario_url(@evento)
-        ics = Ics.evento(uid: "evento-#{@evento.id}@comunia", titulo: @evento.titulo, inicio: @evento.inicio, fin: @evento.fin,
-                         todo_el_dia: @evento.todo_el_dia, ubicacion: @evento.ubicacion, descripcion: @evento.descripcion, url: url)
+        ics = Ics.evento(**@evento.datos_ics(url))
         response.set_header("Cache-Control", "private, no-store")
         send_data ics, type: :ics, disposition: "attachment", filename: "#{@evento.titulo.parameterize.presence || 'evento'}.ics"
       end
@@ -221,19 +237,13 @@ class CalendarioController < ApplicationController
   end
 
   def logia_ids_visibles
-    @filtro == "tenant" ? logia_ids_del_tenant : [current_logia.id] + logias_sincronizadas_ids
+    @filtro == "tenant" ? logia_ids_del_tenant : CalendarioSincronizacion.logia_ids_visibles_para(current_logia.id)
   end
 
   def logia_ids_del_tenant
     ids = [current_logia.id]
     ids += current_logia.logias.pluck(:id) if current_logia.tenant_id.nil?
     ids
-  end
-
-  def logias_sincronizadas_ids
-    CalendarioSincronizacion.aceptadas_para_logia(current_logia.id)
-      .flat_map { |s| [s.logia_solicitante_id, s.logia_destino_id] }
-      .uniq - [current_logia.id]
   end
 
   def logias_del_tenant_sin_sync
