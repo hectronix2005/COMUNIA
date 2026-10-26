@@ -511,7 +511,7 @@ No hecho o no comprobado:
   Sin sesión, el enlace pasa por el login y vuelve a la reunión.
 - Sin migraciones. `test/integration/avisar_whatsapp_test.rb` (2 pruebas).
 
-## Quién viene (26-oct, en la rama feat/quien-viene, sin desplegar)
+## Quién viene (26-oct, desplegado: 200f041, aprobado por Héctor)
 
 - En una convocatoria abierta, quien la gestiona tiene «Ver quién (solo lo ves tú)» bajo los totales: los nombres
   de quienes confirman, no pueden y no han respondido.
