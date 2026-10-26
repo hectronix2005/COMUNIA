@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -855,6 +855,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_020000) do
     t.index ["sujeto_id"], name: "index_red_resenas_on_sujeto_id"
   end
 
+  create_table "reunion_asistencias", force: :cascade do |t|
+    t.bigint "reunion_id", null: false
+    t.bigint "miembro_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["miembro_id"], name: "index_reunion_asistencias_on_miembro_id"
+    t.index ["reunion_id", "miembro_id"], name: "index_reunion_asistencias_on_reunion_id_and_miembro_id", unique: true
+    t.index ["reunion_id"], name: "index_reunion_asistencias_on_reunion_id"
+  end
+
+  create_table "reuniones", force: :cascade do |t|
+    t.bigint "logia_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "calendario_evento_id"
+    t.string "titulo", null: false
+    t.datetime "inicio", null: false
+    t.datetime "fin", null: false
+    t.string "lugar"
+    t.text "orden_del_dia"
+    t.integer "estado", default: 0, null: false
+    t.text "acta"
+    t.datetime "acta_publicada_at"
+    t.datetime "recordatorio_enviado_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calendario_evento_id"], name: "index_reuniones_on_calendario_evento_id"
+    t.index ["logia_id", "inicio"], name: "index_reuniones_on_logia_id_and_inicio"
+    t.index ["logia_id"], name: "index_reuniones_on_logia_id"
+    t.index ["user_id"], name: "index_reuniones_on_user_id"
+  end
+
   create_table "rol_permisos", force: :cascade do |t|
     t.bigint "rol_id", null: false
     t.bigint "permiso_id", null: false
@@ -1001,6 +1032,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_020000) do
   add_foreign_key "red_resenas", "red_conversaciones", column: "conversacion_id"
   add_foreign_key "red_resenas", "users", column: "autor_id"
   add_foreign_key "red_resenas", "users", column: "sujeto_id"
+  add_foreign_key "reunion_asistencias", "miembros"
+  add_foreign_key "reunion_asistencias", "reuniones"
+  add_foreign_key "reuniones", "calendario_eventos", on_delete: :nullify
+  add_foreign_key "reuniones", "logias"
+  add_foreign_key "reuniones", "users"
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"
   add_foreign_key "roles", "logias"

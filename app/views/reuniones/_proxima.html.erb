@@ -1,0 +1,28 @@
+<%# Próxima reunión en el panel, con la respuesta a un clic: el motivo para entrar antes de cada encuentro. %>
+<% if (reunion = proxima_reunion) %>
+  <% respuesta = reunion.respuesta_de(current_user) %>
+  <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid <%= reunion.logia.color_display %> !important;">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+      <div class="text-center flex-shrink-0" style="width:56px;">
+        <div class="fw-bold fs-4 lh-1"><%= reunion.inicio.day %></div>
+        <div class="text-muted text-uppercase" style="font-size:.7rem;"><%= I18n.l(reunion.inicio, format: "%b") %></div>
+      </div>
+      <div class="flex-grow-1 min-w-0">
+        <div class="text-muted small">Lo próximo · <%= reunion.logia.t_reunion %> · <%= reunion.logia.nombre_display %></div>
+        <%= link_to reunion.titulo, reunion_path(reunion), class: "fw-semibold text-decoration-none d-block text-truncate" %>
+        <div class="text-muted small"><%= I18n.l(reunion.inicio, format: "%A %H:%M") %><%= " · #{reunion.lugar}" if reunion.lugar.present? %></div>
+      </div>
+      <div class="d-flex gap-2 flex-shrink-0">
+        <% if respuesta %>
+          <span class="badge <%= respuesta == 'confirmado' ? 'bg-success' : 'bg-secondary' %> align-self-center">
+            <%= respuesta == "confirmado" ? "Vas a ir" : "No vas" %>
+          </span>
+          <%= link_to "Cambiar", reunion_path(reunion), class: "btn btn-sm btn-link" %>
+        <% else %>
+          <%= button_to "Asistiré", responder_reunion_path(reunion, estado: "confirmado"), class: "btn btn-sm btn-success" %>
+          <%= button_to "No puedo", responder_reunion_path(reunion, estado: "rechazado"), class: "btn btn-sm btn-outline-secondary" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

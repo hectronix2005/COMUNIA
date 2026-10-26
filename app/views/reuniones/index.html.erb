@@ -1,0 +1,30 @@
+<% content_for(:title, current_logia.t_reuniones) %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-people me-2" style="color:#c5a24d;"></i><%= current_logia.t_reuniones %></h4>
+  <% if logias_convocables.any? %>
+    <%= link_to new_reunion_path, class: "btn btn-sm btn-primary" do %>
+      <i class="bi bi-plus-lg me-1"></i>Convocar
+    <% end %>
+  <% end %>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h6 class="text-muted text-uppercase small fw-bold mb-2">Próximas</h6>
+    <% if @proximas.any? %>
+      <div class="list-group mb-4"><%= render partial: "reuniones/fila", collection: @proximas, as: :reunion %></div>
+    <% else %>
+      <div class="text-center text-muted py-4 mb-4 border rounded">
+        <i class="bi bi-calendar-event fs-2 d-block mb-1 opacity-25"></i>
+        Nada convocado por ahora.
+      </div>
+    <% end %>
+
+    <% if @pasadas.any? %>
+      <h6 class="text-muted text-uppercase small fw-bold mb-2">Anteriores</h6>
+      <div class="list-group mb-3"><%= render partial: "reuniones/fila", collection: @pasadas, as: :reunion %></div>
+      <%= paginate @pasadas %>
+    <% end %>
+  </div>
+</div>

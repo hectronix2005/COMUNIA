@@ -280,6 +280,29 @@ No hecho o no comprobado:
   grupo, que era un plural puesto a mano. Los seeds crean las mismas cuatro.
 - Lo que cambia en producción: el Club Mercedez deja de ver grados; la Gran Logia sigue igual.
 
+## Reuniones (25-oct, rama `feat/reuniones`, SIN desplegar)
+
+- Héctor eligió «Módulo de reuniones, pero SOLO en rama versionada con pruebas: sin desplegar ni migrar
+  producción hasta que Héctor lo apruebe». Nada de esto está en main ni en producción.
+- Una reunión se llama según la categoría (Reunión, Tenida, Encuentro, Asamblea) y es un módulo más
+  («reuniones»). La migración 20261026030000 lo enciende en todas las categorías que ya existen.
+- Convoca el admin de un grupo (rol admin_logia, en los grupos que gestiona), el superadmin o quien tenga
+  un cargo vigente en su grupo. Si se convoca en la raíz, se convoca a toda la comunidad.
+- Cada persona ve las de su grupo y las de la raíz; quien gestiona, también las de sus grupos. Nada sale
+  de la organización (`AlcanceReuniones`).
+- Al convocar se crea su evento en el calendario, y confirmar en uno es confirmar en el otro. Si se
+  cancela, el evento desaparece. Desde el calendario, el evento de una reunión lleva a la reunión.
+- Después se marca quién asistió (solo cuentan los convocados) y sale el quórum. El acta es un borrador
+  que solo ve quien gestiona hasta que se publica.
+- Avisos (`NotificarReunionJob`): convocatoria, cambio de fecha o lugar, cancelación y acta publicada.
+  `RecordatorioReunionesJob` corre cada hora (en `config/recurring.yml`, producción) y avisa una sola vez
+  el día antes, salvo a quien dijo que no iba.
+- El panel muestra la próxima, con «Asistiré» / «No puedo» a un clic.
+- Plural en español: `Logia.plural` (Reunión → Reuniones). Sustituye a `.pluralize`, que es inglés,
+  en las palabras de la comunidad de las vistas.
+- Para desplegar: fusionar la rama en main, copia previa y `bin/deploy`. Las migraciones corren solas.
+  El primer recordatorio llegaría en la hora siguiente a desplegar, y solo si alguien ya convocó.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

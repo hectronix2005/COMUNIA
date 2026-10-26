@@ -1,0 +1,57 @@
+<% fmt = ->(dt) { dt&.strftime("%Y-%m-%dT%H:%M") } %>
+<%= form_with model: reunion, url: reunion.new_record? ? reuniones_path : reunion_path(reunion) do |f| %>
+  <% if reunion.errors.any? %>
+    <div class="alert alert-danger py-2 small">
+      <% reunion.errors.full_messages.each do |m| %><div><%= m %></div><% end %>
+    </div>
+  <% end %>
+
+  <% if reunion.new_record? && logias_convocables.size > 1 %>
+    <div class="mb-3">
+      <%= f.label :logia_id, "¿A quién se convoca?", class: "form-label small fw-semibold" %>
+      <%= f.select :logia_id, logias_convocables.map { |l| [l.tenant_id ? l.nombre_display : "#{l.nombre_display} (toda la comunidad)", l.id] },
+                   {}, class: "form-select" %>
+    </div>
+  <% elsif reunion.new_record? %>
+    <%= f.hidden_field :logia_id %>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :titulo, "Título", class: "form-label small fw-semibold" %>
+    <%= f.text_field :titulo, class: "form-control", required: true, maxlength: 200, placeholder: "Ej.: Asamblea ordinaria de noviembre" %>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-sm-6">
+      <%= f.label :inicio, "Empieza", class: "form-label small fw-semibold" %>
+      <%= f.datetime_local_field :inicio, value: fmt.(reunion.inicio), class: "form-control", required: true %>
+    </div>
+    <div class="col-sm-6">
+      <%= f.label :fin, "Termina", class: "form-label small fw-semibold" %>
+      <%= f.datetime_local_field :fin, value: fmt.(reunion.fin), class: "form-control", required: true %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :lugar, "Lugar", class: "form-label small fw-semibold" %>
+    <%= f.text_field :lugar, class: "form-control", maxlength: 200, placeholder: "Dirección, salón o enlace de videollamada" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :orden_del_dia, "Orden del día", class: "form-label small fw-semibold" %>
+    <%= f.text_area :orden_del_dia, class: "form-control", rows: 6, placeholder: "1. Bienvenida\n2. Informe de cuentas\n3. Varios" %>
+  </div>
+
+  <% if reunion.celebrada? %>
+    <div class="mb-3">
+      <%= f.label :acta, "Acta", class: "form-label small fw-semibold" %>
+      <%= f.text_area :acta, class: "form-control", rows: 10, placeholder: "Qué se trató y qué se decidió" %>
+      <div class="form-text">Se guarda como borrador; los convocados la ven cuando la publicas.</div>
+    </div>
+  <% end %>
+
+  <div class="d-flex gap-2">
+    <%= f.submit reunion.new_record? ? "Convocar y avisar" : "Guardar", class: "btn btn-primary" %>
+    <%= link_to "Volver", reunion.new_record? ? reuniones_path : reunion_path(reunion), class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

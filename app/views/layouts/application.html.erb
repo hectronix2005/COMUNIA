@@ -110,7 +110,7 @@
                 <% if current_user.tiene_permiso?("miembros", "index") %>
                   <li class="nav-item">
                     <%= link_to miembros_path, class: "nav-link #{'active' if request.path.start_with?('/miembros')}" do %>
-                      <i class="bi bi-people"></i> <%= current_logia.t_miembro.pluralize %>
+                      <i class="bi bi-people"></i> <%= Logia.plural(current_logia.t_miembro) %>
                     <% end %>
                   </li>
                 <% end %>
@@ -132,7 +132,7 @@
                     </a>
                     <ul class="dropdown-menu">
                       <% if _puede_cobros %>
-                        <li><%= link_to cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? current_logia.t_cobro.pluralize : "Mis #{current_logia.t_cobro.pluralize}" %><% end %></li>
+                        <li><%= link_to cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? Logia.plural(current_logia.t_cobro) : "Mis #{Logia.plural(current_logia.t_cobro)}" %><% end %></li>
                       <% end %>
                       <% if _puede_periodos %>
                         <li><%= link_to periodo_cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/periodos')}" do %><i class="bi bi-calendar-check me-2"></i>Periodos<% end %></li>
@@ -189,6 +189,13 @@
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
                     <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">EVENTOS</h6></li>
+                    <% if current_logia.modulo?(:reuniones) %>
+                      <li>
+                        <%= link_to reuniones_path, class: "dropdown-item #{'active' if request.path.include?('/reuniones')}" do %>
+                          <i class="bi bi-people me-2"></i><%= current_logia.t_reuniones %>
+                        <% end %>
+                      </li>
+                    <% end %>
                     <li>
                       <%= link_to calendario_index_path, class: "dropdown-item #{'active' if request.path.start_with?('/calendario')}" do %>
                         <i class="bi bi-calendar3 me-2"></i>Calendario

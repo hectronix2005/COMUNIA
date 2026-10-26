@@ -260,6 +260,17 @@ Rails.application.routes.draw do
     end
   end
 
+  # ── Reuniones ──────────────────────────────────────────────
+  resources :reuniones, only: [:index, :show, :new, :create, :edit, :update] do
+    member do
+      post :responder
+      get  :asistencia
+      post :asistencia, action: :registrar_asistencia, as: :registrar_asistencia
+      post :publicar_acta
+      post :cancelar
+    end
+  end
+
   # ── RSVP Eventos ───────────────────────────────────────────
   resources :calendario, only: [] do
     resources :evento_confirmaciones, only: [:create]

@@ -68,7 +68,7 @@
       <% end %>
       <p class="text-muted small mb-0 mt-1 px-1">
         <i class="bi bi-info-circle me-1"></i>
-        El administrador del tenant puede gestionar <strong>todas las <%= @tenant.t_logia.downcase.pluralize %></strong> de <strong><%= @tenant.nombre_display %></strong>.
+        El administrador del tenant puede gestionar <strong>todas las <%= Logia.plural(@tenant.t_logia).downcase %></strong> de <strong><%= @tenant.nombre_display %></strong>.
       </p>
     </div>
   </div>
@@ -123,7 +123,7 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center"
        style="background: <%= @tenant.color_display %>; color: #fff;">
-    <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i><%= t_sub.pluralize %></h5>
+    <h5 class="mb-0"><i class="bi bi-diagram-3 me-2"></i><%= Logia.plural(t_sub) %></h5>
     <%= link_to new_tenant_logia_path(@tenant), class: "btn btn-sm btn-light text-dark fw-semibold" do %>
       <i class="bi bi-plus-circle me-1"></i><%= t_sub %> nueva
     <% end %>
@@ -135,7 +135,7 @@
           <tr>
             <th>Código</th>
             <th>Nombre</th>
-            <th class="text-center"><%= @tenant.t_miembro.pluralize %></th>
+            <th class="text-center"><%= Logia.plural(@tenant.t_miembro) %></th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -162,7 +162,7 @@
     <% else %>
       <div class="p-4 text-center text-muted">
         <i class="bi bi-diagram-3 fs-2 d-block mb-2"></i>
-        Este tenant aún no tiene <%= t_sub.downcase.pluralize %>. Agrega el primero.
+        Este tenant aún no tiene <%= Logia.plural(t_sub).downcase %>. Agrega el primero.
       </div>
     <% end %>
   </div>

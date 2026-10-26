@@ -65,6 +65,16 @@ class Logia < ApplicationRecord
   def t_reunion    = termino(:reunion)
   def t_ayuda      = termino(:ayuda)
   def t_documentos = termino(:documentos)
+  def t_reuniones  = Logia.plural(t_reunion)
+
+  # Plural en español (pluralize es el inglés): «Reunión» → «Reuniones», «Tenida» → «Tenidas».
+  def self.plural(palabra)
+    case palabra
+    when /[aeiouáéó]\z/i then "#{palabra}s"
+    when /z\z/i then "#{palabra[0..-2]}ces"
+    else "#{palabra.unicode_normalize(:nfd).sub(/\p{Mn}(?=\p{L}*\z)/, '').unicode_normalize(:nfc)}es"
+    end
+  end
 
   # Una comunidad sin categoría tiene todos los módulos.
   def modulo?(clave)

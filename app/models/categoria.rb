@@ -7,6 +7,7 @@ class Categoria < ApplicationRecord
     "biblioteca" => "Biblioteca de libros",
     "ayuda"      => "Fondo de ayuda (recaudos y gastos)",
     "negocios"   => "Negocios",
+    "reuniones"  => "Reuniones (convocatoria, asistencia y acta)",
     "grados"     => "Grados de los miembros"
   }.freeze
 

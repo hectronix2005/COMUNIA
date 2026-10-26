@@ -1,0 +1,5 @@
+<% content_for(:title, "Editar #{@reunion.titulo}") %>
+<div class="container" style="max-width:640px;">
+  <h4 class="fw-bold mb-3"><%= @reunion.celebrada? ? "Acta y datos" : "Editar" %>: <%= @reunion.titulo %></h4>
+  <div class="card border-0 shadow-sm"><div class="card-body p-4"><%= render "form", reunion: @reunion %></div></div>
+</div>

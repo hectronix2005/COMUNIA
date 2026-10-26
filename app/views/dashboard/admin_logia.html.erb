@@ -11,6 +11,8 @@
     <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
   </div>
 
+  <%= render "reuniones/proxima" %>
+
   <%# ---- Fila superior: Miembros ---- %>
   <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
@@ -20,7 +22,7 @@
             <div class="stat-icon bg-white bg-opacity-15 text-white"><i class="bi bi-people-fill"></i></div>
             <div class="ms-3">
               <h3 class="mb-0 fw-bold text-white"><%= @miembros_activos %></h3>
-              <span class="text-white-50 small text-uppercase"><%= @logia.t_miembro.pluralize %> activos</span>
+              <span class="text-white-50 small text-uppercase"><%= Logia.plural(@logia.t_miembro) %> activos</span>
             </div>
           </div>
         </div>
@@ -53,7 +55,7 @@
 
       <%# ── 1. Estado de cobros ──────────────────────────── %>
       <h6 class="text-muted text-uppercase fw-semibold mb-3" style="font-size:.7rem;letter-spacing:.08em">
-        <i class="bi bi-receipt me-1"></i>Estado de <%= @logia.t_cobro.pluralize %>
+        <i class="bi bi-receipt me-1"></i>Estado de <%= Logia.plural(@logia.t_cobro) %>
       </h6>
       <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
@@ -156,7 +158,7 @@
       <div class="row g-2 mb-4">
         <div class="col-auto">
           <%= link_to cobros_path, class: "btn btn-outline-secondary" do %>
-            <i class="bi bi-receipt me-1"></i><%= @logia.t_cobro.pluralize %>
+            <i class="bi bi-receipt me-1"></i><%= Logia.plural(@logia.t_cobro) %>
           <% end %>
         </div>
         <div class="col-auto">

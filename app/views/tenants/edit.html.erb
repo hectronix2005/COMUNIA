@@ -64,8 +64,8 @@
       <% end %>
       <p class="text-muted small mb-0 mt-2 px-1">
         <i class="bi bi-info-circle me-1"></i>
-        Este usuario podrá gestionar <strong>todas las <%= @tenant.t_logia.downcase.pluralize %></strong>
-        y <strong>todos los <%= @tenant.t_miembro.downcase.pluralize %></strong>
+        Este usuario podrá gestionar <strong>todas las <%= Logia.plural(@tenant.t_logia).downcase %></strong>
+        y <strong>todos los <%= Logia.plural(@tenant.t_miembro).downcase %></strong>
         de <strong><%= @tenant.nombre_display %></strong>.
       </p>
     </div>

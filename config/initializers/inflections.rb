@@ -38,4 +38,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "conversacion", "conversaciones"
   inflect.irregular "busqueda_diaria", "busquedas_diarias"
   inflect.irregular "categoria", "categorias"
+  inflect.irregular "reunion", "reuniones"
+  inflect.irregular "asistencia", "asistencias"
 end

@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
+  include AlcanceReuniones
 
   allow_browser versions: :modern
   before_action :capture_tenant_slug_from_script_name

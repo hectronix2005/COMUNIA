@@ -13,6 +13,8 @@
     </div>
   </div>
 
+  <%= render "reuniones/proxima" %>
+
   <%# ---- Alert for Vencidos ---- %>
   <% if @vencidos.any? %>
     <div class="alert alert-danger d-flex align-items-center mb-4">
@@ -88,7 +90,7 @@
       <i class="bi bi-people-fill fs-4"></i>
       <div class="flex-grow-1">
         <h5 class="mb-0 fw-bold">Comunidad</h5>
-        <small class="opacity-75">Muro · Chat · Encuestas · Directorio · Calendario</small>
+        <small class="opacity-75">Muro · Chat · Encuestas · Directorio · Calendario<%= " · #{current_logia.t_reuniones}" if current_logia.modulo?(:reuniones) %></small>
       </div>
       <i class="bi bi-chevron-down ms-auto" id="miembroComunidadChevron" style="transition:transform .25s;transform:rotate(180deg)"></i>
     </div>
@@ -120,6 +122,13 @@
               <i class="bi bi-calendar3"></i><span>Calendario</span>
             <% end %>
           </div>
+          <% if current_logia.modulo?(:reuniones) %>
+          <div class="col-6 col-md-4">
+            <%= link_to reuniones_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
+              <i class="bi bi-people"></i><span><%= current_logia.t_reuniones %></span>
+            <% end %>
+          </div>
+          <% end %>
           <div class="col-6 col-md-4">
             <%= link_to hospitalia_cumpleanos_path, class: "btn btn-outline-light w-100 d-flex align-items-center gap-2 py-2" do %>
               <i class="bi bi-balloon-heart"></i><span>Cumpleaños</span>

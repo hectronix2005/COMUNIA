@@ -27,6 +27,7 @@ class CalendarioEvento < ApplicationRecord
   belongs_to :serie,    class_name: "CalendarioEvento", optional: true,
                         foreign_key: :serie_id
   has_many   :evento_confirmaciones, dependent: :destroy
+  has_one    :reunion, dependent: :nullify # el evento de una reunión se edita desde la reunión
   has_many   :instancias, class_name: "CalendarioEvento", foreign_key: :serie_id,
                           dependent: :delete_all
 

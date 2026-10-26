@@ -8,7 +8,11 @@
       <div class="d-flex align-items-start justify-content-between mb-3">
         <h5 class="mb-0 fw-bold"><%= @evento.titulo %></h5>
         <div class="d-flex gap-2">
-          <% if puede_gestionar_calendario? && @evento.logia_id == current_logia.id %>
+          <% if @evento.reunion %>
+            <%= link_to reunion_path(@evento.reunion), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-people me-1"></i>Ver <%= @evento.logia.t_reunion.downcase %>
+            <% end %>
+          <% elsif puede_gestionar_calendario? && @evento.logia_id == current_logia.id %>
             <%= link_to edit_calendario_path(@evento), class: "btn btn-sm btn-outline-secondary" do %>
               <i class="bi bi-pencil"></i>
             <% end %>
