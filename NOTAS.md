@@ -372,7 +372,7 @@ No hecho o no comprobado:
 - No se mueven los eventos al grupo 1: dentro de la app (contexto de la raíz) dejarían de verse en «Mi grupo».
 - Comprobado en producción: el feed de un miembro del grupo 1 trae las 28 tenidas (24 próximas y 4 del último
   mes). Ahí salió que el enlace de cada evento usaba `/t/<slug del grupo>`, que da «Tenant no encontrado»
-  porque `/t/` solo admite raíces. Arreglado en la rama fix/enlace-feed-raiz (sin desplegar): usa el slug de la
+  porque `/t/` solo admite raíces. Arreglado y desplegado (69c80ea, aprobado por Héctor): usa el slug de la
   raíz.
 
 ## Pendiente de Héctor
