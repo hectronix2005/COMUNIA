@@ -53,6 +53,9 @@
               <i class="bi bi-x-circle me-1"></i>No puedo
             <% end %>
           </div>
+          <% if @reunion.calendario_evento %>
+            <div class="mb-2"><%= render "calendario/anadir", evento: @reunion.calendario_evento, url: reunion_url(@reunion) %></div>
+          <% end %>
           <div class="text-muted small"><%= @confirmados %> confirman · <%= @rechazados %> no pueden · <%= @reunion.convocados.count %> convocados</div>
         </div>
       <% end %>

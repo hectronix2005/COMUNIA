@@ -41,7 +41,18 @@ class CalendarioController < ApplicationController
   end
 
   # ── CRUD ──────────────────────────────────────────────────────
-  def show; end
+  def show
+    respond_to do |format|
+      format.html
+      format.ics do
+        url = @evento.reunion ? reunion_url(@evento.reunion) : calendario_url(@evento)
+        ics = Ics.evento(uid: "evento-#{@evento.id}@comunia", titulo: @evento.titulo, inicio: @evento.inicio, fin: @evento.fin,
+                         todo_el_dia: @evento.todo_el_dia, ubicacion: @evento.ubicacion, descripcion: @evento.descripcion, url: url)
+        response.set_header("Cache-Control", "private, no-store")
+        send_data ics, type: :ics, disposition: "attachment", filename: "#{@evento.titulo.parameterize.presence || 'evento'}.ics"
+      end
+    end
+  end
 
   def new
     if params[:date].present?

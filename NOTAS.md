@@ -333,6 +333,14 @@ No hecho o no comprobado:
   por la columna `serie` (migración 20261026100000). Se avisa una sola vez por la serie, no por cada fecha.
 - En la lista solo sale la fecha más cercana de cada serie; la ficha enseña las siguientes. Se puede
   cancelar solo esa fecha o esa y las siguientes (un solo aviso). Editar cambia solo esa fecha.
+## Añadir a mi calendario (26-oct, en la rama feat/anadir-al-calendario, sin desplegar)
+
+- Push no está activo en casi nadie y no hay correo: que avise el calendario del teléfono. Cada evento del
+  calendario y cada reunión que está convocada tienen «Añadir a mi calendario», con dos opciones:
+  - Google Calendar: solo lleva el título, las horas, el lugar y el enlace a la app; la descripción no sale.
+  - .ics (iPhone, Outlook): `/calendario/:id.ics`, con el título, las horas, el lugar, la descripción y el
+    enlace. Se genera sin gema (`app/services/ics.rb`), con el texto escapado y las líneas plegadas.
+- Solo lo baja quien ve el evento (mismo alcance de organización), con `no-store`. Sin migraciones.
 
 ## Pendiente de Héctor
 
