@@ -1,0 +1,25 @@
+<%# Un acuerdo: qué, quién y para cuándo; «Hecho» para quien se encarga o quien gestiona. `de`: la reunión de la que viene. %>
+<% mio = current_miembro && acuerdo.responsable_id == current_miembro.id %>
+<div class="d-flex justify-content-between align-items-start gap-2 border-bottom py-2">
+  <div class="min-w-0">
+    <div class="<%= 'text-decoration-line-through text-muted' if acuerdo.cumplido? %>"><%= acuerdo.texto %></div>
+    <div class="small text-muted">
+      <%= acuerdo.responsable ? (mio ? "Te encargas tú" : "Se encarga #{acuerdo.responsable.user.nombre_corto}") : "Sin responsable" %>
+      <% if acuerdo.vence_el %>
+        · <span class="<%= 'text-danger' if acuerdo.vencido? %>">para el <%= l(acuerdo.vence_el, format: "%-d %b") %></span>
+      <% end %>
+      <% if de %>· de <%= link_to l(de.inicio, format: "%-d %b"), reunion_path(de) %><% end %>
+    </div>
+  </div>
+  <div class="d-flex gap-1 flex-shrink-0">
+    <% if acuerdo.cumplido? %>
+      <span class="badge bg-success align-self-center">Cumplido</span>
+    <% elsif gestiona || mio %>
+      <%= button_to "Hecho", cumplir_reunion_acuerdo_path(reunion, acuerdo), class: "btn btn-sm btn-outline-success" %>
+    <% end %>
+    <% if gestiona && !de %>
+      <%= button_to reunion_acuerdo_path(reunion, acuerdo), method: :delete, class: "btn btn-sm btn-link text-muted", title: "Borrar",
+                    form: { data: { turbo_confirm: "¿Borrar este acuerdo?" } } do %><i class="bi bi-trash"></i><% end %>
+    <% end %>
+  </div>
+</div>

@@ -9,6 +9,7 @@ class Reunion < ApplicationRecord
   has_many :asistentes, through: :reunion_asistencias, source: :miembro
   has_many :reunion_votaciones, -> { order(:created_at) }, dependent: :destroy
   has_many :reunion_propuestas, -> { order(:created_at) }, dependent: :delete_all
+  has_many :reunion_acuerdos, -> { order(:created_at) }, dependent: :delete_all
 
   enum :estado, { convocada: 0, celebrada: 1, cancelada: 2 }
 
@@ -117,6 +118,15 @@ class Reunion < ApplicationRecord
 
   # Los puntos para el orden del día se proponen mientras está convocada y antes de que empiece.
   def admite_propuestas? = convocada? && inicio.future?
+
+  # Los acuerdos se apuntan desde que empieza: salen de la reunión.
+  def admite_acuerdos? = !cancelada? && inicio <= Time.current
+
+  # Lo que quedó sin cumplir en las reuniones anteriores del mismo grupo: el seguimiento de la siguiente.
+  def acuerdos_anteriores_pendientes
+    ReunionAcuerdo.pendientes.joins(:reunion).where(reuniones: { logia_id: logia_id }).where(reuniones: { inicio: ...inicio })
+                  .includes(:reunion, responsable: :user).order("reuniones.inicio", :created_at)
+  end
 
   # El QR vale desde una hora antes hasta una hora después.
   def asistencia_abierta? = !cancelada? && (inicio - 1.hour..fin + 1.hour).cover?(Time.current)

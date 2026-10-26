@@ -5,7 +5,7 @@ module AlcanceReuniones
   extend ActiveSupport::Concern
 
   included do
-    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion, :proximos_eventos, :puede_llevar_a_reunion?
+    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion, :proximos_eventos, :mis_acuerdos, :puede_llevar_a_reunion?
   end
 
   private
@@ -52,5 +52,13 @@ module AlcanceReuniones
                                      .pluck(:calendario_evento_id, :estado).to_h
       eventos.map { [_1, respuestas[_1.id]] }
     end
+  end
+
+  # Los acuerdos sin cumplir de los que se encarga quien entra, en las reuniones que ve; los que vencen antes, primero.
+  def mis_acuerdos
+    return ReunionAcuerdo.none unless current_miembro && current_logia.modulo?(:reuniones)
+    ReunionAcuerdo.pendientes.where(responsable: current_miembro).joins(:reunion)
+                  .where(reuniones: { logia_id: logia_ids_de_reuniones }).includes(:reunion)
+                  .order(Arel.sql("vence_el IS NULL"), :vence_el, :created_at).limit(5)
   end
 end

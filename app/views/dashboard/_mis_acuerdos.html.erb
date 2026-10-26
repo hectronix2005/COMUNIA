@@ -1,0 +1,21 @@
+<%# Los acuerdos de los que se encarga quien entra, sin cumplir: lo que tiene que hacer antes de la próxima reunión. %>
+<% acuerdos = mis_acuerdos %>
+<% if acuerdos.any? %>
+  <div class="card border-0 shadow-sm mb-4" id="mis-acuerdos">
+    <div class="card-body">
+      <h6 class="fw-bold small text-muted text-uppercase mb-2"><i class="bi bi-flag me-1"></i>Te encargas de</h6>
+      <% acuerdos.each do |a| %>
+        <div class="d-flex justify-content-between align-items-center gap-2 py-1">
+          <div class="min-w-0">
+            <%= link_to a.texto, reunion_path(a.reunion, anchor: "acuerdos"), class: "text-decoration-none d-block text-truncate" %>
+            <div class="small text-muted">
+              <%= a.reunion.titulo %>
+              <% if a.vence_el %>· <span class="<%= 'text-danger' if a.vencido? %>">para el <%= l(a.vence_el, format: "%-d %b") %></span><% end %>
+            </div>
+          </div>
+          <%= button_to "Hecho", cumplir_reunion_acuerdo_path(a.reunion, a, desde: "panel"), class: "btn btn-sm btn-outline-success flex-shrink-0" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

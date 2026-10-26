@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -859,6 +859,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_210000) do
     t.index ["sujeto_id"], name: "index_red_resenas_on_sujeto_id"
   end
 
+  create_table "reunion_acuerdos", force: :cascade do |t|
+    t.bigint "reunion_id", null: false
+    t.bigint "responsable_id"
+    t.string "texto", null: false
+    t.date "vence_el"
+    t.datetime "cumplido_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["responsable_id", "cumplido_at"], name: "index_reunion_acuerdos_on_responsable_id_and_cumplido_at"
+    t.index ["reunion_id"], name: "index_reunion_acuerdos_on_reunion_id"
+  end
+
   create_table "reunion_asistencias", force: :cascade do |t|
     t.bigint "reunion_id", null: false
     t.bigint "miembro_id", null: false
@@ -1077,6 +1089,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_210000) do
   add_foreign_key "red_resenas", "red_conversaciones", column: "conversacion_id"
   add_foreign_key "red_resenas", "users", column: "autor_id"
   add_foreign_key "red_resenas", "users", column: "sujeto_id"
+  add_foreign_key "reunion_acuerdos", "miembros", column: "responsable_id", on_delete: :nullify
+  add_foreign_key "reunion_acuerdos", "reuniones", on_delete: :cascade
   add_foreign_key "reunion_asistencias", "miembros"
   add_foreign_key "reunion_asistencias", "reuniones"
   add_foreign_key "reunion_propuestas", "miembros", on_delete: :cascade

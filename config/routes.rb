@@ -290,6 +290,9 @@ Rails.application.routes.draw do
         post :descartar
       end
     end
+    resources :acuerdos, controller: "reunion_acuerdos", only: [:create, :destroy] do
+      post :cumplir, on: :member
+    end
   end
 
   # ── RSVP Eventos ───────────────────────────────────────────
