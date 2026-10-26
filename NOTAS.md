@@ -451,7 +451,7 @@ No hecho o no comprobado:
   28-oct sale «Llevar como tenida (esta y las 23 siguientes)», solo con su grupo (1). 0 reuniones, 0 errores.
   Las tenidas siguen como eventos hasta que alguien pulse el botón.
 
-## Asistencia con QR (26-oct, en la rama feat/asistencia-qr, sin desplegar)
+## Asistencia con QR (26-oct, desplegado: b6b7028, aprobado por Héctor)
 
 - Quien gestiona la reunión pulsa «QR de asistencia» y lo enseña en la sala (pantalla o teléfono). Cada
   convocado lo escanea con la cámara, pulsa «Estoy aquí» y queda en la lista; quien gestiona la revisa en
