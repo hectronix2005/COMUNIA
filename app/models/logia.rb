@@ -31,6 +31,9 @@ class Logia < ApplicationRecord
   before_validation :generar_slug, if: -> { tenant_id.nil? && slug.blank? && nombre.present? }
 
   scope :ordenadas,      -> { order(:nombre) }
+  # La organización a la que pertenece: ella misma si es raíz.
+  def organizacion = tenant || self
+
   scope :tenants_raiz,   -> { where(tenant_id: nil) }
   scope :por_subdominio, ->(sub) { find_by(slug: sub) }
 

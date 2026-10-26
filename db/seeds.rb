@@ -209,7 +209,7 @@ logias.each do |logia|
 end
 
 # Periodo de cobro actual
-periodo = PeriodoCobro.find_or_create_by!(anio: 2026, mes: 3) do |p|
+periodo = PeriodoCobro.find_or_create_by!(tenant: Logia.tenants_raiz.ordenadas.first, anio: 2026, mes: 3) do |p|
   p.monto = 150_000
   p.fecha_vencimiento = Date.new(2026, 3, 31)
   p.creado_por = super_admin

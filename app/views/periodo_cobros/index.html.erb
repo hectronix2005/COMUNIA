@@ -129,6 +129,7 @@
     <thead class="table-dark">
       <tr>
         <th>Periodo</th>
+        <% if platform_admin_context? %><th>Organización</th><% end %>
         <th>Vencimiento</th>
         <th>Estado</th>
         <th class="text-center">Cobros</th>
@@ -139,6 +140,7 @@
       <% @periodos.each do |periodo| %>
         <tr>
           <td><strong><%= periodo.nombre %></strong></td>
+          <% if platform_admin_context? %><td><%= periodo.tenant.nombre %></td><% end %>
           <td><%= l(periodo.fecha_vencimiento, format: :short) rescue periodo.fecha_vencimiento %></td>
           <td><%= render "shared/estado_badge", estado: periodo.estado %></td>
           <td class="text-center"><%= periodo.cobros.count %></td>

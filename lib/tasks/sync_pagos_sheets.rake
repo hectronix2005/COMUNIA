@@ -117,10 +117,11 @@ namespace :sync do
       begin
         ActiveRecord::Base.transaction do
           # Encontrar o crear PeriodoCobro
-          periodo = PeriodoCobro.find_by(anio: anio, mes: mes)
+          periodo = PeriodoCobro.find_by(tenant: logia.organizacion, anio: anio, mes: mes)
           unless periodo
             monto_periodo = logia.monto_mensual > 0 ? logia.monto_mensual : monto_pago
             periodo = PeriodoCobro.new(
+              tenant:            logia.organizacion,
               anio:              anio,
               mes:               mes,
               nombre:            "#{PeriodoCobro::MESES[mes]} #{anio}",

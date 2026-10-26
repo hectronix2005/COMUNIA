@@ -25,7 +25,9 @@ class PeriodoCobroPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      scope.all
+      # El superadmin ve los de todas; los demás, solo los de su organización.
+      return scope.all if user.rol_ref&.es_super_admin?
+      user.logia ? scope.de_organizacion(user.logia.organizacion) : scope.none
     end
   end
 end

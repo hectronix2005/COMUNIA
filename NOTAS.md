@@ -156,9 +156,8 @@ No hecho o no comprobado:
     permisos ya salían de `rol_ref`.
   - Hospitalía aceptaba un miembro de otra organización en un recaudo o un gasto, y la lista
     enseñaba su nombre. Ahora lo rechaza; en producción no había ninguno.
-  - Sin cambiar, a decidir: los periodos de cobro son globales (`generar_cobros!` crea cobros en
-    todas las logias; solo el superadmin tiene ese permiso); el admin de la raíz no ve los cobros
-    de las logias hijas.
+  - Los periodos de cobro eran globales: se arreglaron el 25-oct (ver «Periodos de cobro por
+    organización»).
 - ✅ **Invitaciones por enlace** (c80f1f4, desplegado el 25-oct con su migración; en producción
   cargan la ficha y la lista, y las rutas de la gema dan 404):
   - El admin pulsa «Invitar» en la ficha. Sale un enlace de un solo uso que caduca a los 7 días,
@@ -233,6 +232,25 @@ No hecho o no comprobado:
 - ✅ 29 de febrero: `MiembroFamiliar#proximo_cumpleanos` lo pasa al 28 en años no bisiestos. Antes
   la página de cumpleaños y el aviso diario lo saltaban, y el dashboard se quedaba sin ningún dato
   de módulos (el `Date::Error` lo tragaba el `rescue`). Hoy no hay ninguno en producción.
+
+## Periodos de cobro por organización (25-oct)
+
+- Antes un periodo era único por año y mes en toda la plataforma, y `generar_cobros!` cobraba a
+  los miembros de todas las organizaciones. Ya hay dos en producción (Gran Logia de Colombia y Club
+  Mercedez), aunque solo la logia 1 tiene miembros. Además, cualquier admin veía en la lista los
+  periodos de las demás.
+- Ahora cada periodo tiene `tenant_id`, que apunta a la logia raíz. Es único por organización, año
+  y mes, y solo cobra a los miembros de esa organización y de sus logias hijas.
+- El superadmin elige la organización al crear el periodo; los demás crean siempre en la suya. En
+  el panel de plataforma la lista enseña la columna «Organización»; dentro de una organización solo
+  salen sus periodos. Un periodo ajeno da 404.
+- En el detalle del periodo, el admin de la raíz ya ve los cobros de sus logias hijas.
+- `generar_cobros!`: una logia sin tarifa ni desglose daba cuota 0 y la generación se rompía. Ahora
+  usa el monto del periodo.
+- La migración 20261026010000 asigna cada periodo a la organización de sus cobros (si no tiene, a
+  la de su creador). En producción, los 28 periodos van a la Gran Logia de Colombia (6). Simulado
+  antes con una consulta de solo lectura.
+- También se tocaron el desplegable de periodos en Cobros, `sync_pagos_sheets` y los seeds.
 
 ## Pendiente de Héctor
 

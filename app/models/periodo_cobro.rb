@@ -7,6 +7,8 @@ class PeriodoCobro < ApplicationRecord
 
   enum :estado, { activo: 0, cerrado: 1 }
 
+  # La organización (logia raíz) del periodo: sus cobros son de los miembros de ella y de sus logias.
+  belongs_to :tenant, class_name: "Logia"
   belongs_to :creado_por, class_name: "User"
   has_many :cobros, dependent: :destroy
 
@@ -15,10 +17,12 @@ class PeriodoCobro < ApplicationRecord
   validates :mes, presence: true, inclusion: { in: 1..12 }
   validates :monto, presence: true, numericality: { greater_than: 0 }
   validates :fecha_vencimiento, presence: true
-  validates :anio, uniqueness: { scope: :mes, message: "ya existe un periodo para este mes/anio" }
+  validates :anio, uniqueness: { scope: [:tenant_id, :mes], message: "ya existe un periodo para este mes/anio" }
+  validate { errors.add(:tenant, "debe ser una organización, no una logia hija") if tenant&.tenant_id }
 
   scope :recientes, -> { order(anio: :desc, mes: :desc) }
   scope :activos, -> { where(estado: :activo) }
+  scope :de_organizacion, ->(raiz) { where(tenant: raiz) }
 
   before_validation :generar_nombre
 
@@ -29,7 +33,7 @@ class PeriodoCobro < ApplicationRecord
   def generar_cobros!
     fecha_periodo = Date.new(anio, mes, 1)
 
-    cobrables = Miembro.includes(:logia).select { |m| m.cobrable_en?(fecha_periodo) }
+    cobrables = Miembro.includes(:logia).where(logia_id: logia_ids).select { |m| m.cobrable_en?(fecha_periodo) }
 
     # Pre-calcular cuota por logia con el conteo real del período
     cuota_por_logia = cobrables.group_by(&:logia_id).transform_values do |miembros_logia|
@@ -40,9 +44,15 @@ class PeriodoCobro < ApplicationRecord
 
     cobrables.each do |miembro|
       cobros.find_or_create_by!(miembro: miembro) do |cobro|
-        cobro.monto = cuota_por_logia[miembro.logia_id] || monto
+        # Una logia sin tarifa ni desglose da cuota 0: entonces vale el monto del periodo.
+        cuota = cuota_por_logia[miembro.logia_id].to_d
+        cobro.monto = cuota.positive? ? cuota : monto
       end
     end
+  end
+
+  def logia_ids
+    [tenant_id, *Logia.where(tenant_id: tenant_id).ids]
   end
 
   private

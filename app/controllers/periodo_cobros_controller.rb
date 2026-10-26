@@ -4,12 +4,13 @@ class PeriodoCobrosController < ApplicationController
 
   def index
     authorize PeriodoCobro
-    @periodos = policy_scope(PeriodoCobro).recientes.page(params[:page])
+    @periodos = periodos_visibles.includes(:tenant).recientes.page(params[:page])
 
     if current_user.scope_propia_logia?
       @logia_actual = current_user.logia
     elsif current_user.tiene_permiso?("logias", "index")
       @logias_con_conceptos = Logia.includes(:conceptos_cobro, :tarifas).ordenadas
+      @logias_con_conceptos = @logias_con_conceptos.where(id: logia_ids_de_la_organizacion) unless platform_admin_context?
     end
   end
 
@@ -20,9 +21,9 @@ class PeriodoCobrosController < ApplicationController
     if current_user.scope_propia_logia?
       @logia_actual = current_user.logia
       @conceptos = @logia_actual.conceptos_cobro.activos.ordenados
-      @cobros = @cobros.por_logia(@logia_actual.id)
+      @cobros = @cobros.por_logia(current_user.logia_ids_accesibles)
     elsif current_user.tiene_permiso?("logias", "index")
-      @logias_con_conceptos = Logia.includes(:conceptos_cobro).ordenadas
+      @logias_con_conceptos = Logia.includes(:conceptos_cobro).where(id: @periodo.logia_ids).ordenadas
       @cobros = @cobros.por_logia(params[:logia_id]) if params[:logia_id].present?
     end
 
@@ -31,12 +32,13 @@ class PeriodoCobrosController < ApplicationController
   end
 
   def new
-    @periodo = PeriodoCobro.new
+    @periodo = PeriodoCobro.new(tenant: organizacion_por_defecto)
     authorize @periodo
   end
 
   def create
     @periodo = PeriodoCobro.new(periodo_params)
+    @periodo.tenant = organizacion_elegida || organizacion_por_defecto
     @periodo.creado_por = current_user
     authorize @periodo
 
@@ -88,7 +90,17 @@ class PeriodoCobrosController < ApplicationController
   private
 
   def set_periodo
-    @periodo = PeriodoCobro.find(params[:id])
+    @periodo = policy_scope(PeriodoCobro).find(params[:id])
+  end
+
+  # El superadmin elige la organización del periodo; los demás crean siempre en la suya.
+  def organizacion_elegida
+    return unless current_user.rol_ref&.es_super_admin?
+    Logia.tenants_raiz.find_by(id: params.fetch(:periodo_cobro, {}).permit(:tenant_id)[:tenant_id])
+  end
+
+  def organizacion_por_defecto
+    (current_user.rol_ref&.es_super_admin? ? current_logia : current_user.logia)&.organizacion
   end
 
   def periodo_params

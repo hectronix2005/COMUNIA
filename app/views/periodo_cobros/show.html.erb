@@ -170,7 +170,7 @@
   <% if current_user.tiene_permiso?("logias", "index") %>
     <div class="col-md-4">
       <%= select_tag :logia_id,
-            options_from_collection_for_select(Logia.ordenadas, :id, :nombre, params[:logia_id]),
+            options_from_collection_for_select(Logia.where(id: @periodo.logia_ids).ordenadas, :id, :nombre, params[:logia_id]),
             include_blank: "-- Todas las Logias --",
             class: "form-select" %>
     </div>

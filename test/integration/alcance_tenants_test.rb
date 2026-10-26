@@ -116,7 +116,7 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
 
   test "un admin no abre la administración de otra organización" do
     admin = admin_de(@a)
-    periodo = PeriodoCobro.create!(anio: 2090 + rand(9), mes: rand(1..12), monto: 10, fecha_vencimiento: Date.current, creado_por: @otro)
+    periodo = periodo_de(@b, @otro)
     cobro = Cobro.create!(periodo_cobro: periodo, miembro: @ficha_b, monto: 10)
     pago = Pago.new(cobro: cobro, monto_pagado: 10, fecha_pago: Date.current, metodo_pago: "transferencia")
     pago.save!(validate: false)
@@ -138,7 +138,7 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
   test "el admin de la raíz ve los cobros de sus logias hijas, como sus miembros" do
     admin = admin_de(@a)
     _, ficha_hija = persona("Hija", @a_hija)
-    periodo = PeriodoCobro.create!(anio: 2090 + rand(9), mes: rand(1..12), monto: 10, fecha_vencimiento: Date.current, creado_por: admin)
+    periodo = periodo_de(@a, admin)
     cobro = Cobro.create!(periodo_cobro: periodo, miembro: ficha_hija, monto: 10)
     pago = Pago.new(cobro: cobro, monto_pagado: 10, fecha_pago: Date.current, metodo_pago: "transferencia")
     pago.save!(validate: false)
@@ -150,6 +150,40 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     assert_response :ok
     get "/miembros/#{ficha_hija.id}"
     assert_response :ok
+  end
+
+  test "un periodo de cobro solo cobra a su organización y la ajena no lo ve" do
+    _, ficha_hija = persona("Hija", @a_hija)
+    periodo_a = periodo_de(@a, @yo)
+    periodo_b = periodo_de(@b, @otro, anio: periodo_a.anio, mes: periodo_a.mes)
+
+    periodo_a.generar_cobros!
+    assert_equal [@mi_ficha, @ficha_vecino, ficha_hija].map(&:id).sort, periodo_a.cobros.pluck(:miembro_id).sort
+    assert_raises(ActiveRecord::RecordInvalid) { periodo_de(@a_hija, @yo) }
+
+    admin = admin_de(@a)
+    assert_no_encontrado(admin, :get, "/periodos/#{periodo_b.id}")
+    sign_in admin
+    get "/periodos"
+    assert_select "a[href=?]", "/periodos/#{periodo_a.id}"
+    assert_select "a[href=?]", "/periodos/#{periodo_b.id}", count: 0
+    get "/periodos/#{periodo_a.id}"
+    assert_response :ok
+    assert_match "Hija", response.body, "el admin de la raíz ve los cobros de sus logias hijas"
+  end
+
+  test "el superadmin crea el periodo en la organización que elige" do
+    rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
+    sign_in User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", rol_ref: rol)
+    datos = { anio: 2099, mes: 7, monto: 10, fecha_vencimiento: Date.current }
+    post "/periodos", params: { periodo_cobro: datos.merge(tenant_id: @b.id) }
+    post "/periodos", params: { periodo_cobro: datos.merge(tenant_id: @a.id) }
+    assert_equal [@a, @b].map(&:id).sort, PeriodoCobro.where(anio: 2099, mes: 7).pluck(:tenant_id).sort
+
+    assert_no_difference -> { PeriodoCobro.count } do
+      post "/periodos", params: { periodo_cobro: datos.merge(tenant_id: @a.id) }
+    end
   end
 
   test "las logias tienen dos niveles: organización y logia" do
@@ -221,13 +255,17 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
   def admin_de(logia)
     rol = Rol.find_or_create_by!(codigo: "admin_logia") { _1.nombre = "Admin de logia" }
     { "cobros" => %w[index show], "reportes" => %w[recibo], "logias" => %w[show gestionar_conceptos],
-      "conceptos" => %w[index], "miembros" => %w[index show update] }.each do |recurso, acciones|
+      "conceptos" => %w[index], "miembros" => %w[index show update], "periodos" => %w[index show] }.each do |recurso, acciones|
       acciones.each do |accion|
         permiso = Permiso.find_or_create_by!(recurso: recurso, accion: accion)
         rol.permisos << permiso unless rol.permisos.include?(permiso)
       end
     end
     persona("Admin", logia, rol_ref: rol).first
+  end
+
+  def periodo_de(organizacion, user, anio: 2090 + rand(9), mes: rand(1..12))
+    PeriodoCobro.create!(tenant: organizacion, anio: anio, mes: mes, monto: 10, fecha_vencimiento: Date.current, creado_por: user)
   end
 
   def evento_de(logia, user)

@@ -20,7 +20,7 @@ class CobrosController < ApplicationController
 
     @logias = current_user.tiene_permiso?("logias", "index") ? Logia.ordenadas : []
     logia_scope = current_user.logia_ids_accesibles
-    @periodos = PeriodoCobro.recientes
+    @periodos = periodos_visibles.recientes
     @miembros = Miembro.includes(:user)
                        .then { |q| logia_scope ? q.where(logia_id: logia_scope) : q }
                        .order("users.apellido ASC, users.nombre ASC")

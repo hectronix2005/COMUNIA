@@ -105,6 +105,12 @@ class ApplicationController < ActionController::Base
     Logia.where(id: Array(current_user.logia_ids_accesibles))
   end
 
+  # Periodos de cobro que se ofrecen: los de la organización actual; en el panel de plataforma, todos.
+  def periodos_visibles
+    periodos = policy_scope(PeriodoCobro)
+    platform_admin_context? ? periodos : periodos.de_organizacion(current_logia.organizacion)
+  end
+
   helper_method :previewing_tenant?, :platform_admin_context?, :modera?
 
   def previewing_tenant?
