@@ -388,7 +388,7 @@ No hecho o no comprobado:
   0 errores, sin crear confirmaciones. Ojo: la visita simulada marcó su `last_seen_at` (lo hace
   `touch_last_seen!`); estaba vacío en la copia de las 13:20 y se devolvió a vacío.
 
-## Quién usa la app, en el panel del admin (26-oct, en la rama feat/adopcion-panel-admin, sin desplegar)
+## Quién usa la app, en el panel del admin (26-oct, desplegado: 1c2fb0d, aprobado por Héctor)
 
 - Producción, 26-oct: de 28 miembros activos, 4 han entrado alguna vez (el último en mayo) y el admin del
   grupo no entra desde junio; 0 invitaciones usadas. Las mejoras no sirven si nadie entra, y quien lleva el
@@ -398,6 +398,8 @@ No hecho o no comprobado:
   invitación caducada), y el botón «Invitar a quienes faltan» (`/miembros/acceso`) si puede invitar.
 - Cuenta los miembros activos del mismo alcance que «activos» del panel (`ids_tenant`), con `User#acceso`.
   Sin migraciones.
+- Prueba en producción como el admin del grupo (cuenta 48, `last_seen_at` guardado y restaurado): «4 de 28 …
+  · 0 esta semana», 0 invitados, 24 sin invitar, con el botón; 0 errores.
 
 ## Pendiente de Héctor
 
