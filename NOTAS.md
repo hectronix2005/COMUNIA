@@ -343,7 +343,7 @@ No hecho o no comprobado:
     enlace. Se genera sin gema (`app/services/ics.rb`), con el texto escapado y las líneas plegadas.
 - Solo lo baja quien ve el evento (mismo alcance de organización), con `no-store`. Sin migraciones.
 
-## Calendario en el teléfono (26-oct, en la rama feat/calendario-suscripcion, sin desplegar)
+## Calendario en el teléfono (26-oct, desplegado: e15f96f, aprobado por Héctor)
 
 - Añadir evento por evento no escala con las series. Cada quien crea en «Calendario → Ver en mi teléfono»
   (`/calendario/suscripcion`) su dirección personal y se suscribe una vez: Google Calendar (`?cid=webcal://…`),
