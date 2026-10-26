@@ -401,6 +401,19 @@ No hecho o no comprobado:
 - Prueba en producción como el admin del grupo (cuenta 48, `last_seen_at` guardado y restaurado): «4 de 28 …
   · 0 esta semana», 0 invitados, 24 sin invitar, con el botón; 0 errores.
 
+## Recordatorio de los eventos del calendario (26-oct, en la rama feat/recordatorio-eventos, sin desplegar)
+
+- Las tenidas de «Propagadores de la Luz» son eventos del calendario, no reuniones, así que nadie recibía el
+  «Mañana: …» que sí tienen las reuniones. `RecordatorioEventosJob` (cada hora, minuto 25): a los eventos que
+  empiezan en las próximas 24 h y sin recordatorio, una notificación (y push a quien lo activó) «Mañana: título»
+  (u «Hoy» si ya es el día), «hora · lugar. ¿Vas a ir?», con enlace al evento. Una sola vez por evento.
+- Destinatarios: los miembros activos del grupo del evento; si es de la raíz, los de todos sus grupos (lo mismo
+  que se ve en el calendario). Nunca otra comunidad, ni quien dijo «No puedo». Los eventos de una reunión los
+  sigue recordando la reunión.
+- Columna `calendario_eventos.recordatorio_enviado_at` (migración 20261026140000); se vacía si cambia el inicio.
+- En producción, la primera la recibirían los 28 miembros activos (todos en el grupo 1) el 27-oct hacia las
+  18:25, para la tenida del 28; sin push activado, solo la verán en la campana al entrar.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

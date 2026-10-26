@@ -36,6 +36,9 @@ class CalendarioEvento < ApplicationRecord
   validates :fin,    presence: true
   validate  :fin_posterior_al_inicio
 
+  # Si cambia la fecha, el recordatorio vuelve a tocar.
+  before_update { self.recordatorio_enviado_at = nil if inicio_changed? }
+
   scope :en_rango,   ->(desde, hasta) { where("#{table_name}.inicio < ? AND #{table_name}.fin > ?", hasta, desde) }
   scope :de_logias,  ->(ids) { where(logia_id: Array(ids)) }
   scope :ordenados,  -> { order(arel_table[:inicio]) }
