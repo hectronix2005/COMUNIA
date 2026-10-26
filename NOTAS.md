@@ -312,7 +312,7 @@ No hecho o no comprobado:
   quién votó qué.
 - Tablas `reunion_votaciones` y `reunion_votos` (migración 20261026080000).
 
-## Invitar en bloque (26-oct, en la rama feat/invitar-en-bloque, sin desplegar)
+## Invitar en bloque (26-oct, desplegado: c00b7e6, aprobado por Héctor)
 
 - Producción: de 28 miembros activos, ninguno ha usado una invitación y solo 1 tiene celular. Invitar uno a
   uno desde cada ficha no escala.
