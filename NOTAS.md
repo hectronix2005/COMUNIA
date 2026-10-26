@@ -401,6 +401,16 @@ No hecho o no comprobado:
 - Prueba en producción como el admin del grupo (cuenta 48, `last_seen_at` guardado y restaurado): «4 de 28 …
   · 0 esta semana», 0 invitados, 24 sin invitar, con el botón; 0 errores.
 
+## Índices únicos que faltaban (26-oct, en la rama fix/indices-unicos, sin desplegar)
+
+- Cuatro validaciones de unicidad no tenían índice único, así que un doble clic o un reintento podía crear el
+  duplicado: `miembros.user_id` (una persona con dos fichas: `user.miembro` cogería una cualquiera),
+  `negocio_reportes` (anuncio, usuario), `conceptos_cobros` (logia, nombre) y `red_comunidades` lower(nombre).
+- Migración 20261026150000. En producción no había duplicados (comprobado el 26-oct), así que crea los índices
+  sin tocar datos.
+- `test/models/indices_unicos_test.rb` revisa todos los modelos: una validación de unicidad nueva sin su índice
+  hace fallar la suite.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

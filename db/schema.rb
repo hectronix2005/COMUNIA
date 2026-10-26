@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_26_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.date "recurrencia_hasta"
     t.integer "recurrencia_count", default: 10
     t.bigint "serie_id"
+    t.datetime "recordatorio_enviado_at"
     t.index ["inicio"], name: "index_calendario_eventos_on_inicio"
     t.index ["logia_id", "inicio"], name: "index_calendario_eventos_on_logia_id_and_inicio"
     t.index ["logia_id"], name: "index_calendario_eventos_on_logia_id"
@@ -192,6 +193,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tipo", default: 0, null: false
+    t.index ["logia_id", "nombre"], name: "index_conceptos_cobros_on_logia_id_and_nombre", unique: true
     t.index ["logia_id", "orden"], name: "index_conceptos_cobros_on_logia_id_and_orden"
     t.index ["logia_id"], name: "index_conceptos_cobros_on_logia_id"
   end
@@ -472,7 +474,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.index ["estado"], name: "index_miembros_on_estado"
     t.index ["logia_id"], name: "index_miembros_on_logia_id"
     t.index ["numero_miembro"], name: "index_miembros_on_numero_miembro", unique: true
-    t.index ["user_id"], name: "index_miembros_on_user_id"
+    t.index ["user_id"], name: "index_miembros_on_user_id", unique: true
   end
 
   create_table "negocio_anuncios", force: :cascade do |t|
@@ -544,6 +546,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.boolean "resuelto", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["negocio_anuncio_id", "user_id"], name: "index_negocio_reportes_on_negocio_anuncio_id_and_user_id", unique: true
     t.index ["negocio_anuncio_id"], name: "index_negocio_reportes_on_negocio_anuncio_id"
     t.index ["user_id"], name: "index_negocio_reportes_on_user_id"
   end
@@ -706,6 +709,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.integer "tamano_publico", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "lower((nombre)::text)", name: "index_red_comunidades_on_lower_nombre", unique: true
     t.index ["estado"], name: "index_red_comunidades_on_estado"
     t.index ["logia_id"], name: "index_red_comunidades_on_logia_id", unique: true
     t.index ["revisada_por_id"], name: "index_red_comunidades_on_revisada_por_id"
