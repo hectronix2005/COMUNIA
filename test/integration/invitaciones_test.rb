@@ -42,6 +42,18 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "la bienvenida lleva al próximo encuentro con su respuesta y al calendario del teléfono" do
+    inicio = 3.days.from_now.change(hour: 19)
+    evento = CalendarioEvento.create!(logia: @logia, user: @admin, titulo: "Encuentro de octubre", inicio: inicio, fin: inicio + 2.hours)
+    sign_in @user
+    get "/bienvenida"
+    assert_response :ok
+    assert_includes response.body, "Encuentro de octubre"
+    assert_includes response.body, "/calendario/#{evento.id}/evento_confirmaciones?estado=confirmado"
+    assert_includes response.body, %(href="/calendario/suscripcion")
+    assert_no_match(/logia/i, response.body[/Avisos en el celular.*?<\/p>/m])
+  end
+
   test "el enlace caduca a los 7 días" do
     enlace = invitar(@miembro)
     sign_out :user

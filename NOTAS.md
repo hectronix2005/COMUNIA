@@ -401,6 +401,15 @@ No hecho o no comprobado:
 - Prueba en producción como el admin del grupo (cuenta 48, `last_seen_at` guardado y restaurado): «4 de 28 …
   · 0 esta semana», 0 invitados, 24 sin invitar, con el botón; 0 errores.
 
+## Bienvenida con la primera acción (26-oct, en la rama feat/bienvenida-primera-accion, sin desplegar)
+
+- Quien acepta la invitación llega a `/bienvenida`: avisos e instalar la app, y nada que hacer dentro. Ahora
+  añade «3. Las fechas en tu calendario» (botón «Ver en mi teléfono») y, debajo, la próxima reunión y los
+  próximos eventos con «Asistiré / No puedo»: la primera visita termina con una respuesta y con las fechas en
+  su calendario, que le recuerda sin push ni correo.
+- «Novedades de la logia» pasa a «de tu comunidad».
+- Sin migraciones. Prueba en `invitaciones_test.rb`.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

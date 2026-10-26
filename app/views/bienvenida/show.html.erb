@@ -10,7 +10,7 @@
         </p>
 
         <h2 class="h6 mt-4">1. Avisos en el celular</h2>
-        <p class="small text-muted mb-2">Convocatorias y novedades de la logia, aunque no tengas la app abierta.</p>
+        <p class="small text-muted mb-2">Convocatorias y novedades de tu comunidad, aunque no tengas la app abierta.</p>
         <button type="button" class="btn btn-outline-primary" data-action="bienvenida#activarAvisos"
                 data-bienvenida-target="avisos">
           <i class="bi bi-bell me-1"></i>Activar avisos
@@ -27,10 +27,26 @@
           En Android: menú del navegador y «Instalar app» o «Agregar a la pantalla principal».
         </p>
 
+        <% if current_logia %>
+          <h2 class="h6 mt-4">3. Las fechas en tu calendario</h2>
+          <p class="small text-muted mb-2">Los encuentros de tu comunidad aparecen solos en el calendario de tu celular.</p>
+          <%= link_to calendario_suscripcion_path, class: "btn btn-outline-primary" do %>
+            <i class="bi bi-calendar-plus me-1"></i>Ver en mi teléfono
+          <% end %>
+        <% end %>
+
         <div class="d-grid mt-4">
           <%= link_to "Ir al inicio", dashboard_path, class: "btn btn-primary" %>
         </div>
       </div>
     </div>
+
+    <%# Lo primero que hacer dentro: responder si va al próximo encuentro. %>
+    <% if current_logia %>
+      <div class="mt-4">
+        <%= render "reuniones/proxima" %>
+        <%= render "calendario/proximos" %>
+      </div>
+    <% end %>
   </div>
 </div>
