@@ -280,7 +280,7 @@ No hecho o no comprobado:
   grupo, que era un plural puesto a mano. Los seeds crean las mismas cuatro.
 - Lo que cambia en producción: el Club Mercedez deja de ver grados; la Gran Logia sigue igual.
 
-## Reuniones (25-oct, rama `feat/reuniones`, SIN desplegar)
+## Reuniones (26-oct, desplegado: 47c48c6, aprobado por Héctor)
 
 - Héctor eligió «Módulo de reuniones, pero SOLO en rama versionada con pruebas: sin desplegar ni migrar
   producción hasta que Héctor lo apruebe». Nada de esto está en main ni en producción.
