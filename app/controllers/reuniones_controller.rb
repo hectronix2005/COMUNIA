@@ -27,6 +27,7 @@ class ReunionesController < ApplicationController
     @confirmados = @reunion.confirmaciones.confirmados.count
     @rechazados = @reunion.confirmaciones.rechazados.count
     @mi_ficha = @reunion.convocados.find_by(id: current_miembro&.id)
+    @quien_viene = quien_viene if @reunion.convocada? && gestiona_reunion?(@reunion)
   end
 
   def new
@@ -161,6 +162,13 @@ class ReunionesController < ApplicationController
   end
 
   private
+
+  # Para quien gestiona: los convocados por su respuesta (confirmado, rechazado o sin responder), por nombre.
+  def quien_viene
+    respuestas = @reunion.confirmaciones.pluck(:user_id, :estado).to_h
+    @reunion.convocados.includes(:user).sort_by { _1.user.nombre_corto }
+            .group_by { respuestas[_1.user_id].presence_in(%w[confirmado rechazado]) || "sin_responder" }
+  end
 
   # Crea todas las fechas de una vez y manda un solo aviso; cada fecha tendrá después su recordatorio.
   def convocar_serie(repetir, veces)

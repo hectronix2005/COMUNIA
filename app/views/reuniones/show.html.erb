@@ -60,6 +60,31 @@
             <div class="mb-2"><%= render "calendario/anadir", evento: @reunion.calendario_evento, url: reunion_url(@reunion) %></div>
           <% end %>
           <div class="text-muted small"><%= @confirmados %> confirman · <%= @rechazados %> no pueden · <%= @reunion.convocados.count %> convocados</div>
+          <% if @quien_viene %>
+            <details class="mt-2 small" id="quien-viene">
+              <summary class="text-primary" style="cursor:pointer;">Ver quién (solo lo ves tú)</summary>
+              <% { "confirmado" => "Confirman", "rechazado" => "No pueden", "sin_responder" => "Sin responder" }.each do |clave, rotulo| %>
+                <% fichas = @quien_viene.fetch(clave, []) %>
+                <div class="fw-semibold mt-2"><%= rotulo %> (<%= fichas.size %>)</div>
+                <% if fichas.empty? %>
+                  <div class="text-muted">Nadie</div>
+                <% end %>
+                <% fichas.each do |ficha| %>
+                  <div class="d-flex align-items-center gap-2">
+                    <span><%= ficha.user.nombre_corto %></span>
+                    <% if ficha.user.acceso != :entro %>
+                      <span class="text-muted">· aún no entra en la app</span>
+                    <% elsif clave == "sin_responder" && ficha.telefono.present? %>
+                      <%= link_to whatsapp_url(ficha.telefono, texto_whatsapp_pregunta(@reunion, ficha.user, reunion_url(@reunion))),
+                                  class: "text-success", target: "_blank", rel: "noopener noreferrer", title: "Preguntarle por WhatsApp" do %>
+                        <i class="bi bi-whatsapp"></i>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </details>
+          <% end %>
         </div>
       <% end %>
 

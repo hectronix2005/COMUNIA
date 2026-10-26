@@ -511,6 +511,16 @@ No hecho o no comprobado:
   Sin sesión, el enlace pasa por el login y vuelve a la reunión.
 - Sin migraciones. `test/integration/avisar_whatsapp_test.rb` (2 pruebas).
 
+## Quién viene (26-oct, en la rama feat/quien-viene, sin desplegar)
+
+- En una convocatoria abierta, quien la gestiona tiene «Ver quién (solo lo ves tú)» bajo los totales: los nombres
+  de quienes confirman, no pueden y no han respondido.
+- A quien no ha respondido, ya entra en la app y tiene teléfono, se le puede preguntar por WhatsApp con un mensaje
+  personal («Hola, X. ¿Vienes a «…» el …? Confírmalo aquí: enlace»), sin el orden del día. A quien nunca ha
+  entrado se le marca «aún no entra en la app» y no se ofrece el enlace (no podría entrar sin invitación).
+- Los socios siguen viendo solo los totales.
+- Sin migraciones. `test/integration/quien_viene_test.rb` (1 prueba).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

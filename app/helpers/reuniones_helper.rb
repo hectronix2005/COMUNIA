@@ -10,4 +10,10 @@ module ReunionesHelper
         "a #{reunion.fin.strftime('%H:%M')}#{lugar}\nConfirma si vas, mira el orden del día y propón puntos en COMUNIA: #{url}"
     end
   end
+
+  # Pregunta personal a quien no ha respondido, con el mismo cuidado: sin orden del día.
+  def texto_whatsapp_pregunta(reunion, user, url)
+    "Hola, #{user.nombre}. ¿Vienes a «#{reunion.titulo}» el #{l(reunion.inicio, format: '%A %-d de %B')} a las " \
+      "#{reunion.inicio.strftime('%H:%M')}? Confírmalo aquí: #{url}"
+  end
 end
