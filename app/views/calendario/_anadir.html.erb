@@ -1,0 +1,18 @@
+<%# Añadir el evento al calendario del teléfono, que es el que avisa: .ics (iPhone, Outlook) o Google Calendar. %>
+<div class="dropdown">
+  <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-calendar-plus me-1"></i>Añadir a mi calendario
+  </button>
+  <ul class="dropdown-menu shadow-sm">
+    <li>
+      <%= link_to google_calendar_url(evento, url), class: "dropdown-item small", target: "_blank", rel: "noopener noreferrer" do %>
+        <i class="bi bi-google me-2"></i>Google Calendar
+      <% end %>
+    </li>
+    <li>
+      <%= link_to calendario_path(evento, format: :ics), class: "dropdown-item small", data: { turbo: false } do %>
+        <i class="bi bi-apple me-2"></i>iPhone, Outlook u otro (.ics)
+      <% end %>
+    </li>
+  </ul>
+</div>

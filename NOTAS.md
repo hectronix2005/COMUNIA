@@ -325,6 +325,15 @@ No hecho o no comprobado:
   mensaje». Un celular mal escrito no guarda nada. Sin correos. Sin migraciones.
 - El teléfono del miembro ahora se valida: hasta 20 caracteres, solo números, espacios y + ( ) - .
 
+## Añadir a mi calendario (26-oct, en la rama feat/anadir-al-calendario, sin desplegar)
+
+- Push no está activo en casi nadie y no hay correo: que avise el calendario del teléfono. Cada evento del
+  calendario y cada reunión que está convocada tienen «Añadir a mi calendario», con dos opciones:
+  - Google Calendar: solo lleva el título, las horas, el lugar y el enlace a la app; la descripción no sale.
+  - .ics (iPhone, Outlook): `/calendario/:id.ics`, con el título, las horas, el lugar, la descripción y el
+    enlace. Se genera sin gema (`app/services/ics.rb`), con el texto escapado y las líneas plegadas.
+- Solo lo baja quien ve el evento (mismo alcance de organización), con `no-store`. Sin migraciones.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
