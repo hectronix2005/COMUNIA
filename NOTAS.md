@@ -325,7 +325,7 @@ No hecho o no comprobado:
   mensaje». Un celular mal escrito no guarda nada. Sin correos. Sin migraciones.
 - El teléfono del miembro ahora se valida: hasta 20 caracteres, solo números, espacios y + ( ) - .
 
-## Reuniones que se repiten (26-oct, en la rama feat/reuniones-periodicas, sin desplegar)
+## Reuniones que se repiten (26-oct, desplegado: 5086354, aprobado por Héctor)
 
 - Al convocar se elige «¿Se repite?»: cada semana, cada dos semanas o cada mes el mismo día de la semana (el
   segundo martes; si era el quinto, el último del mes), y cuántas fechas (2 a 12).
@@ -333,7 +333,8 @@ No hecho o no comprobado:
   por la columna `serie` (migración 20261026100000). Se avisa una sola vez por la serie, no por cada fecha.
 - En la lista solo sale la fecha más cercana de cada serie; la ficha enseña las siguientes. Se puede
   cancelar solo esa fecha o esa y las siguientes (un solo aviso). Editar cambia solo esa fecha.
-## Añadir a mi calendario (26-oct, en la rama feat/anadir-al-calendario, sin desplegar)
+
+## Añadir a mi calendario (26-oct, desplegado: 5086354, aprobado por Héctor)
 
 - Push no está activo en casi nadie y no hay correo: que avise el calendario del teléfono. Cada evento del
   calendario y cada reunión que está convocada tienen «Añadir a mi calendario», con dos opciones:
