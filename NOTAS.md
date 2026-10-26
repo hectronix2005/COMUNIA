@@ -436,6 +436,18 @@ No hecho o no comprobado:
 - `test/models/indices_unicos_test.rb` revisa todos los modelos: una validación de unicidad nueva sin su índice
   hace fallar la suite.
 
+## Eventos del calendario como reunión (26-oct, en la rama feat/evento-a-reunion, sin desplegar)
+
+- Las tenidas de «Propagadores de la Luz» son una serie semanal del calendario (53 fechas, 24 futuras, en la
+  raíz, creadas por la cuenta 48), así que no tienen orden del día, asistencia con quórum, acta ni votaciones,
+  que son de las reuniones. Ahora, en un evento, quien lo gestiona ve «Llevar como tenida (esta y las N
+  siguientes)»: cada fecha pasa a ser una reunión del grupo elegido (solo los que esa persona convoca: para la
+  cuenta 48, su grupo), en una misma serie de reuniones. Se conservan las respuestas y no se avisa a nadie.
+- Las fechas llevadas salen de la serie del calendario y esta termina el día anterior: editar o borrar la serie
+  (que regenera con `delete_all`) ya no las toca. El recordatorio pendiente lo manda la reunión, no el evento.
+- Hasta 60 fechas de una vez. Lo de otra comunidad, de un grupo que no se convoca o ya llevado da 404.
+- Sin migraciones. `test/integration/evento_a_reunion_test.rb` (4 pruebas).
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

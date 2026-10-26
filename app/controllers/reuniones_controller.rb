@@ -2,7 +2,7 @@
 # quórum y acta. Quién ve y quién convoca está en AlcanceReuniones.
 class ReunionesController < ApplicationController
   before_action -> { requiere_modulo!(:reuniones) }
-  before_action :set_reunion, except: [:index, :new, :create]
+  before_action :set_reunion, except: [:index, :new, :create, :desde_evento]
   before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar]
 
   def index
@@ -36,6 +36,25 @@ class ReunionesController < ApplicationController
     @reunion.save!
     NotificarReunionJob.perform_later(@reunion.id, "convocatoria")
     redirect_to reunion_path(@reunion), notice: "Convocatoria enviada: se avisó a los convocados."
+  end
+
+  # Un evento del calendario (con sus fechas siguientes, si es de una serie) pasa a ser reunión de un grupo que
+  # la persona convoca. Lo hace quien gestiona el evento; lo de otra comunidad, o ya llevado, da 404.
+  def desde_evento
+    evento = CalendarioEvento.de_logias(logia_ids_de_la_organizacion).where.missing(:reunion).find(params[:evento_id])
+    logia = logias_convocables.find { _1.id == params[:logia_id].to_i }
+    return head(:not_found) unless logia && gestiona_evento?(evento)
+
+    eventos = evento.esta_y_las_siguientes.where.missing(:reunion).to_a
+    if eventos.size > Reunion::MAX_DESDE_EVENTOS
+      return redirect_to calendario_path(evento), alert: "Son #{eventos.size} fechas; se llevan hasta #{Reunion::MAX_DESDE_EVENTOS}. Acorta la serie en el calendario."
+    end
+
+    reuniones = Reunion.desde_eventos!(eventos, logia: logia, user: current_user)
+    aviso = reuniones.size > 1 ? "#{reuniones.size} fechas pasaron a ser #{logia.t_reunion.downcase}" : "Ahora es #{logia.t_reunion.downcase}"
+    redirect_to reunion_path(reuniones.first), notice: "#{aviso}: orden del día, asistencia, acta y votaciones. Las respuestas se conservan."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to calendario_path(evento), alert: "No se pudo: #{e.record.errors.full_messages.to_sentence}."
   end
 
   def edit; end

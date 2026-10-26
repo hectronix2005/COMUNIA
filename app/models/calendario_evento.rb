@@ -54,6 +54,22 @@ class CalendarioEvento < ApplicationRecord
     serie_id.present?
   end
 
+  # Esta fecha y las siguientes de su serie (o solo esta, si no es de una serie).
+  def esta_y_las_siguientes
+    return CalendarioEvento.where(id: id) unless recurrente? || instancia_de_serie?
+
+    maestro_id = serie_id || id
+    CalendarioEvento.where(id: maestro_id).or(CalendarioEvento.where(serie_id: maestro_id)).where(inicio: inicio..).ordenados
+  end
+
+  # Estas fechas salen de su serie y quedan como eventos sueltos: regenerar o borrar la serie (que lo hace con
+  # delete_all) ya no las toca. La serie termina el día anterior a la primera.
+  def self.separar_de_la_serie!(eventos)
+    primero = eventos.min_by(&:inicio)
+    where(id: eventos.map(&:id)).update_all(serie_id: nil, recurrencia_tipo: nil)
+    primero.serie&.update_columns(recurrencia_fin: "fecha", recurrencia_hasta: primero.inicio.to_date - 1, recurrencia_count: nil)
+  end
+
   # Lo que lleva el evento al calendario del teléfono (Ics.vevento).
   def datos_ics(url)
     { uid: "evento-#{id}@comunia", titulo: titulo, inicio: inicio, fin: fin, todo_el_dia: todo_el_dia,

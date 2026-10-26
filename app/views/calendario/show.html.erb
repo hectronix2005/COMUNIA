@@ -104,6 +104,32 @@
         <%= render "calendario/anadir", evento: @evento, url: @evento.reunion ? reunion_url(@evento.reunion) : calendario_url(@evento) %>
       </div>
 
+      <%# Quien lo gestiona puede llevarlo como reunión (con sus fechas siguientes, si es de una serie). %>
+      <% if puede_llevar_a_reunion?(@evento) %>
+        <% termino = current_logia.t_reunion.downcase %>
+        <% fechas = @evento.esta_y_las_siguientes.where.missing(:reunion).count %>
+        <div class="border rounded p-3 mb-3 small">
+          <p class="text-muted mb-2">
+            Como <%= termino %> tendrá orden del día, asistencia con quórum, acta y votaciones. Se conservan las
+            respuestas y no se avisa a nadie.
+          </p>
+          <%= form_with url: desde_evento_reuniones_path, method: :post, class: "d-flex flex-wrap gap-2 align-items-center" do |f| %>
+            <%= hidden_field_tag :evento_id, @evento.id %>
+            <% if logias_convocables.size > 1 %>
+              <% preferida = [@evento.logia_id, current_miembro&.logia_id].find { |id| logias_convocables.any? { _1.id == id } } %>
+              <%= select_tag :logia_id, options_from_collection_for_select(logias_convocables, :id, :nombre_display, preferida),
+                    class: "form-select form-select-sm w-auto", aria: { label: "Grupo" } %>
+            <% else %>
+              <%= hidden_field_tag :logia_id, logias_convocables.first.id %>
+            <% end %>
+            <%= f.button type: :submit, class: "btn btn-sm btn-outline-primary",
+                  data: { turbo_confirm: fechas > 1 ? "¿Llevar esta fecha y las #{fechas - 1} siguientes como #{termino}?" : "¿Llevarlo como #{termino}?" } do %>
+              <i class="bi bi-people me-1"></i>Llevar como <%= termino %><%= " (esta y las #{fechas - 1} siguientes)" if fechas > 1 %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
       <%# Logia / creador %>
       <div class="d-flex align-items-center gap-3 mb-3">
         <i class="bi bi-building text-muted"></i>

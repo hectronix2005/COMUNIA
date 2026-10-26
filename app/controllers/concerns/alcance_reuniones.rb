@@ -5,7 +5,7 @@ module AlcanceReuniones
   extend ActiveSupport::Concern
 
   included do
-    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion, :proximos_eventos
+    helper_method :gestiona_reunion?, :logias_convocables, :proxima_reunion, :proximos_eventos, :puede_llevar_a_reunion?
   end
 
   private
@@ -21,6 +21,14 @@ module AlcanceReuniones
   end
 
   def gestiona_reunion?(reunion) = logias_convocables.any? { _1.id == reunion.logia_id }
+
+  # Un evento lo gestiona quien lo creó o quien gestiona su grupo (lo mismo que para editarlo o borrarlo).
+  def gestiona_evento?(evento) = evento.user_id == current_user.id || logia_ids_gestionables.include?(evento.logia_id)
+
+  # Llevar un evento como reunión: en un grupo que se convoca y con el módulo de reuniones activo.
+  def puede_llevar_a_reunion?(evento)
+    evento.reunion.nil? && current_logia.modulo?(:reuniones) && logias_convocables.any? && gestiona_evento?(evento)
+  end
 
   def logia_ids_de_reuniones
     @logia_ids_de_reuniones ||= begin

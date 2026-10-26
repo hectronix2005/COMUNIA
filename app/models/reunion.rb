@@ -17,6 +17,7 @@ class Reunion < ApplicationRecord
     "mensual"   => "Cada mes, el mismo día de la semana"
   }.freeze
   MAX_FECHAS = 12
+  MAX_DESDE_EVENTOS = 60 # un año de una serie semanal del calendario
 
   validates :titulo, presence: true, length: { maximum: 200 }
   validates :lugar, length: { maximum: 200 }
@@ -67,6 +68,24 @@ class Reunion < ApplicationRecord
     dia = mes + ((inicio.wday - mes.wday) % 7) + ((inicio.day - 1) / 7 * 7)
     dia -= 7 if dia.month != mes.month
     inicio.change(year: dia.year, month: dia.month, day: dia.day)
+  end
+
+  # Un evento del calendario (y sus fechas siguientes, si es de una serie) pasa a ser reunión del grupo: se
+  # conservan las respuestas y el evento queda como el de la reunión. No se avisa: ya estaba en el calendario.
+  def self.desde_eventos!(eventos, logia:, user:)
+    serie = SecureRandom.uuid if eventos.size > 1
+    prefijo = /\A#{Regexp.escape(logia.t_reunion)}[\s:]+/i
+    transaction do
+      CalendarioEvento.separar_de_la_serie!(eventos)
+      eventos.map do |evento|
+        reunion = create!(logia: logia, user: user, serie: serie, calendario_evento: evento,
+                          titulo: evento.titulo.sub(prefijo, "").presence || evento.titulo,
+                          inicio: evento.inicio, fin: evento.fin, lugar: evento.ubicacion, orden_del_dia: evento.descripcion)
+        # El recordatorio que el evento no mandó sigue pendiente (al crearla con menos de un día se daría por enviado).
+        reunion.update_column(:recordatorio_enviado_at, evento.recordatorio_enviado_at)
+        reunion
+      end
+    end
   end
 
   def acta_publicada? = acta_publicada_at.present?

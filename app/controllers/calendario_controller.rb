@@ -202,7 +202,7 @@ class CalendarioController < ApplicationController
 
   # Editar o borrar: quien lo creó, o quien gestiona la logia del evento.
   def verificar_gestion_evento
-    return if @evento.user_id == current_user.id || logia_ids_gestionables.include?(@evento.logia_id)
+    return if gestiona_evento?(@evento)
     redirect_to calendario_path(@evento), alert: "Solo puede cambiarlo quien lo creó o quien gestiona su logia."
   end
 
