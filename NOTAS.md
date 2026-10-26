@@ -501,7 +501,7 @@ No hecho o no comprobado:
 - Sin migraciones. En producción aún no hay reuniones celebradas, así que por ahora solo se verá el aviso.
 - `test/integration/constancia_test.rb` (2 pruebas).
 
-## Avisar por WhatsApp (26-oct, en la rama feat/avisar-whatsapp, sin desplegar)
+## Avisar por WhatsApp (26-oct, desplegado: f126ecb, aprobado por Héctor)
 
 - Quien gestiona la reunión tiene «Avisar por WhatsApp» mientras está convocada y no ha empezado, y «Avisar del
   acta por WhatsApp» cuando el acta está publicada. Abre WhatsApp con el mensaje escrito para elegir el grupo.
