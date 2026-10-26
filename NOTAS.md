@@ -521,7 +521,7 @@ No hecho o no comprobado:
 - Los socios siguen viendo solo los totales.
 - Sin migraciones. `test/integration/quien_viene_test.rb` (1 prueba).
 
-## Activar avisos desde el panel (26-oct, en la rama feat/activar-avisos, sin desplegar)
+## Activar avisos desde el panel (26-oct, desplegado: 9de09af, aprobado por Héctor)
 
 - En producción no había ningún dispositivo suscrito a los avisos (0 en `push_subscriptions`) y ninguna de las
   1069 notificaciones se había leído: las convocatorias y los recordatorios se quedaban en la campana.
