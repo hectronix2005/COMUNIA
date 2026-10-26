@@ -164,6 +164,9 @@
 <p class="small text-muted mb-2">
   <i class="bi bi-phone me-1"></i>De los miembros activos, <strong><%= @acceso[:entraron] %></strong> de
   <strong><%= @acceso[:activos] %></strong> han entrado a la app.
+  <% if @acceso[:entraron] < @acceso[:activos] && policy(Miembro).invitar_en_bloque? %>
+    <%= link_to acceso_miembros_path, class: "ms-1" do %><i class="bi bi-send me-1"></i>Invitar a quienes faltan<% end %>
+  <% end %>
 </p>
 
 <div class="table-responsive">

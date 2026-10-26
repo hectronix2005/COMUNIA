@@ -1,0 +1,35 @@
+<% content_for(:title, "Enlaces de invitación") %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0"><i class="bi bi-whatsapp me-2"></i>Enlaces listos (<%= @invitados.size %>)</h1>
+  <%= link_to "Volver a la lista", acceso_miembros_path, class: "btn btn-outline-secondary btn-sm" %>
+</div>
+
+<div class="rounded-3 border border-info-subtle bg-info-subtle text-info-emphasis p-3 mb-3">
+  <strong>Solo se muestran ahora:</strong> mándalos antes de cerrar esta página. Si se pierden, vuelve a la lista y
+  genéralos otra vez; los anteriores dejarán de servir.
+</div>
+
+<div class="list-group mb-3">
+  <% @invitados.each do |m, enlace| %>
+    <div class="list-group-item" data-controller="copiar">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <strong><%= m.user.nombre_completo %></strong>
+          <span class="text-muted small">· <%= m.logia.nombre %> · usuario <%= m.user.username %></span>
+          <div class="small text-muted"><%= m.telefono.presence || "Sin celular: WhatsApp te dejará elegir el contacto" %></div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <%= link_to whatsapp_url(m.telefono, texto_invitacion(m, enlace)), class: "btn btn-success btn-sm",
+                      target: "_blank", rel: "noopener noreferrer" do %>
+            <i class="bi bi-whatsapp me-1"></i>Enviar por WhatsApp
+          <% end %>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copiar#copiar" data-copiar-target="boton">
+            <i class="bi bi-clipboard me-1"></i>Copiar mensaje
+          </button>
+        </div>
+      </div>
+      <input type="hidden" value="<%= texto_invitacion(m, enlace) %>" data-copiar-target="texto">
+    </div>
+  <% end %>
+</div>

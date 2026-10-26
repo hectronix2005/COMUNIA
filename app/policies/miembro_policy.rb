@@ -23,6 +23,11 @@ class MiembroPolicy < ApplicationPolicy
     user.rol_ref&.es_super_admin? || (destino.miembro? && destino.rol_ref&.codigo == "miembro")
   end
 
+  # La página de invitar en bloque; a cada miembro de la lista se le aplica además invitar?.
+  def invitar_en_bloque?
+    update?
+  end
+
   def destroy?
     tiene_permiso?("miembros", "destroy")
   end

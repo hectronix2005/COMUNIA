@@ -34,6 +34,8 @@ class Miembro < ApplicationRecord
   validates :numero_miembro, presence: true, uniqueness: true
   validates :cedula, presence: true, uniqueness: true
   validates :user_id, uniqueness: true
+  validates :telefono, length: { maximum: 20 }, format: { with: /\A[\d\s+().-]*\z/, message: "solo admite números, espacios y + ( ) - ." },
+                       allow_blank: true
   validates :estado_desde, presence: true, if: -> { !activo? }
   validates :estado_hasta, comparison: { greater_than_or_equal_to: :estado_desde },
                            if: -> { estado_desde.present? && estado_hasta.present? }

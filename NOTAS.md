@@ -312,6 +312,19 @@ No hecho o no comprobado:
   quién votó qué.
 - Tablas `reunion_votaciones` y `reunion_votos` (migración 20261026080000).
 
+## Invitar en bloque (26-oct, en la rama feat/invitar-en-bloque, sin desplegar)
+
+- Producción: de 28 miembros activos, ninguno ha usado una invitación y solo 1 tiene celular. Invitar uno a
+  uno desde cada ficha no escala.
+- `/miembros/acceso` (enlace «Invitar a quienes faltan» en la lista de miembros): los activos de la
+  comunidad que aún no han entrado y que el admin puede invitar (`invitar?`: miembros rasos, nunca la propia
+  cuenta ni otro admin). Quien ya entró no aparece, porque invitarlo le quita la contraseña; el servidor lo
+  descarta aunque llegue su id.
+- Se marca a quién invitar y se apunta el celular. Al enviar se guardan los celulares y se generan los
+  enlaces; la respuesta los pinta una sola vez, sin caché y sin flash, con «Enviar por WhatsApp» y «Copiar
+  mensaje». Un celular mal escrito no guarda nada. Sin correos. Sin migraciones.
+- El teléfono del miembro ahora se valida: hasta 20 caracteres, solo números, espacios y + ( ) - .
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

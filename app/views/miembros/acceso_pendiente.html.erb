@@ -1,0 +1,77 @@
+<% content_for(:title, "Invitar a la app") %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0"><i class="bi bi-send me-2"></i>Invitar a la app</h1>
+  <%= link_to "Volver a #{Logia.plural(current_logia.t_miembro).downcase}", miembros_path, class: "btn btn-outline-secondary btn-sm" %>
+</div>
+
+<% if @pendientes.empty? %>
+  <div class="card"><div class="card-body text-muted">
+    <i class="bi bi-check2-circle me-1"></i>Todos los <%= Logia.plural(current_logia.t_miembro).downcase %> activos que puedes invitar ya han entrado a la app.
+  </div></div>
+<% else %>
+  <p class="text-muted">
+    Estos <%= Logia.plural(current_logia.t_miembro).downcase %> activos aún no han entrado. Marca a quién invitar, revisa su
+    celular y genera los enlaces: en la página siguiente los mandas uno a uno por WhatsApp. Quien ya entró no aparece,
+    porque invitarlo le quitaría su contraseña.
+  </p>
+
+  <% errores = @pendientes.select { _1.errors.any? } %>
+  <% if errores.any? %>
+    <div class="rounded-3 border border-danger-subtle bg-danger-subtle text-danger-emphasis p-3 mb-3">
+      No se guardó nada. Revisa estos celulares:
+      <ul class="mb-0">
+        <% errores.each do |m| %>
+          <li><%= m.user.nombre_completo %>: <%= m.errors.full_messages.to_sentence %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# Sin Turbo: la respuesta trae los enlaces en la misma página, y Turbo exige redirigir tras un POST. %>
+  <%= form_with url: invitar_pendientes_miembros_path, method: :post, data: { turbo: false } do %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th scope="col" class="text-center">Invitar</th>
+            <th scope="col">Nombre</th>
+            <th scope="col"><%= current_logia.t_logia %></th>
+            <th scope="col">App</th>
+            <th scope="col">Celular</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @pendientes.each do |m| %>
+            <% marcado = params.key?(:ids) ? Array(params[:ids]).include?(m.id.to_s) : m.user.acceso != :invitado %>
+            <tr>
+              <td class="text-center">
+                <%= check_box_tag "ids[]", m.id, marcado, id: "invitar_#{m.id}", class: "form-check-input",
+                                  aria: { label: "Invitar a #{m.user.nombre_completo}" } %>
+              </td>
+              <td>
+                <label for="invitar_<%= m.id %>" class="mb-0"><%= m.user.nombre_completo %></label>
+                <% if m.user.acceso == :invitado %>
+                  <div class="small text-muted">Tiene un enlace sin usar; si generas otro, el anterior deja de servir.</div>
+                <% end %>
+              </td>
+              <td><%= m.logia.nombre %></td>
+              <td><%= acceso_badge(m.user) %></td>
+              <td style="min-width: 11rem">
+                <%= telephone_field_tag "telefonos[#{m.id}]", m.telefono, maxlength: 20, placeholder: "300 123 4567",
+                                        class: "form-control form-control-sm #{'is-invalid' if m.errors[:telefono].any?}",
+                                        aria: { label: "Celular de #{m.user.nombre_completo}" } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <%= button_tag type: "submit", class: "btn btn-primary" do %>
+        <i class="bi bi-link-45deg me-1"></i>Guardar celulares y generar enlaces
+      <% end %>
+      <span class="small text-muted">No sale ningún correo. Cada enlace sirve una vez y caduca a los 7 días.</span>
+    </div>
+  <% end %>
+<% end %>

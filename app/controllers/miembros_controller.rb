@@ -236,6 +236,45 @@ class MiembrosController < ApplicationController
     redirect_to miembro_path(@miembro, anchor: "acceso")
   end
 
+  # Invitar en bloque: los miembros activos que aún no han entrado, con su celular, para generar de una vez
+  # los enlaces y mandarlos por WhatsApp. Quien ya entró no aparece: invitarlo le quitaría la contraseña.
+  def acceso_pendiente
+    authorize Miembro, :invitar_en_bloque?
+    @pendientes = pendientes_de_acceso
+  end
+
+  # Guarda los celulares cambiados y genera el enlace de los marcados. Los enlaces se pintan en esta misma
+  # respuesta, sin caché y sin pasar por el flash: si se pierden, se generan otra vez.
+  def invitar_pendientes
+    authorize Miembro, :invitar_en_bloque?
+    @pendientes = pendientes_de_acceso
+    elegidos = Array(params[:ids]).grep(String).map(&:to_i)
+
+    @pendientes.each do |m|
+      telefono = params.dig(:telefonos, m.id.to_s)
+      m.telefono = telefono.strip.presence if telefono.is_a?(String)
+    end
+    if @pendientes.select(&:telefono_changed?).reject(&:valid?).any?
+      return render :acceso_pendiente, status: :unprocessable_entity
+    end
+
+    @invitados = []
+    ActiveRecord::Base.transaction do
+      @pendientes.each do |m|
+        m.save! if m.telefono_changed?
+        next unless elegidos.include?(m.id)
+        m.user.invite!(current_user) { |u| u.skip_invitation = true }
+        @invitados << [m, accept_user_invitation_url(invitation_token: m.user.raw_invitation_token)]
+      end
+    end
+
+    if @invitados.empty?
+      redirect_to acceso_miembros_path, notice: "No se generó ningún enlace: marca a quién invitar."
+    else
+      response.set_header("Cache-Control", "no-store")
+    end
+  end
+
   def destroy
     authorize @miembro
     @miembro.user.destroy
@@ -247,6 +286,12 @@ class MiembrosController < ApplicationController
   def set_miembro
     # Acotado a las logias que el usuario puede ver: con un id ajeno da 404, no la ficha de otra logia.
     @miembro = policy_scope(Miembro).find(params[:id])
+  end
+
+  def pendientes_de_acceso
+    base = policy_scope(Miembro).activo.includes(:logia, user: :rol_ref).joins(:user).order("users.apellido", "users.nombre")
+    base = base.where(logia_id: logia_ids_de_la_organizacion) if current_logia
+    base.reject { |m| m.user.acceso == :entro || !policy(m).invitar? }
   end
 
   def miembro_params

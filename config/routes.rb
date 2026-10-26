@@ -181,6 +181,10 @@ Rails.application.routes.draw do
     resources :tarifas, only: [:index, :new, :create, :edit, :update, :destroy]
   end
   resources :miembros do
+    collection do
+      get  :acceso, action: :acceso_pendiente
+      post :acceso, action: :invitar_pendientes, as: :invitar_pendientes
+    end
     member do
       get   :cambiar_estado
       patch :cambiar_estado
