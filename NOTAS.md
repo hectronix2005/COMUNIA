@@ -375,7 +375,7 @@ No hecho o no comprobado:
   porque `/t/` solo admite raíces. Arreglado y desplegado (69c80ea, aprobado por Héctor): usa el slug de la
   raíz.
 
-## Próximos eventos en el panel (26-oct, en la rama feat/proximos-eventos-panel, sin desplegar)
+## Próximos eventos en el panel (26-oct, desplegado: 8ab03f0, aprobado por Héctor)
 
 - El panel solo enseñaba la próxima reunión; las tenidas de «Propagadores de la Luz» son eventos del
   calendario y no salían al entrar. Ahora, bajo la próxima reunión, «Próximos eventos»: hasta 3 de los
@@ -384,6 +384,8 @@ No hecho o no comprobado:
 - Alcance: el de las reuniones (`logia_ids_de_reuniones`: su grupo, la raíz y los grupos que gestiona), sin
   los eventos de reuniones (`where.missing(:reunion)`), que ya tienen su tarjeta.
 - `CalendarioEvento.en_rango` y `ordenados` califican la tabla para poder unirse con `reuniones`.
+- Prueba en producción: un miembro del grupo 1 ve las tenidas del 28-oct, 4-nov y 11-nov con sus botones; panel 200,
+  0 errores, sin crear confirmaciones.
 
 ## Pendiente de Héctor
 
