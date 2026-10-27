@@ -572,6 +572,14 @@ No hecho o no comprobado:
 - Migración: `reuniones.acta_aprobada_at` y `acta_aprobada_en_id` (a la reunión, `on_delete: :nullify`).
   Pruebas: test/integration/aprobar_acta_test.rb.
 
+## Acta en PDF (26-oct, pendiente de desplegar)
+
+- En el acta de la reunión, «Descargar en PDF»: convocatoria, orden del día, asistencia (nombres, quórum), el acta,
+  los acuerdos (responsable, fecha, cumplido o pendiente), las votaciones cerradas (con nombres solo si no fueron
+  secretas) y si está publicada, aprobada o en borrador. Pie con la fecha de generación y la página.
+- La publicada la descarga quien ve la reunión; el borrador, solo quien la gestiona. Prawn, como el paquete de
+  DENUNCIAPP (`app/services/acta_pdf.rb`). Sin migración. Pruebas: test/integration/acta_pdf_test.rb.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

@@ -147,6 +147,16 @@ class ReunionesController < ApplicationController
     redirect_to reunion_path(@reunion), notice: "Acta publicada."
   end
 
+  # El acta en PDF: la publicada, para quien ve la reunión; el borrador, solo para quien la gestiona.
+  def acta_pdf
+    unless @reunion.acta_publicada? || (gestiona_reunion?(@reunion) && @reunion.acta.present?)
+      return redirect_to reunion_path(@reunion), alert: "El acta aún no está publicada."
+    end
+
+    nombre = "acta-#{@reunion.inicio.to_date.iso8601}-#{@reunion.titulo.parameterize.presence || 'reunion'}.pdf"
+    send_data ActaPdf.generar(@reunion), type: "application/pdf", disposition: "attachment", filename: nombre
+  end
+
   # El acta de la reunión anterior se aprueba en esta, desde que empieza; después ya no se puede cambiar.
   def aprobar_acta_anterior
     anterior = @reunion.acta_por_aprobar

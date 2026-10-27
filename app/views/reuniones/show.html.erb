@@ -102,6 +102,9 @@
             Acta <% unless @reunion.acta_publicada? %><span class="badge bg-warning text-dark ms-1">Borrador, solo la ves tú</span><% end %>
           </h6>
           <div style="white-space:pre-wrap;"><%= @reunion.acta %></div>
+          <%= link_to acta_pdf_reunion_path(@reunion), class: "btn btn-sm btn-outline-secondary mt-2", data: { turbo: false } do %>
+            <i class="bi bi-file-earmark-pdf me-1"></i>Descargar en PDF
+          <% end %>
           <% if @reunion.acta_publicada? %>
             <div class="text-muted small mt-2">
               Publicada el <%= I18n.l(@reunion.acta_publicada_at, format: "%-d %b %Y") %><% if @reunion.acta_aprobada? %>
