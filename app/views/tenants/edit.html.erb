@@ -5,7 +5,7 @@
     <h1 class="h3 mb-0">
       <%= @tenant.icono_display %> <%= @tenant.nombre_display %>
     </h1>
-    <small class="text-muted">Configuración del tenant</small>
+    <small class="text-muted">Configuración de la comunidad</small>
   </div>
   <%= link_to tenant_path(@tenant), class: "btn btn-outline-secondary btn-sm" do %>
     <i class="bi bi-arrow-left me-1"></i>Volver
@@ -22,11 +22,11 @@
   </div>
 </div>
 
-<%# ── Administradores del Tenant ──────────────────────────── %>
+<%# ── Administradores de la comunidad ──────────────────────────── %>
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center"
        style="background: <%= @tenant.color_display %>; color: #fff;">
-    <h6 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Administradores del Tenant</h6>
+    <h6 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Administradores de la comunidad</h6>
     <button class="btn btn-sm btn-light text-dark fw-semibold"
             type="button"
             data-bs-toggle="collapse"

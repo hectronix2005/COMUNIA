@@ -26,7 +26,7 @@ class AdopcionPanelTest < ActionDispatch::IntegrationTest
     texto = response.body.gsub(/\s+/, " ")
     assert_match "3 de 5", texto
     assert_match "· 2 esta semana", texto
-    assert_match "1 invitados sin entrar", texto
+    assert_match "1 invitado sin entrar", texto
     assert_match "1 sin invitar", texto
     assert_includes response.body, %(href="/t/#{@logia.slug}/miembros/acceso")
   end

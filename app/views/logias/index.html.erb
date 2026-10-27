@@ -2,12 +2,12 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <h1 class="h3 mb-0"><i class="bi bi-building me-2"></i>Tenants</h1>
-    <small class="text-muted">Cada logia es un tenant independiente con su propio white-label</small>
+    <h1 class="h3 mb-0"><i class="bi bi-building me-2"></i>Comunidades</h1>
+    <small class="text-muted">Cada comunidad es independiente y lleva su propia marca</small>
   </div>
   <% if policy(Logia).create? %>
     <%= link_to new_logia_path, class: "btn btn-primary" do %>
-      <i class="bi bi-plus-circle me-1"></i>Nuevo Tenant
+      <i class="bi bi-plus-circle me-1"></i>Nueva comunidad
     <% end %>
   <% end %>
 </div>

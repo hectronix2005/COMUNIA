@@ -48,13 +48,13 @@
             include_blank: "— COMUNIA (todos los tenants) —",
             class: "form-select",
             id: "rol-tenant-select" %>
-      <div class="form-text">Dejar vacío para un rol compartido entre todos los tenants.</div>
+      <div class="form-text">Dejar vacío para un rol compartido entre todas las comunidades.</div>
     </div>
 
     <div class="mb-3">
       <%= f.label :logia_id, "Grupo", class: "form-label" %>
       <select name="rol[logia_id]" id="rol-grupo-select" class="form-select">
-        <option value="">— Todo el tenant —</option>
+        <option value="">— Toda la comunidad —</option>
         <% tenants.each do |t| %>
           <% t.logias.order(:codigo).each do |g| %>
             <option value="<%= g.id %>"
@@ -65,7 +65,7 @@
           <% end %>
         <% end %>
       </select>
-      <div class="form-text">Opcional. Selecciona un grupo específico dentro del tenant.</div>
+      <div class="form-text">Opcional. Selecciona un grupo específico dentro de la comunidad.</div>
     </div>
 
     <script>

@@ -55,7 +55,8 @@
                          text-decoration:none; line-height:1.7; }
     .cal-chip:hover    { opacity:.85; color:#fff; }
     .cal-chip.todo-dia { border-radius:3px; }
-    .cal-chip.timed    { background:transparent !important; color:#3c4043 !important; font-weight:500; }
+    .cal-chip.timed    { background:transparent !important; color:#3c4043 !important; font-weight:500;
+                         white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
     .cal-chip.timed::before { content:"●"; margin-right:4px; }
     .cal-mas           { font-size:.7rem; color:#70757a; padding:1px 6px; cursor:pointer; }
     .cal-mas:hover     { background:#f1f3f4; border-radius:3px; }
@@ -284,7 +285,7 @@
                         class: "cal-chip #{e.todo_el_dia || e.multidia? ? 'todo-dia' : 'timed'}",
                         style: "background-color:#{e.todo_el_dia || e.multidia? ? e.color : 'transparent'};#{e.todo_el_dia || e.multidia? ? '' : "color:#{e.color}!important;"}",
                         title: e.titulo do %>
-                    <% unless e.todo_el_dia || e.multidia? %><span style="color:<%= e.color %>;">●</span> <% end %><%= e.todo_el_dia || e.multidia? ? "" : e.inicio.strftime("%H:%M") + " " %><%= e.titulo %>
+                    <%= e.todo_el_dia || e.multidia? ? "" : e.inicio.strftime("%H:%M") + " " %><%= e.titulo %>
                   <% end %>
                 <% end %>
                 <% if eventos_dia.size > 3 %>

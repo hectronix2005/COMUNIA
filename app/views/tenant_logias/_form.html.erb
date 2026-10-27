@@ -15,7 +15,7 @@
       <%= f.label :codigo, "Código", class: "form-label fw-semibold" %>
       <%= f.text_field :codigo, class: "form-control #{'is-invalid' if logia.errors[:codigo].any?}",
             placeholder: "LOG001", value: logia.codigo %>
-      <div class="form-text">Único dentro de este tenant.</div>
+      <div class="form-text">Único dentro de esta comunidad.</div>
       <% if logia.errors[:codigo].any? %>
         <div class="invalid-feedback"><%= logia.errors[:codigo].join(", ") %></div>
       <% end %>

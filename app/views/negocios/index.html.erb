@@ -1,12 +1,12 @@
-<% content_for(:title, "Marketplace") %>
+<% content_for(:title, "Negocios") %>
 
 <div class="container-fluid py-3 px-md-4 marketplace-wrapper">
   <%# ── Header ───────────────────────────────────────────── %>
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
     <div>
-      <h4 class="mb-0 fw-bold"><i class="bi bi-shop me-2"></i>Marketplace</h4>
+      <h4 class="mb-0 fw-bold"><i class="bi bi-shop me-2"></i>Negocios</h4>
       <p class="text-muted small mb-0">
-        <%= pluralize(@total_resultados, "anuncio") %>
+        <%= pluralize(@total_resultados, "anuncio", plural: "anuncios") %>
         <% if @tipo_filtro.present? %> · <%= NegocioAnuncio::TIPO_LABEL[@tipo_filtro] %><% end %>
       </p>
     </div>

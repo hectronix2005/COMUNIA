@@ -27,11 +27,11 @@
   </div>
 </div>
 
-<%# ── Administradores del Tenant ──────────────────────────── %>
+<%# ── Administradores de la comunidad ──────────────────────────── %>
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center"
        style="background: <%= @tenant.color_display %>; color: #fff;">
-    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Administradores del Tenant</h5>
+    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Administradores de la comunidad</h5>
     <button class="btn btn-sm btn-light text-dark fw-semibold"
             type="button"
             data-bs-toggle="collapse"
@@ -68,7 +68,7 @@
       <% end %>
       <p class="text-muted small mb-0 mt-1 px-1">
         <i class="bi bi-info-circle me-1"></i>
-        El administrador del tenant puede gestionar <strong>todas las <%= Logia.plural(@tenant.t_logia).downcase %></strong> de <strong><%= @tenant.nombre_display %></strong>.
+        El administrador de la comunidad puede gestionar <strong>todas las <%= Logia.plural(@tenant.t_logia).downcase %></strong> de <strong><%= @tenant.nombre_display %></strong>.
       </p>
     </div>
   </div>

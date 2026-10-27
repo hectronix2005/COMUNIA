@@ -1,4 +1,4 @@
-<% content_for(:title, "Dashboard — #{@logia.nombre_display}") %>
+<% content_for(:title, "Inicio — #{@logia.nombre_display}") %>
 
 <div class="container-fluid py-4">
 
@@ -626,7 +626,7 @@
         </h6>
         <div class="d-flex gap-2 flex-wrap">
           <%= link_to negocios_path, class: "btn btn-outline-light" do %>
-            <i class="bi bi-grid me-1"></i>Ver Marketplace
+            <i class="bi bi-grid me-1"></i>Ver negocios
           <% end %>
           <%= link_to new_negocio_path(tipo: "servicio"), class: "btn btn-outline-light" do %>
             <i class="bi bi-plus-lg me-1"></i>Servicio

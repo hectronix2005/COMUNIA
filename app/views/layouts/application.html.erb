@@ -65,7 +65,7 @@
                 <%# ── Navbar COMUNIA: solo gestión de plataforma ── %>
                 <li class="nav-item">
                   <%= link_to tenants_path, class: "nav-link #{'active' if request.path.start_with?('/tenants')}" do %>
-                    <i class="bi bi-grid-3x3-gap"></i> Tenants
+                    <i class="bi bi-grid-3x3-gap"></i> Comunidades
                   <% end %>
                 </li>
                 <li class="nav-item">
@@ -90,7 +90,7 @@
                 <%# ── Navbar tenant: módulos operativos ── %>
                 <li class="nav-item">
                   <%= link_to dashboard_path, class: "nav-link #{'active' if current_page?(dashboard_path) || current_page?(root_path)}" do %>
-                    <i class="bi bi-speedometer2"></i> Dashboard
+                    <i class="bi bi-house"></i> Inicio
                   <% end %>
                 </li>
 
@@ -367,7 +367,7 @@
              style="background: #ff6b00; color: #fff; font-size: 0.85rem;">
           <span>
             <i class="bi bi-eye-fill me-2"></i>
-            <strong>Vista previa:</strong> estás viendo el tenant
+            <strong>Vista previa:</strong> estás viendo la comunidad
             <strong><%= current_logia.nombre_display %></strong>
             — los datos mostrados son reales de este tenant.
           </span>

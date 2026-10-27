@@ -3,7 +3,7 @@ module MiembrosHelper
     entro:               ["bg-success", "Ha entrado"],
     invitado:            ["bg-info text-dark", "Invitado"],
     invitacion_caducada: ["bg-warning text-dark", "Invitación caducada"],
-    nunca:               ["bg-secondary", "Nunca ha entrado"]
+    nunca:               ["bg-light text-muted border", "Nunca ha entrado"]
   }.freeze
 
   def acceso_badge(user)

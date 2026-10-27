@@ -54,7 +54,7 @@
       <div class="col-md-6">
         <%= f.label :logia_id, "Grupo", class: "form-label" %>
         <select name="user[logia_id]" id="user-grupo-select" class="form-select">
-          <option value="">— Todo el tenant —</option>
+          <option value="">— Toda la comunidad —</option>
           <% tenants.each do |t| %>
             <% t.logias.order(:codigo).each do |g| %>
               <option value="<%= g.id %>"

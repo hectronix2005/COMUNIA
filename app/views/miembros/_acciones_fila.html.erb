@@ -1,0 +1,24 @@
+<%# Editar a la vista; desactivar o reactivar, en el menú, para no tenerlo al lado de un clic cualquiera. %>
+<% if policy(miembro).update? %>
+  <div class="d-inline-flex gap-1">
+    <%= link_to edit_miembro_path(miembro), class: "btn btn-sm btn-light", title: "Editar", aria: { label: "Editar a #{miembro.nombre_completo}" } do %>
+      <i class="bi bi-pencil"></i>
+    <% end %>
+    <div class="dropdown">
+      <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+              aria-label="Más acciones para <%= miembro.nombre_completo %>">
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><%= link_to miembro_path(miembro), class: "dropdown-item" do %><i class="bi bi-person me-2"></i>Ver ficha<% end %></li>
+        <li>
+          <% if miembro.activo? %>
+            <%= link_to cambiar_estado_miembro_path(miembro), class: "dropdown-item text-danger" do %><i class="bi bi-person-dash me-2"></i>Desactivar<% end %>
+          <% else %>
+            <%= link_to cambiar_estado_miembro_path(miembro), class: "dropdown-item" do %><i class="bi bi-person-check me-2"></i>Reactivar<% end %>
+          <% end %>
+        </li>
+      </ul>
+    </div>
+  </div>
+<% end %>
