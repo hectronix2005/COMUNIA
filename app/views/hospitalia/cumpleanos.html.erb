@@ -57,7 +57,7 @@
               <div class="text-center rounded d-flex flex-column align-items-center justify-content-center flex-shrink-0 <%= p[:dias] == 0 ? 'bg-warning text-white' : (p[:dias] <= 7 ? 'bg-danger text-white' : (p[:dias] <= 30 ? 'bg-info bg-opacity-25' : 'bg-light')) %>"
                    style="width:46px;height:46px;line-height:1;">
                 <span class="fw-bold" style="font-size:1.05rem;"><%= p[:fecha].strftime("%d") %></span>
-                <span class="text-uppercase" style="font-size:.65rem;"><%= I18n.l(p[:fecha], format: "%b").downcase rescue p[:fecha].strftime("%b").downcase %></span>
+                <span class="text-uppercase texto-mini"><%= I18n.l(p[:fecha], format: "%b").downcase rescue p[:fecha].strftime("%b").downcase %></span>
               </div>
 
               <%# Nombre + info %>

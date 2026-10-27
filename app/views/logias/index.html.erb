@@ -32,11 +32,11 @@
           <div class="row text-center g-0 mb-2">
             <div class="col border-end">
               <div class="fw-bold"><%= logia.miembros.activos.count %></div>
-              <div class="text-muted" style="font-size:0.7rem"><%= Logia.plural(logia.t_miembro) %> activos</div>
+              <div class="text-muted texto-mini"><%= Logia.plural(logia.t_miembro) %> activos</div>
             </div>
             <div class="col">
               <div class="fw-bold"><%= logia.miembros.count %></div>
-              <div class="text-muted" style="font-size:0.7rem">Total</div>
+              <div class="text-muted texto-mini">Total</div>
             </div>
           </div>
           <% if logia.slug.present? %>

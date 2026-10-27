@@ -67,10 +67,10 @@ rol_super_admin = Rol.find_or_create_by!(codigo: "super_admin") do |r|
 end
 rol_super_admin.permisos = todos_los_permisos
 
-# Admin Logia - permisos de gestion de su logia
+# Administrador - permisos de gestión de su comunidad
 rol_admin_logia = Rol.find_or_create_by!(codigo: "admin_logia") do |r|
-  r.nombre = "Admin Logia"
-  r.descripcion = "Administrador de una logia especifica"
+  r.nombre = "Administrador"
+  r.descripcion = "Administrador de una comunidad específica"
   r.es_sistema = true
 end
 
@@ -237,5 +237,5 @@ puts "  #{periodo.cobros.count} cobros generados"
 
 puts "\nDatos de ejemplo creados exitosamente!"
 puts "Login Super Admin: admin@granlogia.co / password123"
-puts "Login Admin Logia: admin1@granlogia.co / password123"
+puts "Login Administrador: admin1@granlogia.co / password123"
 puts "Login Miembro: miembro1@granlogia.co / password123"

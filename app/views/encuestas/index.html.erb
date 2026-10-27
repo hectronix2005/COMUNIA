@@ -1,7 +1,7 @@
 <% content_for(:title, "Encuestas") %>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2" style="color:#c5a24d;"></i>Encuestas</h4>
+  <h4 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-oro"></i>Encuestas</h4>
   <%= link_to new_encuesta_path, class: "btn btn-sm btn-primary" do %>
     <i class="bi bi-plus-lg me-1"></i>Nueva encuesta
   <% end %>
@@ -15,7 +15,7 @@
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
               <h6 class="fw-bold mb-0"><%= enc.titulo %></h6>
-              <div class="text-muted" style="font-size:.75rem;">
+              <div class="text-muted texto-chico">
                 <%= enc.user.nombre_corto %> · <%= time_ago_in_words(enc.created_at) %>
                 <% if enc.cerrada_o_expirada? %>
                   <span class="badge bg-secondary ms-1">Cerrada</span>
@@ -26,7 +26,7 @@
                 <% if enc.multiple? %><span class="badge bg-light text-dark ms-1">Opción múltiple</span><% end %>
               </div>
             </div>
-            <span class="text-muted" style="font-size:.8rem;"><%= enc.total_votos %> votos</span>
+            <span class="text-muted texto-chico"><%= enc.total_votos %> votos</span>
           </div>
 
           <% total = enc.total_votos %>

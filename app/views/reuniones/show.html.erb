@@ -62,7 +62,7 @@
           <div class="text-muted small"><%= @confirmados %> confirman · <%= @rechazados %> no pueden · <%= @reunion.convocados.count %> convocados</div>
           <% if @quien_viene %>
             <details class="mt-2 small" id="quien-viene">
-              <summary class="text-primary" style="cursor:pointer;">Ver quién (solo lo ves tú)</summary>
+              <summary class="text-primary cursor-pointer">Ver quién (solo lo ves tú)</summary>
               <% { "confirmado" => "Confirman", "rechazado" => "No pueden", "sin_responder" => "Sin responder" }.each do |clave, rotulo| %>
                 <% fichas = @quien_viene.fetch(clave, []) %>
                 <div class="fw-semibold mt-2"><%= rotulo %> (<%= fichas.size %>)</div>

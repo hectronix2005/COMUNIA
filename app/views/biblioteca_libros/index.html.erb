@@ -61,7 +61,7 @@
                 <% end %>
               </div>
               <% if libro.descripcion.present? %>
-                <p class="text-muted small mb-2" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                <p class="text-muted small mb-2 recorte-2">
                   <%= libro.descripcion %>
                 </p>
               <% end %>
@@ -71,10 +71,10 @@
                 <% 5.times do |i| %>
                   <i class="bi bi-star<%= i < promedio.to_i ? '-fill' : (i < promedio.ceil && promedio % 1 >= 0.5 ? '-half' : '') %> text-warning" style="font-size:.75rem;"></i>
                 <% end %>
-                <span class="text-muted" style="font-size:.72rem;"><%= promedio > 0 ? "#{promedio} (#{libro.total_calificaciones})" : "Sin calificaciones" %></span>
+                <span class="text-muted texto-mini"><%= promedio > 0 ? "#{promedio} (#{libro.total_calificaciones})" : "Sin calificaciones" %></span>
               </div>
               <% if libro.categoria.present? %>
-                <span class="badge bg-light text-dark border mt-2" style="font-size:.7rem;"><%= libro.categoria %></span>
+                <span class="badge bg-light text-dark border mt-2 texto-mini"><%= libro.categoria %></span>
               <% end %>
             </div>
           </div>

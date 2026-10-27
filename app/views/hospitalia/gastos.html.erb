@@ -75,7 +75,7 @@
                     <td class="text-muted small"><%= g.fecha.strftime("%d/%m/%Y") %></td>
                     <td>
                       <div class="fw-semibold small"><%= g.concepto %></div>
-                      <% if g.descripcion.present? %><div class="text-muted" style="font-size:.72rem;"><%= g.descripcion %></div><% end %>
+                      <% if g.descripcion.present? %><div class="text-muted texto-mini"><%= g.descripcion %></div><% end %>
                     </td>
                     <td class="small"><%= g.beneficiario&.user&.nombre_completo || "–" %></td>
                     <td class="text-end fw-semibold text-danger small">-<%= number_to_currency(g.monto, unit: "$", delimiter: ".", separator: ",") %></td>

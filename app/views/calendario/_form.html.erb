@@ -159,7 +159,7 @@
                       min: 1, max: 99, value: (evento.recurrencia_intervalo || 1),
                       class: "form-control",
                       id:    "num-intervalo" %>
-                <span class="input-group-text" id="lbl-unidad" style="font-size:.75rem;">semana(s)</span>
+                <span class="input-group-text texto-chico" id="lbl-unidad">semana(s)</span>
               </div>
             </div>
           </div>
@@ -268,10 +268,10 @@
         <% if evento.instancia_de_serie? %>
           <%= f.hidden_field :editar_serie, value: "false" %>
           <div class="dropdown">
-            <button type="submit" form="evento-form" class="btn btn-sm text-white" style="background:#1B2A4A;">
+            <button type="submit" form="evento-form" class="btn btn-sm text-white bg-marino">
               Guardar
             </button>
-            <button type="button" class="btn btn-sm text-white dropdown-toggle dropdown-toggle-split" style="background:#1B2A4A;"
+            <button type="button" class="btn btn-sm text-white dropdown-toggle dropdown-toggle-split bg-marino"
                     data-bs-toggle="dropdown"></button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
               <li>

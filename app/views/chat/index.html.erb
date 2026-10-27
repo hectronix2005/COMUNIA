@@ -3,6 +3,9 @@
   <meta name="view-transition" content="same-origin">
   <style>
     :root { --wa-teal:#008069; --wa-teal-dark:#005c4b; --wa-green-bubble:#d9fdd3; --wa-bg:#efeae2; --wa-sidebar:#fff; --wa-panel-header:#f0f2f5; --wa-border:#e9edef; --wa-unread:#25d366; --wa-blue-check:#53bdeb; --wa-text:#111b21; --wa-text-secondary:#667781; --wa-hover:#f5f6f6; }
+    .wa-texto { color:var(--wa-text); }
+    .wa-secundario { color:var(--wa-text-secondary); }
+    .wa-fondo-teal { background:var(--wa-teal); }
 
     /* Disable global page animation inside chat to prevent flash */
     main, .main-content, .content-animate { animation:none !important; }
@@ -183,12 +186,12 @@
   <%# ══════════════ SIDEBAR ══════════════ %>
   <div class="chat-sidebar">
     <div class="chat-sidebar-header">
-      <div class="chat-avatar chat-avatar-header" style="background:var(--wa-teal);">
-        <i class="bi bi-person-fill" style="font-size:1rem;"></i>
+      <div class="chat-avatar chat-avatar-header wa-fondo-teal">
+        <i class="bi bi-person-fill fs-6"></i>
       </div>
       <div class="d-flex gap-3">
-        <i class="bi bi-chat-left-text" style="font-size:1.1rem;color:var(--wa-text-secondary);cursor:pointer;"></i>
-        <i class="bi bi-three-dots-vertical" style="font-size:1.1rem;color:var(--wa-text-secondary);cursor:pointer;"></i>
+        <i class="bi bi-chat-left-text texto-medio wa-secundario cursor-pointer"></i>
+        <i class="bi bi-three-dots-vertical texto-medio wa-secundario cursor-pointer"></i>
       </div>
     </div>
 
@@ -204,26 +207,26 @@
       <div class="chat-section-label"><i class="bi bi-hash me-1"></i>Canales</div>
 
       <%= link_to chat_path, class: "chat-item #{@canal == 'tenant' ? 'active' : ''}" do %>
-        <div class="chat-avatar" style="background:var(--wa-teal);">
-          <i class="bi bi-globe2" style="font-size:1.1rem;"></i>
+        <div class="chat-avatar wa-fondo-teal">
+          <i class="bi bi-globe2 texto-medio"></i>
         </div>
         <div class="chat-item-info">
           <div class="d-flex justify-content-between align-items-baseline">
-            <span class="fw-semibold" style="font-size:.9rem;color:var(--wa-text);">Canal General</span>
+            <span class="fw-semibold texto-reducido wa-texto">Canal General</span>
           </div>
-          <div class="text-truncate" style="font-size:.78rem;color:var(--wa-text-secondary);">Todos los miembros</div>
+          <div class="text-truncate texto-chico wa-secundario">Todos los miembros</div>
         </div>
       <% end %>
 
       <%= link_to chat_path(canal: "logia"), class: "chat-item #{@canal == 'logia' ? 'active' : ''}" do %>
         <div class="chat-avatar" style="background:<%= current_logia.color_display || '#6c757d' %>;">
-          <i class="bi bi-building" style="font-size:1.1rem;"></i>
+          <i class="bi bi-building texto-medio"></i>
         </div>
         <div class="chat-item-info">
           <div class="d-flex justify-content-between align-items-baseline">
-            <span class="fw-semibold" style="font-size:.9rem;color:var(--wa-text);"><%= current_logia.nombre_display %></span>
+            <span class="fw-semibold texto-reducido wa-texto"><%= current_logia.nombre_display %></span>
           </div>
-          <div class="text-truncate" style="font-size:.78rem;color:var(--wa-text-secondary);">Solo esta logia</div>
+          <div class="text-truncate texto-chico wa-secundario">Solo esta logia</div>
         </div>
       <% end %>
 
@@ -241,14 +244,14 @@
         <%= render "chat/sidebar_dm_item", u: u, ultimo: @ultimo_dm[u.id], unread: @unread_counts[u.id] || 0, activo: (@canal == 'dm' && @con_id == u.id), hidden: !dm_shown_ids.include?(u.id) %>
       <% end %>
 
-      <div id="dm-no-results" class="text-center py-4 d-none" style="font-size:.82rem;color:var(--wa-text-secondary);">
+      <div id="dm-no-results" class="text-center py-4 d-none texto-chico wa-secundario">
         <i class="bi bi-search me-1"></i>No se encontraron chats
       </div>
     </div>
   </div>
 
   <%# ══════════════ MAIN CHAT ══════════════ %>
-  <div class="chat-main" style="position:relative;">
+  <div class="chat-main position-relative">
 
     <%# Header %>
     <div class="chat-main-head">
@@ -285,7 +288,7 @@
         </div>
 
       <% else %>
-        <div class="chat-avatar chat-avatar-header" style="background:var(--wa-teal);">
+        <div class="chat-avatar chat-avatar-header wa-fondo-teal">
           <i class="bi bi-globe2"></i>
         </div>
         <div class="flex-grow-1">
@@ -294,9 +297,9 @@
         </div>
       <% end %>
 
-      <div class="d-flex gap-3 ms-auto" style="color:var(--wa-text-secondary);">
-        <i class="bi bi-search" style="font-size:1rem;cursor:pointer;" data-action="click->chat-search#toggle" data-chat-search-target="toggleBtn"></i>
-        <i class="bi bi-three-dots-vertical" style="font-size:1rem;cursor:pointer;"></i>
+      <div class="d-flex gap-3 ms-auto wa-secundario">
+        <i class="bi bi-search fs-6 cursor-pointer" data-action="click->chat-search#toggle" data-chat-search-target="toggleBtn"></i>
+        <i class="bi bi-three-dots-vertical fs-6 cursor-pointer"></i>
       </div>
     </div>
 
@@ -309,7 +312,7 @@
           <div class="text-center py-5">
             <div style="background:rgba(255,255,255,.9);display:inline-block;padding:12px 24px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.1);">
               <i class="bi bi-lock-fill me-1" style="color:var(--wa-teal);font-size:.7rem;"></i>
-              <span style="font-size:.8rem;color:var(--wa-text-secondary);">
+              <span class="texto-chico wa-secundario">
                 <% if @canal == "dm" %>
                   Los mensajes están cifrados de extremo a extremo. Nadie fuera de este chat puede leerlos.
                 <% else %>
@@ -344,7 +347,7 @@
       <%# Search overlay %>
       <div class="chat-search-overlay" data-chat-search-target="overlay" style="display:none;">
         <div class="d-flex align-items-center gap-2 p-2" style="background:var(--wa-panel-header);border-bottom:1px solid var(--wa-border);">
-          <button class="btn btn-sm" style="color:var(--wa-text-secondary);" data-action="click->chat-search#toggle"><i class="bi bi-arrow-left"></i></button>
+          <button class="btn btn-sm wa-secundario" data-action="click->chat-search#toggle"><i class="bi bi-arrow-left"></i></button>
           <input type="text" class="form-control form-control-sm" placeholder="Buscar mensajes..."
                  data-chat-search-target="input" data-action="input->chat-search#search"
                  style="border-radius:8px;border:none;background:#fff;">

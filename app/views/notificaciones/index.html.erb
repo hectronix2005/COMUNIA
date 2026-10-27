@@ -1,5 +1,5 @@
 <turbo-frame id="notificaciones-lista">
-  <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom" style="background:#f8f9fa;">
+  <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
     <strong class="small">Notificaciones</strong>
     <% if @notificaciones.any? { |n| !n.leida } %>
       <%= button_to leer_todas_notificaciones_path, method: :post,
@@ -13,7 +13,7 @@
     <% if @notificaciones.empty? %>
       <div class="text-center text-muted py-4">
         <i class="bi bi-bell-slash d-block mb-1" style="font-size:1.5rem;opacity:.4;"></i>
-        <span style="font-size:.82rem;">Sin notificaciones</span>
+        <span class="texto-chico">Sin notificaciones</span>
       </div>
     <% else %>
       <% @notificaciones.each do |n| %>
@@ -33,9 +33,9 @@
           <div class="min-w-0 flex-grow-1">
             <div class="fw-semibold text-truncate"><%= n.titulo %></div>
             <% if n.cuerpo.present? %>
-              <div class="text-muted text-truncate" style="font-size:.75rem;"><%= n.cuerpo %></div>
+              <div class="text-muted text-truncate texto-chico"><%= n.cuerpo %></div>
             <% end %>
-            <div class="text-muted" style="font-size:.68rem;">
+            <div class="text-muted texto-mini">
               <%= time_ago_in_words(n.created_at) %>
             </div>
           </div>

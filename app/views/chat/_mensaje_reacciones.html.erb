@@ -7,7 +7,7 @@
     <% mensaje.reacciones.each do |emoji, user_ids| %>
       <% next if user_ids.blank? %>
       <span class="msg-reaccion <%= viewer && user_ids.include?(viewer.id) ? 'msg-reaccion--active' : '' %>">
-        <%= emoji %> <span style="font-size:.62rem;"><%= user_ids.size %></span>
+        <%= emoji %> <span class="texto-mini"><%= user_ids.size %></span>
       </span>
     <% end %>
   </div>

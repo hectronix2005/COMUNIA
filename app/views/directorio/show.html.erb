@@ -25,7 +25,7 @@
               <div style="font-size:.9rem;color:#475569;"><%= @miembro.profesion %></div>
             <% end %>
             <% if @miembro.empresa.present? %>
-              <div class="text-muted" style="font-size:.85rem;"><i class="bi bi-building me-1"></i><%= @miembro.empresa %></div>
+              <div class="text-muted texto-reducido"><i class="bi bi-building me-1"></i><%= @miembro.empresa %></div>
             <% end %>
             <div class="mt-1">
               <span class="badge bg-light text-dark"><%= @miembro.logia.nombre %></span>
@@ -39,7 +39,7 @@
         <% if @miembro.bio.present? %>
           <div class="mb-3">
             <h6 class="fw-bold small text-muted text-uppercase">Acerca de</h6>
-            <p style="font-size:.9rem;"><%= simple_format(@miembro.bio) %></p>
+            <p class="texto-reducido"><%= simple_format(@miembro.bio) %></p>
           </div>
         <% end %>
 
@@ -47,29 +47,29 @@
           <% if @miembro.telefono.present? %>
             <div class="col-sm-6">
               <div class="text-muted small fw-bold text-uppercase">Teléfono</div>
-              <div style="font-size:.9rem;"><i class="bi bi-telephone me-1"></i><%= @miembro.telefono %></div>
+              <div class="texto-reducido"><i class="bi bi-telephone me-1"></i><%= @miembro.telefono %></div>
             </div>
           <% end %>
           <% if @miembro.habilidades.present? %>
             <div class="col-sm-6">
               <div class="text-muted small fw-bold text-uppercase">Habilidades</div>
-              <div style="font-size:.9rem;"><%= @miembro.habilidades %></div>
+              <div class="texto-reducido"><%= @miembro.habilidades %></div>
             </div>
           <% end %>
           <div class="col-sm-6">
             <div class="text-muted small fw-bold text-uppercase">Miembro #</div>
-            <div style="font-size:.9rem;"><%= @miembro.numero_miembro %></div>
+            <div class="texto-reducido"><%= @miembro.numero_miembro %></div>
           </div>
           <% if @miembro.fecha_iniciacion.present? %>
             <div class="col-sm-6">
               <div class="text-muted small fw-bold text-uppercase">Fecha de iniciación</div>
-              <div style="font-size:.9rem;"><%= I18n.l(@miembro.fecha_iniciacion, format: :long) rescue @miembro.fecha_iniciacion %></div>
+              <div class="texto-reducido"><%= I18n.l(@miembro.fecha_iniciacion, format: :long) rescue @miembro.fecha_iniciacion %></div>
             </div>
           <% end %>
           <% if @miembro.fecha_ingreso.present? %>
             <div class="col-sm-6">
               <div class="text-muted small fw-bold text-uppercase">Fecha de ingreso</div>
-              <div style="font-size:.9rem;"><%= I18n.l(@miembro.fecha_ingreso, format: :long) rescue @miembro.fecha_ingreso %></div>
+              <div class="texto-reducido"><%= I18n.l(@miembro.fecha_ingreso, format: :long) rescue @miembro.fecha_ingreso %></div>
             </div>
           <% end %>
         </div>

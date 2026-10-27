@@ -78,7 +78,7 @@
             <% resumen = (@evento.recurrente? ? @evento : @evento.serie)&.resumen_recurrencia %>
             <span class="text-muted"><%= resumen || "Evento recurrente" %></span>
             <% if @evento.instancia_de_serie? %>
-              <div class="text-muted" style="font-size:.72rem;">Instancia de serie</div>
+              <div class="text-muted texto-mini">Instancia de serie</div>
             <% end %>
           </div>
         </div>
@@ -137,7 +137,7 @@
           <div class="small fw-semibold" style="color:<%= @evento.logia.color_display %>;">
             <%= @evento.logia.nombre_display %>
           </div>
-          <div class="text-muted" style="font-size:.75rem;">Creado por <%= @evento.user.nombre_completo %></div>
+          <div class="text-muted texto-chico">Creado por <%= @evento.user.nombre_completo %></div>
         </div>
       </div>
 
@@ -171,7 +171,7 @@
             <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i><%= confirmados.count %> confirmados</span>
             <div class="mt-1">
               <% confirmados.each do |c| %>
-                <span class="badge bg-light text-dark me-1 mb-1" style="font-size:.7rem;"><%= c.user.nombre_corto %></span>
+                <span class="badge bg-light text-dark me-1 mb-1 texto-mini"><%= c.user.nombre_corto %></span>
               <% end %>
             </div>
           </div>
@@ -182,7 +182,7 @@
             <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill me-1"></i><%= rechazados.count %> no asisten</span>
             <div class="mt-1">
               <% rechazados.each do |c| %>
-                <span class="badge bg-light text-dark me-1 mb-1" style="font-size:.7rem;"><%= c.user.nombre_corto %></span>
+                <span class="badge bg-light text-dark me-1 mb-1 texto-mini"><%= c.user.nombre_corto %></span>
               <% end %>
             </div>
           </div>

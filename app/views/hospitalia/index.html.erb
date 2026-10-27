@@ -50,21 +50,21 @@
       <%= link_to hospitalia_recaudos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
         <i class="bi bi-arrow-down-circle text-success fs-4 d-block mb-2"></i>
         <div class="fw-semibold small">Recaudos</div>
-        <div class="text-muted" style="font-size:.75rem;">Ingresos al fondo</div>
+        <div class="text-muted texto-chico">Ingresos al fondo</div>
       <% end %>
     </div>
     <div class="col-6 col-md-3">
       <%= link_to hospitalia_gastos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
         <i class="bi bi-arrow-up-circle text-danger fs-4 d-block mb-2"></i>
         <div class="fw-semibold small">Gastos</div>
-        <div class="text-muted" style="font-size:.75rem;">Egresos del fondo</div>
+        <div class="text-muted texto-chico">Egresos del fondo</div>
       <% end %>
     </div>
     <div class="col-6 col-md-3">
       <%= link_to hospitalia_cumpleanos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
         <i class="bi bi-balloon-heart text-warning fs-4 d-block mb-2"></i>
         <div class="fw-semibold small">Cumpleaños</div>
-        <div class="text-muted" style="font-size:.75rem;">Próximas fechas</div>
+        <div class="text-muted texto-chico">Próximas fechas</div>
       <% end %>
     </div>
     <div class="col-6 col-md-3">
@@ -74,7 +74,7 @@
               class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
           <i class="bi bi-people text-info fs-4 d-block mb-2"></i>
           <div class="fw-semibold small">Mi Familia</div>
-          <div class="text-muted" style="font-size:.75rem;">Familiares registrados</div>
+          <div class="text-muted texto-chico">Familiares registrados</div>
         <% end %>
       <% end %>
     </div>
@@ -96,12 +96,12 @@
               <div class="list-group-item d-flex justify-content-between align-items-start py-2">
                 <div>
                   <div class="fw-semibold small"><%= r.concepto %></div>
-                  <div class="text-muted" style="font-size:.75rem;"><%= r.fecha.strftime("%d/%m/%Y") %><% if r.miembro %> · <%= r.miembro.user.nombre_completo %><% end %></div>
+                  <div class="text-muted texto-chico"><%= r.fecha.strftime("%d/%m/%Y") %><% if r.miembro %> · <%= r.miembro.user.nombre_completo %><% end %></div>
                 </div>
                 <div class="text-end">
                   <div class="text-success fw-semibold small">+<%= number_to_currency(r.monto, unit: "$", delimiter: ".", separator: ",") %></div>
                   <% if r.soporte.attached? %>
-                    <a href="<%= rails_blob_path(r.soporte) %>" target="_blank" class="text-muted" style="font-size:.7rem;"><i class="bi bi-paperclip"></i> soporte</a>
+                    <a href="<%= rails_blob_path(r.soporte) %>" target="_blank" class="text-muted texto-mini"><i class="bi bi-paperclip"></i> soporte</a>
                   <% end %>
                 </div>
               </div>
@@ -124,12 +124,12 @@
               <div class="list-group-item d-flex justify-content-between align-items-start py-2">
                 <div>
                   <div class="fw-semibold small"><%= g.concepto %></div>
-                  <div class="text-muted" style="font-size:.75rem;"><%= g.fecha.strftime("%d/%m/%Y") %><% if g.beneficiario %> · <%= g.beneficiario.user.nombre_completo %><% end %></div>
+                  <div class="text-muted texto-chico"><%= g.fecha.strftime("%d/%m/%Y") %><% if g.beneficiario %> · <%= g.beneficiario.user.nombre_completo %><% end %></div>
                 </div>
                 <div class="text-end">
                   <div class="text-danger fw-semibold small">-<%= number_to_currency(g.monto, unit: "$", delimiter: ".", separator: ",") %></div>
                   <% if g.soporte.attached? %>
-                    <a href="<%= rails_blob_path(g.soporte) %>" target="_blank" class="text-muted" style="font-size:.7rem;"><i class="bi bi-paperclip"></i> soporte</a>
+                    <a href="<%= rails_blob_path(g.soporte) %>" target="_blank" class="text-muted texto-mini"><i class="bi bi-paperclip"></i> soporte</a>
                   <% end %>
                 </div>
               </div>

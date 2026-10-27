@@ -10,7 +10,7 @@
 
     <div class="card">
       <div class="card-body">
-        <h5 class="fw-bold mb-3"><i class="bi bi-person-vcard me-2" style="color:#c5a24d;"></i>Editar perfil</h5>
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-vcard me-2 text-oro"></i>Editar perfil</h5>
 
         <%= form_with model: @miembro, url: directorio_path(@miembro), method: :patch, local: true do |f| %>
           <% if @miembro.errors.any? %>

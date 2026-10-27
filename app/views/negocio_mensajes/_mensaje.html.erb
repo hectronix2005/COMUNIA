@@ -6,7 +6,7 @@
       <div class="small fw-semibold mb-1"><%= mensaje.user.nombre_completo %></div>
     <% end %>
     <div class="texto-usuario"><%= mensaje.cuerpo %></div>
-    <div class="small <%= propio ? 'text-white-50' : 'text-muted' %> text-end mt-1" style="font-size: .7rem;">
+    <div class="small <%= propio ? 'text-white-50' : 'text-muted' %> text-end mt-1 texto-mini">
       <%= mensaje.created_at.strftime("%d/%m %H:%M") %>
     </div>
   </div>

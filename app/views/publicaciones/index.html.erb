@@ -2,7 +2,7 @@
 
 <div class="row justify-content-center">
   <div class="col-lg-7">
-    <h4 class="fw-bold mb-3"><i class="bi bi-newspaper me-2" style="color:#c5a24d;"></i>Muro</h4>
+    <h4 class="fw-bold mb-3"><i class="bi bi-newspaper me-2 text-oro"></i>Muro</h4>
 
     <%# Compose box %>
     <div class="card mb-3">
@@ -41,18 +41,18 @@
               <%= pub.user.nombre[0] %><%= pub.user.apellido[0] %>
             </div>
             <div class="flex-grow-1">
-              <div class="fw-bold" style="font-size:.9rem;"><%= pub.user.nombre_completo %></div>
-              <div class="text-muted" style="font-size:.72rem;">
+              <div class="fw-bold texto-reducido"><%= pub.user.nombre_completo %></div>
+              <div class="text-muted texto-mini">
                 <%= time_ago_in_words(pub.created_at) %>
-                <span class="ms-1 badge bg-light text-dark" style="font-size:.62rem;"><%= pub.logia.nombre %></span>
+                <span class="ms-1 badge bg-light text-dark texto-mini"><%= pub.logia.nombre %></span>
                 <% if pub.fijada? %>
-                  <i class="bi bi-pin-fill ms-1" style="color:#c5a24d;" title="Fijada"></i>
+                  <i class="bi bi-pin-fill ms-1 text-oro" title="Fijada"></i>
                 <% end %>
               </div>
             </div>
             <% if pub.user_id == current_user.id || modera?(pub) %>
               <div class="dropdown">
-                <i class="bi bi-three-dots text-muted" data-bs-toggle="dropdown" style="cursor:pointer;"></i>
+                <i class="bi bi-three-dots text-muted cursor-pointer" data-bs-toggle="dropdown"></i>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <% if modera?(pub) %>
                     <li><%= button_to pub.fijada? ? "Desfijar" : "Fijar", toggle_pin_publicacion_path(pub), method: :post, class: "dropdown-item" %></li>
@@ -76,7 +76,7 @@
           <% end %>
 
           <%# Actions bar %>
-          <div class="d-flex gap-3 pt-2 border-top" style="font-size:.85rem;">
+          <div class="d-flex gap-3 pt-2 border-top texto-reducido">
             <%= button_to toggle_like_publicacion_path(pub), method: :post, class: "btn btn-sm btn-link text-decoration-none p-0 #{ pub.liked_by?(current_user) ? 'text-danger' : 'text-muted' }" do %>
               <i class="bi bi-<%= pub.liked_by?(current_user) ? 'heart-fill' : 'heart' %> me-1"></i><%= pub.likes_count %>
             <% end %>
@@ -93,8 +93,8 @@
                     <%= c.user.nombre[0] %><%= c.user.apellido[0] %>
                   </div>
                   <div style="background:#f8fafc;border-radius:12px;padding:6px 10px;font-size:.82rem;flex:1;">
-                    <span class="fw-bold" style="font-size:.78rem;"><%= c.user.nombre_corto %></span>
-                    <span class="text-muted ms-1" style="font-size:.68rem;"><%= time_ago_in_words(c.created_at) %></span>
+                    <span class="fw-bold texto-chico"><%= c.user.nombre_corto %></span>
+                    <span class="text-muted ms-1 texto-mini"><%= time_ago_in_words(c.created_at) %></span>
                     <div><%= c.contenido %></div>
                   </div>
                 </div>

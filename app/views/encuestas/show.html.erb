@@ -16,7 +16,7 @@
             <% if @encuesta.descripcion.present? %>
               <p class="text-muted mb-1" style="font-size:.88rem;"><%= @encuesta.descripcion %></p>
             <% end %>
-            <div class="text-muted" style="font-size:.75rem;">
+            <div class="text-muted texto-chico">
               Creada por <%= @encuesta.user.nombre_corto %> · <%= time_ago_in_words(@encuesta.created_at) %>
               <% if @encuesta.cierre_en.present? && !@encuesta.cerrada? %>
                 · Cierra <%= time_ago_in_words(@encuesta.cierre_en) %>
@@ -40,7 +40,7 @@
                 <% else %>
                   <input type="radio" name="opcion_ids[]" value="<%= op.id %>" class="form-check-input" id="op_<%= op.id %>">
                 <% end %>
-                <label class="form-check-label" for="op_<%= op.id %>" style="font-size:.9rem;"><%= op.texto %></label>
+                <label class="form-check-label texto-reducido" for="op_<%= op.id %>"><%= op.texto %></label>
               </div>
             <% end %>
             <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check2 me-1"></i>Votar</button>
@@ -49,7 +49,7 @@
           <%# Results %>
           <% @encuesta.encuesta_opciones.each do |op| %>
             <div class="mb-2">
-              <div class="d-flex justify-content-between mb-1" style="font-size:.85rem;">
+              <div class="d-flex justify-content-between mb-1 texto-reducido">
                 <span><%= op.texto %></span>
                 <span class="fw-bold"><%= op.votos_count %> (<%= op.porcentaje(@total_votos) %>%)</span>
               </div>
@@ -59,13 +59,13 @@
               <% unless @encuesta.anonima? %>
                 <div class="mt-1">
                   <% op.encuesta_votos.includes(:user).each do |v| %>
-                    <span class="badge bg-light text-dark me-1" style="font-size:.65rem;"><%= v.user.nombre_corto %></span>
+                    <span class="badge bg-light text-dark me-1 texto-mini"><%= v.user.nombre_corto %></span>
                   <% end %>
                 </div>
               <% end %>
             </div>
           <% end %>
-          <div class="text-center text-muted mt-3" style="font-size:.82rem;">
+          <div class="text-center text-muted mt-3 texto-chico">
             Total: <%= @total_votos %> votos
             <% if @ya_voto %><span class="ms-2 text-success"><i class="bi bi-check-circle me-1"></i>Ya votaste</span><% end %>
           </div>

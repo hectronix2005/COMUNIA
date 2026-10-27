@@ -5,7 +5,7 @@
     <div class="card-body d-flex flex-wrap align-items-center gap-3">
       <div class="text-center flex-shrink-0" style="width:56px;">
         <div class="fw-bold fs-4 lh-1"><%= reunion.inicio.day %></div>
-        <div class="text-muted text-uppercase" style="font-size:.7rem;"><%= I18n.l(reunion.inicio, format: "%b") %></div>
+        <div class="text-muted text-uppercase texto-mini"><%= I18n.l(reunion.inicio, format: "%b") %></div>
       </div>
       <div class="flex-grow-1 min-w-0">
         <div class="text-muted small">Lo próximo · <%= reunion.logia.t_reunion %> · <%= reunion.logia.nombre_display %></div>
