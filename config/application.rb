@@ -38,7 +38,9 @@ module GranLogiaDeColombia
     config.i18n.available_locales = [:es, :en]
     config.i18n.fallbacks = true
 
-    config.active_storage.variant_processor = :mini_magick
+    # Producción solo trae libvips (Dockerfile); con :mini_magick las imágenes subidas
+    # se guardaban sin ancho ni alto porque no hay ImageMagick.
+    config.active_storage.variant_processor = :vips
     # Allow SVG to be served inline (needed for logo rendering)
     config.active_storage.content_types_to_serve_as_binary -= ["image/svg+xml"]
     config.active_storage.content_types_allowed_inline    += ["image/svg+xml"]
