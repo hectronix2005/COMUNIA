@@ -1,3 +1,6 @@
+require "mini_magick"
+require "open3"
+
 class SoporteParser
   BANCOS = {
     "Bancolombia" => %w[bancolombia bcolombia],
@@ -55,6 +58,18 @@ class SoporteParser
     [/\b(?:visa|mastercard|amex|american\s*express|diners)\b/i, "tarjeta"]
   ].freeze
 
+  # Primero los formatos con decimales completos, para que un «$400,000.000» mal
+  # leído por el OCR se quede en «400,000.00» y no en un número que no existe.
+  MONTO = /\d{1,3}(?:,\d{3})+\.\d{2}|\d{1,3}(?:\.\d{3})+,\d{2}|\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?/
+
+  # Variantes sin umbral para fotos y capturas (ver ejecutar_ocr_multiples).
+  VARIANTES_SUAVES = [
+    { ampliar: false, normalizar: false, enfocar: false },
+    { ampliar: true, normalizar: false, enfocar: false },
+    { ampliar: true, normalizar: true, enfocar: false },
+    { ampliar: false, normalizar: false, enfocar: true }
+  ].freeze
+
   def initialize(archivo)
     @archivo = archivo
     @temp_files = []
@@ -109,14 +124,10 @@ class SoporteParser
   def convertir_pdf_a_imagen
     temp = Tempfile.new(["soporte_pdf", ".png"])
     @temp_files << temp
-    img = MiniMagick::Image.open(@archivo.tempfile.path)
-    img.combine_options do |c|
-      c.density "300"
-      c.quality "100"
-    end
-    img.format("png")
-    img.flatten
-    img.write(temp.path)
+    # vips rasteriza el PDF con poppler; ImageMagick necesitaría ghostscript.
+    require "vips"
+    Vips::Image.pdfload(@archivo.tempfile.path, page: 0, dpi: 300)
+      .flatten(background: [ 255 ]).write_to_file(temp.path)
     preprocesar_imagen(temp.path)
   rescue => e
     Rails.logger.warn("SoporteParser: error convirtiendo PDF: #{e.message}")
@@ -159,20 +170,68 @@ class SoporteParser
     nil
   end
 
+  # Las fotos y capturas pierden el texto con el umbral del preprocesado principal,
+  # así que también se prueban variantes suaves y enderezadas; se para en cuanto
+  # una lectura trae monto y fecha.
   def ejecutar_ocr_multiples(imagen_path)
     lang = tesseract_lang_disponible?("spa") ? "spa" : "eng"
     textos = []
-    textos << ejecutar_ocr_single(imagen_path, lang)
-    source = @archivo.tempfile.path
-    ext = File.extname(@archivo.original_filename).downcase
-    source = imagen_path if ext == ".pdf"
-    alt_path = preprocesar_imagen_alternativa(source)
-    textos << ejecutar_ocr_single(alt_path, lang) if alt_path
-    textos.compact
+    imagenes_candidatas(imagen_path).each do |ruta, psm|
+      texto = ejecutar_ocr_single(ruta, lang, psm)
+      next if texto.blank?
+      textos << texto
+      break if extraer_monto(texto) && extraer_fecha(texto)
+    end
+    textos
   end
 
-  def ejecutar_ocr_single(imagen_path, lang)
-    rtesseract = RTesseract.new(imagen_path, lang: lang)
+  def imagenes_candidatas(imagen_path)
+    source = @archivo.tempfile.path
+    source = imagen_path if File.extname(@archivo.original_filename).downcase == ".pdf"
+
+    Enumerator.new do |y|
+      y << [ imagen_path, nil ]
+      alt_path = preprocesar_imagen_alternativa(source)
+      y << [ alt_path, nil ] if alt_path
+      giro = orientacion(source)
+      VARIANTES_SUAVES.each do |variante|
+        ruta = preprocesar_imagen_suave(source, giro, **variante)
+        y << [ ruta, 6 ] if ruta
+      end
+    end
+  end
+
+  def preprocesar_imagen_suave(path, giro, ampliar:, normalizar:, enfocar:)
+    img = MiniMagick::Image.open(path)
+    return nil if ampliar && img.width >= 2000
+    temp = Tempfile.new(["soporte_suave", ".png"])
+    @temp_files << temp
+    img.combine_options do |c|
+      c.rotate giro.to_s if giro
+      c.colorspace "Gray"
+      c.resize "200%" if ampliar
+      c.normalize if normalizar
+      c.sharpen "0x1" if enfocar
+    end
+    img.write(temp.path)
+    temp.path
+  rescue
+    nil
+  end
+
+  # Grados que hay que girar la imagen según tesseract, solo si está seguro
+  # (con poca confianza se equivoca en capturas derechas).
+  def orientacion(path)
+    salida, = Open3.capture2e("tesseract", path, "-", "--psm", "0")
+    giro = salida[/Rotate:\s*(\d+)/, 1].to_i
+    confianza = salida[/Orientation confidence:\s*([\d.]+)/, 1].to_f
+    giro if giro.positive? && confianza >= 2
+  rescue
+    nil
+  end
+
+  def ejecutar_ocr_single(imagen_path, lang, psm = nil)
+    rtesseract = RTesseract.new(imagen_path, lang: lang, psm: psm)
     rtesseract.to_s
   rescue => e
     Rails.logger.warn("SoporteParser: error OCR: #{e.message}")
@@ -225,27 +284,29 @@ class SoporteParser
 
   def extraer_monto(texto)
     candidatos = []
+    # El costo o la comisión de la transacción no es lo que se pagó.
+    texto = texto.lines.grep_v(/costo|comisi[oó]n/i).join
 
     # COP o $ seguido de monto
-    texto.scan(/(?:COP|\$)\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)/) do |match|
+    texto.scan(/(?:COP|\$)\s*(#{MONTO})/) do |match|
       monto = normalizar_monto(match[0])
       candidatos << { valor: monto, prioridad: 3 } if monto
     end
 
     # Monto seguido de COP
-    texto.scan(/([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)\s*COP/i) do |match|
+    texto.scan(/(#{MONTO})\s*COP/i) do |match|
       monto = normalizar_monto(match[0])
       candidatos << { valor: monto, prioridad: 3 } if monto
     end
 
     # Labels explícitos
-    texto.scan(/(?:valor|monto|total|vlr|importe|valor\s+pagado|valor\s+total|total\s+pagado)\s*[:\-]?\s*\$?\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)/i) do |match|
+    texto.scan(/(?:valor|monto|total|vlr|importe|valor\s+pagado|valor\s+total|total\s+pagado)\s*[:\-]?\s*\$?\s*(#{MONTO})/i) do |match|
       monto = normalizar_monto(match[0])
       candidatos << { valor: monto, prioridad: 2 } if monto
     end
 
-    # Formato colombiano suelto
-    texto.scan(/([\d]{1,3}(?:\.\d{3})+(?:,\d{1,2})?)/) do |match|
+    # Formato colombiano suelto, sin confundirlo con una IP ni con un número más largo
+    texto.scan(/(?<![\d.,])(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?)(?![.,]?\d)/) do |match|
       monto = normalizar_monto(match[0])
       candidatos << { valor: monto, prioridad: 1 } if monto
     end
@@ -254,10 +315,12 @@ class SoporteParser
     candidatos.sort_by { |c| [-c[:prioridad], -c[:valor]] }.first[:valor]
   end
 
+  # El último separador es decimal si lo siguen una o dos cifras; los demás son de
+  # miles. Vale para «400.000,00» y para el «$400,000.00» de Bancolombia en la web.
   def normalizar_monto(raw)
     return nil if raw.blank?
-    limpio = raw.gsub(/\.(?=\d{3})/, "").gsub(",", ".")
-    valor = limpio.to_f.round(0).to_i
+    entero, decimales = raw.match(/\A(.*?)(?:[.,](\d{1,2}))?\z/).captures
+    valor = "#{entero.delete('.,')}.#{decimales || 0}".to_f.round(0).to_i
     valor.between?(1_000, 50_000_000) ? valor : nil
   rescue
     nil
@@ -276,7 +339,8 @@ class SoporteParser
       candidatos << formatear_fecha(anio.to_i, mes.to_i, dia.to_i)
     end
 
-    texto.scan(/(\d{1,2})\s+de\s+(\w+)\s+(?:de\s+|del\s+)?(\d{4})/i) do |dia, mes_nombre, anio|
+    # «16 de marzo de 2026», «11 mar, 2026», «11 MAR. 2026»
+    texto.scan(/(\d{1,2})\s+(?:de\s+)?([[:alpha:]]{3,})\.?,?\s+(?:de\s+|del\s+)?(\d{4})/i) do |dia, mes_nombre, anio|
       mes = MESES[mes_nombre.downcase]
       candidatos << formatear_fecha(anio.to_i, mes, dia.to_i) if mes
     end
