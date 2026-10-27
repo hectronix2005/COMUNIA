@@ -562,6 +562,16 @@ No hecho o no comprobado:
 - Probada en Chrome sin ventana con el servidor de desarrollo: entrar, publicar con foto, muro sin nombre,
   retirar, panel. `test/denuncias/api_test.rb` (14 pruebas).
 
+## Aprobar el acta anterior (26-oct, pendiente de desplegar)
+
+- En cada reunión sale «Acta anterior»: la última acta publicada de una reunión anterior del mismo grupo, si aún no
+  está aprobada. Antes de empezar, para leerla («se aprueba en esta reunión»); desde que empieza, quien gestiona pulsa
+  «Aprobada». En el acta queda «Aprobada en <reunión> el <fecha>».
+- Aprobada, ya no se corrige: desaparece «Editar acta», el formulario no trae el campo y el modelo lo rechaza. Quien
+  gestiona la reunión donde se aprobó puede «Deshacer» y el acta vuelve a poder corregirse. No manda avisos.
+- Migración: `reuniones.acta_aprobada_at` y `acta_aprobada_en_id` (a la reunión, `on_delete: :nullify`).
+  Pruebas: test/integration/aprobar_acta_test.rb.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)

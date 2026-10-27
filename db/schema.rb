@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -909,6 +909,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_000000) do
     t.datetime "updated_at", null: false
     t.string "serie"
     t.string "codigo_asistencia"
+    t.datetime "acta_aprobada_at"
+    t.bigint "acta_aprobada_en_id"
+    t.index ["acta_aprobada_en_id"], name: "index_reuniones_on_acta_aprobada_en_id"
     t.index ["calendario_evento_id"], name: "index_reuniones_on_calendario_evento_id"
     t.index ["codigo_asistencia"], name: "index_reuniones_on_codigo_asistencia", unique: true
     t.index ["logia_id", "inicio"], name: "index_reuniones_on_logia_id_and_inicio"
@@ -1077,6 +1080,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_000000) do
   add_foreign_key "reunion_votos", "reunion_votaciones"
   add_foreign_key "reuniones", "calendario_eventos", on_delete: :nullify
   add_foreign_key "reuniones", "logias"
+  add_foreign_key "reuniones", "reuniones", column: "acta_aprobada_en_id", on_delete: :nullify
   add_foreign_key "reuniones", "users"
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"

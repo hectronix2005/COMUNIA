@@ -3,7 +3,8 @@
 class ReunionesController < ApplicationController
   before_action -> { requiere_modulo!(:reuniones) }
   before_action :set_reunion, except: [:index, :new, :create, :desde_evento, :constancia]
-  before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar, :qr]
+  before_action :exigir_gestion, only: [:edit, :update, :asistencia, :registrar_asistencia, :publicar_acta, :cancelar, :qr,
+                                         :aprobar_acta_anterior, :deshacer_aprobacion]
 
   def index
     visibles = Reunion.where(logia_id: logia_ids_de_reuniones).includes(:logia)
@@ -144,6 +145,22 @@ class ReunionesController < ApplicationController
     @reunion.update!(acta_publicada_at: Time.current)
     NotificarReunionJob.perform_later(@reunion.id, "acta") if primera
     redirect_to reunion_path(@reunion), notice: "Acta publicada."
+  end
+
+  # El acta de la reunión anterior se aprueba en esta, desde que empieza; después ya no se puede cambiar.
+  def aprobar_acta_anterior
+    anterior = @reunion.acta_por_aprobar
+    unless anterior && @reunion.admite_acuerdos?
+      return redirect_to reunion_path(@reunion), alert: "No hay acta que aprobar ahora."
+    end
+
+    anterior.update!(acta_aprobada_at: Time.current, acta_aprobada_en: @reunion)
+    redirect_to reunion_path(@reunion, anchor: "acta-anterior"), notice: "Acta de «#{anterior.titulo}» aprobada."
+  end
+
+  def deshacer_aprobacion
+    @reunion.actas_aprobadas.find(params[:acta_id]).update!(acta_aprobada_at: nil, acta_aprobada_en: nil)
+    redirect_to reunion_path(@reunion, anchor: "acta-anterior"), notice: "Se deshizo la aprobación: el acta vuelve a poder corregirse."
   end
 
   def cancelar

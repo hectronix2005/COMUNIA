@@ -97,19 +97,25 @@
       <% end %>
 
       <% if @reunion.acta_publicada? || (gestiona_reunion?(@reunion) && @reunion.acta.present?) %>
-        <div class="border-top mt-4 pt-3">
+        <div class="border-top mt-4 pt-3" id="acta">
           <h6 class="fw-bold small text-muted text-uppercase mb-2">
             Acta <% unless @reunion.acta_publicada? %><span class="badge bg-warning text-dark ms-1">Borrador, solo la ves tú</span><% end %>
           </h6>
           <div style="white-space:pre-wrap;"><%= @reunion.acta %></div>
           <% if @reunion.acta_publicada? %>
-            <div class="text-muted small mt-2">Publicada el <%= I18n.l(@reunion.acta_publicada_at, format: "%-d %b %Y") %></div>
+            <div class="text-muted small mt-2">
+              Publicada el <%= I18n.l(@reunion.acta_publicada_at, format: "%-d %b %Y") %><% if @reunion.acta_aprobada? %>
+                · <span class="text-success"><i class="bi bi-check-circle-fill"></i> Aprobada</span><% if @reunion.acta_aprobada_en %>
+                en <%= link_to @reunion.acta_aprobada_en.titulo, reunion_path(@reunion.acta_aprobada_en) %><% end %>
+                el <%= I18n.l(@reunion.acta_aprobada_at, format: "%-d %b %Y") %><% end %>
+            </div>
           <% end %>
         </div>
       <% end %>
     </div>
   </div>
 
+  <%= render "reuniones/acta_anterior", reunion: @reunion %>
   <%= render "reuniones/acuerdos", reunion: @reunion %>
   <%= render "reuniones/propuestas", reunion: @reunion, mi_ficha: @mi_ficha %>
   <%= render "reuniones/votaciones", reunion: @reunion, mi_ficha: @mi_ficha %>
@@ -129,7 +135,7 @@
       <%= link_to asistencia_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>
         <i class="bi bi-list-check me-1"></i>Registrar asistencia
       <% end %>
-      <% if @reunion.celebrada? %>
+      <% if @reunion.celebrada? && !@reunion.acta_aprobada? %>
         <%= link_to edit_reunion_path(@reunion), class: "btn btn-sm btn-outline-primary" do %>
           <i class="bi bi-file-text me-1"></i><%= @reunion.acta.present? ? "Editar acta" : "Escribir acta" %>
         <% end %>

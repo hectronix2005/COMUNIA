@@ -57,11 +57,12 @@
     <%= f.text_area :orden_del_dia, class: "form-control", rows: 6, placeholder: "1. Bienvenida\n2. Informe de cuentas\n3. Varios" %>
   </div>
 
-  <% if reunion.celebrada? %>
+  <%# Aprobada en la reunión siguiente, el acta ya no se cambia. %>
+  <% if reunion.celebrada? && !reunion.acta_aprobada? %>
     <div class="mb-3">
       <%= f.label :acta, "Acta", class: "form-label small fw-semibold" %>
       <%= f.text_area :acta, class: "form-control", rows: 10, placeholder: "Qué se trató y qué se decidió" %>
-      <div class="form-text">Se guarda como borrador; los convocados la ven cuando la publicas.</div>
+      <div class="form-text">Se guarda como borrador; los convocados la ven cuando la publicas. Se puede corregir hasta que se apruebe en la siguiente.</div>
     </div>
   <% end %>
 

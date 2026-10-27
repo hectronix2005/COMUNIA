@@ -250,6 +250,8 @@ Rails.application.routes.draw do
       get  :asistencia
       post :asistencia, action: :registrar_asistencia, as: :registrar_asistencia
       post :publicar_acta
+      post :aprobar_acta_anterior
+      post :deshacer_aprobacion
       get  :qr
       get  :presente
       post :presente, action: :marcar_presente, as: :marcar_presente

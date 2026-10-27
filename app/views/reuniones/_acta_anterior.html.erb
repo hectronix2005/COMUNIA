@@ -1,0 +1,41 @@
+<%# El acta de la reunión anterior del grupo, que se aprueba en esta: antes de empezar, para leerla; desde que empieza,
+    quien gestiona la da por aprobada. Aprobada, ya no se cambia. %>
+<% anterior = reunion.acta_por_aprobar %>
+<% aprobadas = reunion.actas_aprobadas.to_a %>
+<% gestiona = gestiona_reunion?(reunion) %>
+<% if anterior || aprobadas.any? %>
+  <div class="card border-0 shadow-sm mb-3" id="acta-anterior">
+    <div class="card-body p-4">
+      <h6 class="fw-bold small text-muted text-uppercase mb-3"><i class="bi bi-file-earmark-check me-1"></i>Acta anterior</h6>
+
+      <% aprobadas.each do |a| %>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <span>
+            <i class="bi bi-check-circle-fill text-success me-1"></i>Se aprobó aquí el acta de
+            <%= link_to a.titulo, reunion_path(a, anchor: "acta") %> (<%= I18n.l(a.inicio, format: "%-d %b %Y") %>).
+          </span>
+          <% if gestiona %>
+            <%= button_to "Deshacer", deshacer_aprobacion_reunion_path(reunion, acta_id: a.id), class: "btn btn-sm btn-outline-secondary",
+                          form: { data: { turbo_confirm: "El acta volverá a poder corregirse. ¿Deshacer la aprobación?" } } %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if anterior %>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span>
+            Acta de <%= link_to anterior.titulo, reunion_path(anterior, anchor: "acta") %>
+            (<%= I18n.l(anterior.inicio, format: "%-d %b %Y") %>):
+            <span class="text-muted">sin aprobar<%= ". Léela antes: se aprueba en esta reunión" if reunion.convocada? && reunion.inicio.future? %>.</span>
+          </span>
+          <% if gestiona && reunion.admite_acuerdos? %>
+            <%= button_to aprobar_acta_anterior_reunion_path(reunion), class: "btn btn-sm btn-primary",
+                          form: { data: { turbo_confirm: "Después ya no se podrá corregir. ¿Dar el acta por aprobada?" } } do %>
+              <i class="bi bi-check2 me-1"></i>Aprobada
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

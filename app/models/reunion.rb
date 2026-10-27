@@ -10,6 +10,9 @@ class Reunion < ApplicationRecord
   has_many :reunion_votaciones, -> { order(:created_at) }, dependent: :destroy
   has_many :reunion_propuestas, -> { order(:created_at) }, dependent: :delete_all
   has_many :reunion_acuerdos, -> { order(:created_at) }, dependent: :delete_all
+  belongs_to :acta_aprobada_en, class_name: "Reunion", optional: true
+  has_many :actas_aprobadas, class_name: "Reunion", foreign_key: :acta_aprobada_en_id, inverse_of: :acta_aprobada_en,
+                             dependent: :nullify
 
   enum :estado, { convocada: 0, celebrada: 1, cancelada: 2 }
 
@@ -29,6 +32,7 @@ class Reunion < ApplicationRecord
   validates :orden_del_dia, :acta, length: { maximum: 20_000 }
   validates :inicio, :fin, presence: true
   validate { errors.add(:fin, "debe ser posterior al inicio") if inicio && fin && fin <= inicio }
+  validate { errors.add(:acta, "ya está aprobada y no se puede cambiar") if acta_aprobada_at_in_database && will_save_change_to_acta? }
 
   scope :proximas, -> { where(estado: :convocada).where(fin: Time.current..).order(:inicio) }
   scope :pasadas,  -> { where.not(id: proximas.select(:id)).order(inicio: :desc) }
@@ -115,6 +119,15 @@ class Reunion < ApplicationRecord
   end
 
   def acta_publicada? = acta_publicada_at.present?
+  def acta_aprobada? = acta_aprobada_at.present?
+
+  # El acta que se aprueba en esta reunión: la última publicada de las anteriores del mismo grupo, si aún no se aprobó.
+  def acta_por_aprobar
+    return if cancelada?
+
+    ultima = Reunion.celebrada.where(logia_id: logia_id, inicio: ...inicio).where.not(acta_publicada_at: nil).order(inicio: :desc).first
+    ultima unless ultima&.acta_aprobada?
+  end
 
   # Los puntos para el orden del día se proponen mientras está convocada y antes de que empiece.
   def admite_propuestas? = convocada? && inicio.future?
