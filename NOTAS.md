@@ -562,7 +562,7 @@ No hecho o no comprobado:
 - Probada en Chrome sin ventana con el servidor de desarrollo: entrar, publicar con foto, muro sin nombre,
   retirar, panel. `test/denuncias/api_test.rb` (14 pruebas).
 
-## Aprobar el acta anterior (26-oct, pendiente de desplegar)
+## Aprobar el acta anterior (26-oct, desplegado: e9d8787, en piloto automático por decisión de Héctor)
 
 - En cada reunión sale «Acta anterior»: la última acta publicada de una reunión anterior del mismo grupo, si aún no
   está aprobada. Antes de empezar, para leerla («se aprueba en esta reunión»); desde que empieza, quien gestiona pulsa
