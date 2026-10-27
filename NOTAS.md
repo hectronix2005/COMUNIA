@@ -580,7 +580,7 @@ No hecho o no comprobado:
 - La publicada la descarga quien ve la reunión; el borrador, solo quien la gestiona. Prawn, como el paquete de
   DENUNCIAPP (`app/services/acta_pdf.rb`). Sin migración. Pruebas: test/integration/acta_pdf_test.rb.
 
-## Recordatorio de los acuerdos (26-oct, pendiente de desplegar)
+## Recordatorio de los acuerdos (26-oct, desplegado: 816c651, en piloto automático por decisión de Héctor)
 
 - Cada día a las 7:10, quien se encarga de un acuerdo sin cumplir que vence hoy o mañana recibe «Vence hoy/mañana:
   …» (aviso y push), una sola vez por acuerdo. No a quien ya no es miembro activo, ni de reuniones canceladas o de
