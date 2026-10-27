@@ -1,5 +1,5 @@
 <% content_for(:title, "Editar #{@reunion.titulo}") %>
-<div class="container" style="max-width:640px;">
+<div class="container ancho-lectura">
   <h4 class="fw-bold mb-3"><%= @reunion.celebrada? ? "Acta y datos" : "Editar" %>: <%= @reunion.titulo %></h4>
   <% if @reunion.serie %>
     <p class="text-muted small"><i class="bi bi-arrow-repeat me-1"></i>Se repite: los cambios solo afectan a esta fecha.</p>

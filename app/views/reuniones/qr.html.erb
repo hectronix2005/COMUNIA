@@ -1,7 +1,7 @@
 <% content_for(:title, "QR de asistencia: #{@reunion.titulo}") %>
 <% presentes = @reunion.reunion_asistencias.count %>
 
-<div class="container text-center" style="max-width:480px;">
+<div class="container ancho-estrecho text-center">
   <div class="text-muted small"><%= @reunion.logia.t_reunion %> · <%= I18n.l(@reunion.inicio, format: "%-d %b %Y, %H:%M") %></div>
   <h4 class="fw-bold mb-3"><%= @reunion.titulo %></h4>
 

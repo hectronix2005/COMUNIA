@@ -26,7 +26,7 @@
 
   <body class="denuncias d-flex flex-column min-vh-100">
     <nav class="navbar denuncias-barra" aria-label="Principal">
-      <div class="container flex-wrap gap-2" style="max-width: 960px;">
+      <div class="container ancho-amplio flex-wrap gap-2">
         <%= link_to denuncias_muro_path, class: "navbar-brand fw-bold" do %>
           <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>Denuncias
         <% end %>
@@ -45,7 +45,7 @@
     </nav>
 
     <main id="contenido" class="flex-grow-1 py-3">
-      <div class="container" style="max-width: 960px;">
+      <div class="container ancho-amplio">
         <% flash.each do |tipo, mensaje| %>
           <div class="alert <%= tipo.to_s == 'alert' ? 'alert-warning' : 'alert-success' %> py-2" role="<%= tipo.to_s == 'alert' ? 'alert' : 'status' %>"><%= mensaje %></div>
         <% end %>

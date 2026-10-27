@@ -260,7 +260,8 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   overflow: hidden;
   background: #fff;
 
-  &:hover {
+  // Solo se levanta la tarjeta que es un enlace; un formulario o una tabla no deben moverse al pasar el ratón.
+  @at-root a > #{&}:hover, a#{&}:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08);
   }
@@ -716,3 +717,60 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
   font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
   color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); border-bottom-width: 1px;
 }
+
+// =============================================================================
+// Componentes comunes (diseño, fase 2): paleta corta — marino, un acento dorado y grises.
+// El color de estado (éxito, aviso, peligro) solo va en el icono, nunca de fondo.
+// =============================================================================
+
+// Tres anchos para toda la app: formulario corto, lectura y página amplia. El resto usa el ancho general.
+.contenido-app  { max-width: 1320px; margin-inline: auto; }
+.ancho-estrecho { max-width: 560px; }
+.ancho-lectura  { max-width: 720px; }
+.ancho-amplio   { max-width: 960px; }
+
+.seccion-titulo {
+  font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: #64748b; margin-bottom: .75rem;
+}
+
+.icono-chip {
+  width: 2.5rem; height: 2.5rem; border-radius: .75rem; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem;
+  background: rgba($navy, .07); color: $navy;
+  &.chip-oro     { background: rgba($gold, .14);    color: darken($gold, 12%); }
+  &.chip-exito   { background: rgba($success, .1);  color: $success; }
+  &.chip-aviso   { background: rgba($warning, .12); color: $warning; }
+  &.chip-peligro { background: rgba($danger, .1);   color: $danger; }
+  &.chip-info    { background: rgba($info, .1);     color: $info; }
+  &.chip-sm      { width: 2rem; height: 2rem; border-radius: 50%; font-size: .75rem; }
+}
+
+// Acceso: una baldosa que lleva a una sección, con icono, título y un detalle o una cifra.
+.acceso {
+  display: flex; align-items: center; gap: .75rem; height: 100%;
+  padding: .85rem 1rem; border: 1px solid #e2e8f0; border-radius: .875rem;
+  background: #fff; color: $body-color; text-decoration: none;
+  transition: border-color .15s, box-shadow .15s;
+  &:hover, &:focus-visible { border-color: rgba($navy, .25); box-shadow: 0 4px 14px rgba(15, 23, 42, .06); color: $body-color; }
+  .acceso-titulo  { font-weight: 600; color: $dark; line-height: 1.25; }
+  .acceso-detalle { font-size: .8125rem; color: #64748b; }
+  .acceso-cifra   { font-size: 1.35rem; font-weight: 700; color: $dark; line-height: 1.15; }
+}
+
+// Módulo plegable del panel: cabecera blanca con su icono; el chevron gira solo con CSS.
+.modulo {
+  border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; margin-bottom: 1rem; overflow: hidden;
+  .modulo-cabecera {
+    display: flex; align-items: center; gap: .85rem; width: 100%;
+    padding: 1rem 1.25rem; background: none; border: 0; text-align: left; color: inherit;
+    .modulo-titulo  { font-weight: 700; font-size: 1.05rem; color: $dark; margin: 0; }
+    .modulo-detalle { font-size: .8125rem; color: #64748b; }
+    .bi-chevron-down { margin-left: auto; color: #94a3b8; transition: transform .2s; }
+    &[aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
+    &:focus-visible { outline: 3px solid rgba($gold, .5); outline-offset: -3px; }
+  }
+  .modulo-cuerpo { padding: .25rem 1.25rem 1.25rem; }
+}
+.progress-fina { height: 8px; }
+.min-w-distribucion { min-width: 180px; }
