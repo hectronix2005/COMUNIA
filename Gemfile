@@ -40,7 +40,10 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.2"
+# Desde image_processing 2.0 los procesadores no vienen incluidos: se declaran aquí.
+gem "mini_magick", "~> 5.4", require: false
+gem "ruby-vips", "~> 2.3", require: false
 
 # Active Storage backend para Cloudflare R2 (S3-compatible)
 gem "aws-sdk-s3", "~> 1.180", require: false
@@ -80,7 +83,7 @@ gem "pdf-reader", "~> 2.12"
 gem "prawn", "~> 2.5"
 
 # Lectura de archivos Excel/CSV para conciliacion de cortes
-gem "roo", "~> 3.0"
+gem "roo", "~> 4.0"
 gem "csv", "~> 3.3"   # Ruby 3.4: csv ya no es default gem, requerido por roo
 
 # QR de asistencia a las reuniones (SVG en el servidor)
