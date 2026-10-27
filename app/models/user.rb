@@ -48,8 +48,8 @@ class User < ApplicationRecord
   def self.find_for_database_authentication(warden_conditions)
     login = warden_conditions[:email].to_s.strip
     return nil if login.blank?
-    # Las cuentas de la red entran con su correo; las de las logias, con su usuario.
-    return find_by(email: login.downcase, solo_red: true) if login.include?("@")
+    # Se entra con el usuario o con el correo (único en la tabla); las cuentas de la red no tienen usuario.
+    return find_by(email: login.downcase) if login.include?("@")
     find_by("LOWER(username) = ?", login.downcase)
   end
 

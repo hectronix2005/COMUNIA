@@ -33,14 +33,17 @@ class Red::ConfinamientoTest < ActionDispatch::IntegrationTest
     assert_empty abiertas, "Pantallas que abren para una cuenta de la red"
   end
 
-  test "una cuenta de la red entra con su correo; la de una logia, no" do
+  test "una cuenta de la red entra con su correo; la de una logia, con su usuario o su correo" do
     sign_out @persona
     post "/red/entrar", params: { user: { email: @persona.email, password: RedPrueba::CLAVE } }
     assert_redirected_to "/red"
 
     sign_out @persona
     de_logia = User.create!(nombre: "L", apellido: "M", email: "l_#{SecureRandom.hex(3)}@x.co", password: "password123", logia: @logia)
-    assert_nil User.find_for_database_authentication(email: de_logia.email)
+    assert_equal de_logia, User.find_for_database_authentication(email: " #{de_logia.email.upcase} ")
+    assert_equal de_logia, User.find_for_database_authentication(email: de_logia.username.upcase)
+    post "/login", params: { user: { email: de_logia.email, password: "password123" } }
+    assert_redirected_to "/dashboard"
   end
 
   test "la portada abre sin cuenta y con cuenta enseña el tablón" do

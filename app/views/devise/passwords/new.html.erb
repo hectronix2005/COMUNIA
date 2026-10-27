@@ -2,9 +2,10 @@
   <div class="col-md-5">
     <div class="card shadow">
       <div class="card-body p-4">
-        <h3 class="card-title text-center mb-4">👁️ Los Magios</h3>
+        <h3 class="card-title text-center mb-4">COMUNIA</h3>
         <p class="text-center text-muted mb-4">Recuperar Contrase&ntilde;a</p>
 
+        <% if ActionMailer::Base.perform_deliveries %>
         <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "needs-validation" }) do |f| %>
           <%= render "devise/shared/error_messages", resource: resource %>
 
@@ -15,6 +16,12 @@
 
           <div class="d-grid mb-3">
             <%= f.submit "Enviar instrucciones", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+        <% else %>
+          <div class="alert alert-warning" id="sin-correo">
+            Por ahora COMUNIA no envía correos, así que no te llegarían las instrucciones.
+            Pide a quien administra tu grupo que te ponga una contraseña nueva.
           </div>
         <% end %>
 

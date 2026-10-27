@@ -1,19 +1,17 @@
 require "test_helper"
 
-# Pedir el cambio de contraseña no debe delatar si un correo tiene cuenta (en la red, eso diría que
-# alguien está en COMUNIA), ni romper la página si el servidor de correo falla.
+# Recuperar la contraseña: sin correo saliente, la página no promete unas instrucciones que no van a llegar.
 class RecuperarClaveTest < ActionDispatch::IntegrationTest
-  include ActiveJob::TestHelper
+  test "con correo saliente pide el correo; sin él, dice a quién pedir la contraseña" do
+    get "/password/new"
+    assert_select "form input[type=email]"
+    assert_select "#sin-correo", 0
 
-  test "con o sin cuenta, la respuesta es la misma y el correo sale en segundo plano" do
-    logia = Logia.create!(nombre: "Logia Clave", slug: "clave-#{SecureRandom.hex(3)}", codigo: "CL#{rand(10_000)}")
-    user = User.create!(nombre: "Ana", apellido: "Prueba", email: "ana_#{SecureRandom.hex(3)}@correo.co", password: "password123", logia: logia)
-
-    respuestas = [user.email, "nadie_#{SecureRandom.hex(3)}@correo.co"].map do |email|
-      post "/password", params: { user: { email: email } }
-      [response.status, response.location, flash[:notice]]
-    end
-    assert_equal respuestas.first, respuestas.last
-    assert_equal 1, enqueued_jobs.count { _1["job_class"] == "ActionMailer::MailDeliveryJob" }
+    ActionMailer::Base.perform_deliveries = false
+    get "/password/new"
+    assert_select "form input[type=email]", 0
+    assert_select "#sin-correo", /no envía correos/
+  ensure
+    ActionMailer::Base.perform_deliveries = true
   end
 end
