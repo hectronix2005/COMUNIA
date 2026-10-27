@@ -106,7 +106,9 @@
       </button>
       <div class="collapse" id="miembroHospitaliaBody">
         <div class="modulo-cuerpo d-flex gap-2 flex-wrap">
-          <%= link_to hospitalia_path, class: "btn btn-light border" do %><i class="bi bi-wallet2 me-1"></i>Resumen<% end %>
+          <% if current_user.tiene_cargo?("Hospitalario") %>
+            <%= link_to hospitalia_path, class: "btn btn-light border" do %><i class="bi bi-wallet2 me-1"></i>Resumen<% end %>
+          <% end %>
           <%= link_to hospitalia_cumpleanos_path, class: "btn btn-light border" do %><i class="bi bi-balloon-heart me-1"></i>Cumpleaños<% end %>
           <% if current_user.miembro %>
             <%= link_to hospitalia_familiares_path(miembro_id: current_user.miembro.id), class: "btn btn-light border" do %><i class="bi bi-people me-1"></i>Mi familia<% end %>

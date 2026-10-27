@@ -76,6 +76,15 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     assert_response :ok
   end
 
+  test "el menú no enseña las cuentas de ayuda a quien no tiene el cargo" do
+    sign_in @yo
+    get "/dashboard"
+    follow_redirect! while response.redirect?
+    assert_response :ok
+    assert_no_match %r{href="[^"]*/hospitalia/recaudos"}, response.body
+    assert_no_match %r{href="[^"]*/hospitalia"}, response.body
+  end
+
   test "el indicador de escribiendo solo va a los canales propios" do
     sign_in @yo
     post "/chat/typing", params: { stream: "chat_tenant_#{@b.id}" }

@@ -230,8 +230,8 @@
                 </li>
                 <% end %>
 
-                <%# ── Hospitalia (fondo de ayuda) ── %>
-                <% if current_logia.modulo?(:ayuda) %>
+                <%# ── Hospitalia (fondo de ayuda): las tres páginas exigen el cargo ── %>
+                <% if current_logia.modulo?(:ayuda) && current_user.tiene_cargo?("Hospitalario") %>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/hospitalia') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

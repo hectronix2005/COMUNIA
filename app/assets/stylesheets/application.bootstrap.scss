@@ -535,6 +535,9 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
 
   .bi, .alert-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
   .btn-close { margin-left: auto; }
+  // El padding de arriba anula el hueco que Bootstrap deja a la X absoluta y
+  // el texto se metía debajo: la X pasa al flujo flex.
+  &.alert-dismissible .btn-close { position: static; flex-shrink: 0; padding: 0.35rem; }
 
   &.alert-success { background: #ecfdf5; border-left-color: $success; color: #065f46; }
   &.alert-danger  { background: #fef2f2; border-left-color: $danger;  color: #991b1b; }

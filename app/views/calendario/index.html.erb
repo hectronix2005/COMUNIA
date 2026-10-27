@@ -111,6 +111,21 @@
                          white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:1px;
                          text-decoration:none; line-height:1.7; }
     .cal-allday-chip:hover { opacity:.85; color:#fff; }
+
+    /* Teléfono: el calendario a todo el ancho y el panel debajo, sin el
+       minicalendario ni su botón de crear (la barra ya tiene los dos). */
+    @media (max-width: 767.98px) {
+      .cal-layout        { flex-direction:column; height:auto; overflow:visible; }
+      .cal-main          { order:-1; }
+      .cal-sidebar       { width:100%; min-width:0; border-right:none; border-top:1px solid #dee2e6; overflow:visible; }
+      .cal-sidebar > .mini-cal, .cal-sidebar > .cal-sb-crear { display:none; }
+      .cal-toolbar       { flex-wrap:wrap; gap:6px; padding:8px 12px; }
+      .cal-toolbar-title { min-width:0; font-size:1.05rem; }
+      .cal-day           { min-height:68px; padding:2px; }
+      .cal-chip          { font-size:.62rem; padding:1px 3px; }
+      .cal-week-gutter, .cal-week-times, .cal-allday-gutter { width:36px; }
+      .cal-week-day-head .num { font-size:1rem; width:30px; height:30px; }
+    }
   </style>
 <% end %>
 
@@ -134,7 +149,7 @@
 
     <%# Nuevo evento button %>
     <% if puede_gestionar_calendario? %>
-      <div style="padding:14px 16px;">
+      <div class="cal-sb-crear" style="padding:14px 16px;">
         <%= link_to new_calendario_path(date: hoy, vista: @vista),
               class: "btn btn-sm d-flex align-items-center gap-2",
               style: "background:#fff;border:1px solid #dadce0;border-radius:24px;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:8px 16px;font-size:.85rem;color:#3c4043;" do %>
