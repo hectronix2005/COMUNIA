@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -843,6 +843,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_010000) do
     t.datetime "cumplido_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "recordatorio_enviado_at"
     t.index ["responsable_id", "cumplido_at"], name: "index_reunion_acuerdos_on_responsable_id_and_cumplido_at"
     t.index ["reunion_id"], name: "index_reunion_acuerdos_on_reunion_id"
   end

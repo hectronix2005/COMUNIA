@@ -580,6 +580,14 @@ No hecho o no comprobado:
 - La publicada la descarga quien ve la reunión; el borrador, solo quien la gestiona. Prawn, como el paquete de
   DENUNCIAPP (`app/services/acta_pdf.rb`). Sin migración. Pruebas: test/integration/acta_pdf_test.rb.
 
+## Recordatorio de los acuerdos (26-oct, pendiente de desplegar)
+
+- Cada día a las 7:10, quien se encarga de un acuerdo sin cumplir que vence hoy o mañana recibe «Vence hoy/mañana:
+  …» (aviso y push), una sola vez por acuerdo. No a quien ya no es miembro activo, ni de reuniones canceladas o de
+  grupos sin el módulo. Al 26-oct no hay reuniones ni acuerdos en producción: no sale ningún aviso hasta que los haya.
+- `RecordatorioAcuerdosJob` en config/recurring.yml. Migración: `reunion_acuerdos.recordatorio_enviado_at`.
+  Pruebas: test/jobs/recordatorio_acuerdos_job_test.rb.
+
 ## Pendiente de Héctor
 
 (Nada de esto se hace en el piloto.)
