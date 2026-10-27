@@ -60,7 +60,7 @@ gem "devise_invitable", "~> 2.0", ">= 2.0.14"
 gem "pundit", "~> 2.4"
 
 # Pagination
-gem "kaminari", "~> 1.2"
+gem "kaminari", "~> 1.3"
 
 # Excel export
 gem "caxlsx", "~> 4.1"
