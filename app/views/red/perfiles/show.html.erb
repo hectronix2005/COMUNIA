@@ -7,7 +7,7 @@
   <% if @ficha.resenas.positive? %>
     <p class="small mb-2"><i class="bi bi-star-fill text-warning" aria-hidden="true"></i> <%= @ficha.promedio %> de 5 · <%= @ficha.resenas %> reseñas verificadas</p>
   <% end %>
-  <% if @ficha.bio.present? %><div class="mb-2" style="white-space: pre-line;"><%= @ficha.bio %></div><% end %>
+  <% if @ficha.bio.present? %><div class="texto-usuario mb-2"><%= @ficha.bio %></div><% end %>
   <% if @ficha.habilidades.present? %>
     <div class="d-flex flex-wrap gap-1 mb-2">
       <% @ficha.habilidades.split(",").map(&:strip).compact_blank.first(15).each do |h| %><span class="red-chip"><%= h %></span><% end %>

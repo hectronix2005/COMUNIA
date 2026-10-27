@@ -7,7 +7,7 @@
   </div>
   <h1 class="h5"><%= @publicacion.titulo %></h1>
   <% if @publicacion.precio_texto.present? %><p class="fw-semibold mb-2"><%= @publicacion.precio_texto %></p><% end %>
-  <div class="mb-3" style="white-space: pre-line;"><%= @publicacion.descripcion %></div>
+  <div class="texto-usuario mb-3"><%= @publicacion.descripcion %></div>
   <p class="small text-muted mb-0">Publicada el <%= l(@publicacion.created_at.to_date) %> · vigente hasta el <%= l(@publicacion.vence_el) %></p>
 </div></article>
 

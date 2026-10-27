@@ -42,7 +42,7 @@
 
       <% if @reunion.orden_del_dia.present? %>
         <h6 class="fw-bold small text-muted text-uppercase mt-4 mb-2">Orden del día</h6>
-        <div style="white-space:pre-wrap;"><%= @reunion.orden_del_dia %></div>
+        <div class="texto-usuario"><%= @reunion.orden_del_dia %></div>
       <% end %>
 
       <% if @reunion.convocada? %>
@@ -101,7 +101,7 @@
           <h6 class="fw-bold small text-muted text-uppercase mb-2">
             Acta <% unless @reunion.acta_publicada? %><span class="badge bg-warning text-dark ms-1">Borrador, solo la ves tú</span><% end %>
           </h6>
-          <div style="white-space:pre-wrap;"><%= @reunion.acta %></div>
+          <div class="texto-usuario"><%= @reunion.acta %></div>
           <%= link_to acta_pdf_reunion_path(@reunion), class: "btn btn-sm btn-outline-secondary mt-2", data: { turbo: false } do %>
             <i class="bi bi-file-earmark-pdf me-1"></i>Descargar en PDF
           <% end %>

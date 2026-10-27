@@ -36,7 +36,7 @@
       </div>
 
       <% if @plancha.descripcion.present? %>
-        <div style="white-space:pre-wrap;" class="mb-3"><%= @plancha.descripcion %></div>
+        <div class="texto-usuario mb-3"><%= @plancha.descripcion %></div>
       <% end %>
 
       <% if @plancha.documento.attached? %>

@@ -814,3 +814,39 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
   .acceso .icono-chip { width: 1.9rem; height: 1.9rem; font-size: .95rem; }
   .acceso .acceso-titulo { font-size: .875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+// Texto que escribe la gente (descripciones, actas, mensajes): respeta los saltos de línea y parte palabras largas
+.texto-usuario { white-space: pre-wrap; overflow-wrap: break-word; }
+.campo-corto { max-width: 9rem; }
+.campo-medio { max-width: 12rem; }
+.burbuja { max-width: 85%; }
+
+// ── Red y Denuncias: misma identidad que la app (marino, acento dorado, grises) ──
+.red-barra, .denuncias-barra {
+  background: linear-gradient(135deg, rgba($navy, .97) 0%, rgba($navy-dark, .98) 100%);
+  border-bottom: 1px solid rgba($gold, .25);
+
+  .navbar-brand, .nav-link { color: #fff; white-space: nowrap; }
+  .nav-link:hover, .nav-link:focus { color: $gold; }
+}
+.red-saltar { position: absolute; left: -999px; top: 0; z-index: 2000; }
+.red-saltar:focus { left: 1rem; top: .5rem; background: #fff; padding: .5rem 1rem; border-radius: .5rem; }
+.red-nivel {
+  display: inline-flex; align-items: center; gap: .25rem; font-size: .8rem; border-radius: 1rem;
+  padding: .1rem .55rem; background: #e2e8f0; color: $dark;
+  &[data-nivel="2"] { background: #d1fae5; color: #064e3b; }
+  &[data-nivel="3"] { background: #a7f3d0; color: #064e3b; }
+  &[data-nivel="4"] { background: $success; color: #fff; }
+}
+.red-tarjeta { border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: none; }
+.red-chip {
+  font-size: .75rem; border-radius: 1rem; padding: .1rem .55rem; background: rgba($navy, .07); color: $navy;
+  &.ofrezco { background: rgba($success, .1); color: #065f46; }
+}
+a.red-tarjeta-enlace { color: inherit; text-decoration: none; }
+a.red-tarjeta-enlace:hover .red-tarjeta { border-color: rgba($navy, .35); }
+a.red-tarjeta-enlace:focus-visible { outline: 3px solid $gold; outline-offset: 2px; }
+// Los avisos de la app son flex (icono + texto); en Denuncias llevan texto con negritas y enlaces
+body.denuncias .alert { display: block; }
+.denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
+.denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #d1fae5; color: #064e3b; }

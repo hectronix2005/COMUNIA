@@ -38,7 +38,7 @@
     <p class="small">Se borran tu perfil, tus publicaciones, tus membresías, tus conversaciones y tus reseñas. No se puede deshacer.
       <% if current_user.solo_red? %>También se borra tu cuenta.<% end %></p>
     <label class="form-label small" for="p-borrar">Escribe BORRAR para confirmar</label>
-    <input class="form-control form-control-sm mb-2" id="p-borrar" name="confirmacion" autocomplete="off" style="max-width: 12rem;">
+    <input class="form-control form-control-sm mb-2 campo-medio" id="p-borrar" name="confirmacion" autocomplete="off">
     <button class="btn btn-danger btn-sm" type="submit">Borrar definitivamente</button>
   <% end %>
 </details>

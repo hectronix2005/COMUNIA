@@ -59,7 +59,7 @@
                   <% end %>
                   <%= form_with url: decidir_red_comunidad_path(@comunidad, perfil: pt, accion: "revocar"), method: :post, class: "d-inline-flex gap-1" do %>
                     <label class="visually-hidden" for="rev-<%= m.id %>">Motivo de la revocación</label>
-                    <input id="rev-<%= m.id %>" name="motivo" class="form-control form-control-sm" placeholder="Motivo" maxlength="500" required style="max-width: 9rem;">
+                    <input id="rev-<%= m.id %>" name="motivo" class="form-control form-control-sm campo-corto" placeholder="Motivo" maxlength="500" required>
                     <button class="btn btn-outline-danger btn-sm" type="submit">Revocar</button>
                   <% end %>
                 <% end %>

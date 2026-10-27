@@ -53,7 +53,7 @@
         <div class="card-body p-4">
           <h5 class="fw-bold mb-3">Descripción</h5>
           <% if @anuncio.descripcion.present? %>
-            <div style="white-space: pre-wrap;" class="text-body"><%= @anuncio.descripcion %></div>
+            <div class="texto-usuario text-body"><%= @anuncio.descripcion %></div>
           <% else %>
             <p class="text-muted fst-italic mb-0">Sin descripción.</p>
           <% end %>

@@ -3,7 +3,7 @@
   <head>
     <title><%= content_for?(:title) ? "#{yield(:title)} · Denuncias" : "Denuncias · Bogotá" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="theme-color" content="#1B2A4A">
+    <meta name="theme-color" content="#1a2744">
     <meta name="referrer" content="same-origin">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -12,16 +12,6 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-    <style>
-      body.denuncias { background: #f5f6f8; }
-      /* Los avisos de COMUNIA son flex (icono + texto); aquí llevan texto con negritas y enlaces. */
-      body.denuncias .alert { display: block; }
-      .denuncias-barra { background: #1B2A4A; }
-      .denuncias-barra .navbar-brand, .denuncias-barra .nav-link { color: #fff; white-space: nowrap; }
-      .denuncias-barra .nav-link:hover, .denuncias-barra .nav-link:focus { color: rgba(255,255,255,.85); }
-      .denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
-      .denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #d1e7dd; color: #0a3622; }
-    </style>
   </head>
 
   <body class="denuncias d-flex flex-column min-vh-100">
