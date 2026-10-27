@@ -572,7 +572,7 @@ No hecho o no comprobado:
 - Migración: `reuniones.acta_aprobada_at` y `acta_aprobada_en_id` (a la reunión, `on_delete: :nullify`).
   Pruebas: test/integration/aprobar_acta_test.rb.
 
-## Acta en PDF (26-oct, pendiente de desplegar)
+## Acta en PDF (26-oct, desplegado: eeae6aa, en piloto automático por decisión de Héctor)
 
 - En el acta de la reunión, «Descargar en PDF»: convocatoria, orden del día, asistencia (nombres, quórum), el acta,
   los acuerdos (responsable, fecha, cumplido o pendiente), las votaciones cerradas (con nombres solo si no fueron
