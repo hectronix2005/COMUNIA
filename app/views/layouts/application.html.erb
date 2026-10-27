@@ -55,7 +55,7 @@
             <% end %>
           <% end %>
 
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Abrir el menú">
             <span class="navbar-toggler-icon"></span>
           </button>
 
@@ -159,7 +159,7 @@
                     <i class="bi bi-people-fill"></i> Comunidad
                   </a>
                   <ul class="dropdown-menu">
-                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">SOCIAL</h6></li>
+                    <li><h6 class="dropdown-header menu-grupo">SOCIAL</h6></li>
                     <li>
                       <%= link_to publicaciones_path, class: "dropdown-item #{'active' if request.path.start_with?('/publicaciones')}" do %>
                         <i class="bi bi-newspaper me-2"></i>Muro
@@ -176,14 +176,14 @@
                       <% end %>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
-                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">MIEMBROS</h6></li>
+                    <li><h6 class="dropdown-header menu-grupo">MIEMBROS</h6></li>
                     <li>
                       <%= link_to directorio_index_path, class: "dropdown-item #{'active' if request.path.start_with?('/directorio')}" do %>
                         <i class="bi bi-person-vcard me-2"></i>Directorio
                       <% end %>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
-                    <li><h6 class="dropdown-header" style="font-size:.68rem;letter-spacing:.06em;">EVENTOS</h6></li>
+                    <li><h6 class="dropdown-header menu-grupo">EVENTOS</h6></li>
                     <% if current_logia.modulo?(:reuniones) %>
                       <li>
                         <%= link_to reuniones_path, class: "dropdown-item #{'active' if request.path.include?('/reuniones')}" do %>
@@ -251,12 +251,6 @@
                     <li>
                       <%= link_to hospitalia_gastos_path, class: "dropdown-item #{'active' if request.path.start_with?('/hospitalia/gastos')}" do %>
                         <i class="bi bi-arrow-up-circle me-2 text-danger"></i>Gastos
-                      <% end %>
-                    </li>
-                    <li><hr class="dropdown-divider my-1"></li>
-                    <li>
-                      <%= link_to hospitalia_cumpleanos_path, class: "dropdown-item #{'active' if request.path.start_with?('/hospitalia/cumpleanos')}" do %>
-                        <i class="bi bi-balloon-heart me-2 text-warning"></i>Cumpleaños
                       <% end %>
                     </li>
                   </ul>
@@ -387,6 +381,23 @@
           </div>
         </div>
       </main>
+
+      <%# Barra inferior en el móvil: los destinos de cada día a un toque; «Menú» abre el resto. %>
+      <% unless platform_admin_context? %>
+        <nav class="barra-inferior d-flex d-lg-none" aria-label="Navegación principal">
+          <% [[dashboard_path, "house", "Inicio", current_page?(dashboard_path) || current_page?(root_path)],
+              [calendario_index_path, "calendar3", "Agenda", request.path.start_with?("/calendario") || request.path.include?("/reuniones")],
+              [publicaciones_path, "newspaper", "Muro", request.path.start_with?("/publicaciones")],
+              [chat_path, "chat-dots", "Chat", request.path.start_with?("/chat")]].each do |ruta, icono, texto, activa| %>
+            <%= link_to ruta, aria: { current: ("page" if activa) } do %>
+              <i class="bi bi-<%= icono %>"></i><%= texto %>
+            <% end %>
+          <% end %>
+          <button type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false">
+            <i class="bi bi-list"></i>Menú
+          </button>
+        </nav>
+      <% end %>
 
       <footer class="footer mt-auto py-3 border-top bg-white">
         <div class="container-fluid px-4 text-center text-muted small">

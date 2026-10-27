@@ -14,6 +14,17 @@
   <%= render "dashboard/activar_avisos" %>
   <%= render "reuniones/proxima" %>
   <%= render "dashboard/mis_acuerdos" %>
+  <%# Lo que le toca hoy a quien administra, antes que los módulos plegados. %>
+  <% if @soporte_adjunto.positive? %>
+    <%= link_to cobros_path(estado: "soporte_adjunto"), class: "acceso mb-4" do %>
+      <span class="icono-chip chip-info"><i class="bi bi-paperclip"></i></span>
+      <span class="flex-grow-1 min-w-0">
+        <span class="acceso-titulo d-block"><%= @soporte_adjunto == 1 ? "1 pago espera que lo valides" : "#{@soporte_adjunto} pagos esperan que los valides" %></span>
+        <span class="acceso-detalle">Enviaron el soporte; revísalo y confírmalo.</span>
+      </span>
+      <i class="bi bi-chevron-right text-muted"></i>
+    <% end %>
+  <% end %>
   <%= render "calendario/proximos" %>
   <%= render "adopcion" %>
 
@@ -163,12 +174,12 @@
               [directorio_index_path, "bi-person-vcard", "Directorio", "Perfiles de miembros"],
               [calendario_index_path, "bi-calendar3", "Calendario", "Eventos y asistencia"],
               [hospitalia_cumpleanos_path, "bi-balloon-heart", "Cumpleaños", "#{@hospitalia_cumpleanos || 0} próximos"]].each do |ruta, icono, titulo, detalle| %>
-            <div class="col-12 col-sm-6 col-xl-4">
+            <div class="col-6 col-xl-4">
               <%= link_to ruta, class: "acceso" do %>
                 <span class="icono-chip"><i class="bi <%= icono %>"></i></span>
                 <span class="min-w-0">
                   <span class="acceso-titulo d-block"><%= titulo %></span>
-                  <span class="acceso-detalle"><%= detalle %></span>
+                  <span class="acceso-detalle d-none d-sm-inline"><%= detalle %></span>
                 </span>
               <% end %>
             </div>

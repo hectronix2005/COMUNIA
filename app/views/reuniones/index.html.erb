@@ -28,8 +28,12 @@
     <% else %>
       <div class="text-center text-muted py-4 mb-4 border rounded">
         <i class="bi bi-calendar-event fs-2 d-block mb-1 opacity-25"></i>
-        Nada convocado por ahora.
+        Nada convocado por ahora<%= " como #{current_logia.t_reunion.downcase}" if proximos_eventos.any? %>.
+        <% if proximos_eventos.any? %>
+          <div class="small mt-1">Los próximos eventos del calendario salen aquí debajo.</div>
+        <% end %>
       </div>
+      <%= render "calendario/proximos" %>
     <% end %>
 
     <% if @pasadas.any? %>

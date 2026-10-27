@@ -10,9 +10,9 @@
     <ul class="list-group list-group-flush">
       <% proximos_eventos.each do |evento, respuesta| %>
         <li class="list-group-item d-flex flex-wrap align-items-center gap-3">
-          <div class="text-center flex-shrink-0" style="width:56px;">
+          <div class="fecha-bloque">
             <div class="fw-bold fs-5 lh-1"><%= evento.inicio.day %></div>
-            <div class="text-muted text-uppercase" style="font-size:.7rem;"><%= I18n.l(evento.inicio, format: "%b") %></div>
+            <div class="fecha-bloque-mes"><%= I18n.l(evento.inicio, format: "%b") %></div>
           </div>
           <div class="flex-grow-1 min-w-0">
             <%= link_to evento.titulo, calendario_path(evento), class: "fw-semibold text-decoration-none d-block text-truncate" %>

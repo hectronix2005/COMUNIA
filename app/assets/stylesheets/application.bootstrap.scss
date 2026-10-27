@@ -670,7 +670,8 @@ a, button, .btn, .nav-link, .dropdown-item, .form-control, .form-select, .page-l
 }
 
 // ── Responsive hardening ──
-html, body { overflow-x: hidden; max-width: 100%; }
+// clip, no hidden: hidden convierte html/body en contenedor de scroll y rompe la barra fija (sticky)
+html, body { overflow-x: clip; max-width: 100%; }
 img, video, table { max-width: 100%; }
 body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 .table-responsive { -webkit-overflow-scrolling: touch; }
@@ -774,3 +775,42 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
 }
 .progress-fina { height: 8px; }
 .min-w-distribucion { min-width: 180px; }
+
+// Encabezado de grupo dentro de un desplegable del menú
+.dropdown-header.menu-grupo { font-size: .68rem; letter-spacing: .06em; }
+
+// Fecha en bloque (día grande, mes pequeño) para listas de eventos
+.fecha-bloque { width: 56px; flex-shrink: 0; text-align: center; }
+.fecha-bloque-mes { font-size: .7rem; text-transform: uppercase; color: #64748b; }
+
+// Barra inferior del móvil: Inicio, Agenda, Muro, Chat y Menú
+.barra-inferior {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030;
+  background: #fff; border-top: 1px solid #e2e8f0;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 12px rgba(15, 23, 42, .06);
+
+  a, button {
+    flex: 1; min-height: 56px; padding: .45rem 0 .35rem;
+    background: none; border: 0; text-align: center; text-decoration: none;
+    font: inherit; font-size: .72rem; line-height: 1.2; color: #64748b;
+  }
+  i { display: block; font-size: 1.3rem; line-height: 1.2; }
+  a[aria-current="page"] { color: $navy; font-weight: 600; }
+  a:focus-visible, button:focus-visible { outline: 3px solid $gold; outline-offset: -3px; }
+}
+
+@media (max-width: 991.98px) {
+  // Hueco para que la barra inferior no tape el final de la página
+  body:has(.barra-inferior) { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+  // El menú se abre desde la barra inferior: la barra de arriba queda a la vista y su lista hace scroll
+  .navbar-main { position: sticky; top: 0; z-index: 1031; }
+  .navbar-main .navbar-collapse { max-height: calc(100vh - 140px); overflow-y: auto; }
+}
+
+// En el teléfono los accesos van de dos en dos: menos relleno y chip más pequeño para que quepa el título
+@media (max-width: 575.98px) {
+  .acceso { padding: .7rem .65rem; gap: .5rem; }
+  .acceso .icono-chip { width: 1.9rem; height: 1.9rem; font-size: .95rem; }
+  .acceso .acceso-titulo { font-size: .875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
