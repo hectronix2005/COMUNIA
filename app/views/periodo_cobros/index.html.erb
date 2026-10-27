@@ -36,7 +36,7 @@
                 <% if logia.tiene_conceptos? %>
                   <small class="text-muted">
                     <% logia.conceptos_cobro.activos.ordenados.each_with_index do |c, i| %>
-                      <%= c.nombre %>: <strong><%= number_to_currency(c.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong><%= i < logia.conceptos_cobro.activos.count - 1 ? " &middot; " : "" %>
+                      <%= c.nombre %>: <strong><%= number_to_currency(c.monto, unit: "$", delimiter: ".", separator: ",", precision: 0) %></strong><%= i < logia.conceptos_cobro.activos.count - 1 ? " · " : "" %>
                     <% end %>
                   </small>
                 <% else %>

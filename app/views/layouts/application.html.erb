@@ -317,19 +317,20 @@
                 </div>
               </li>
 
-              <li class="nav-item me-2 d-none d-lg-block">
+              <li class="nav-item me-2 d-none d-xxl-block">
                 <span class="badge rounded-pill <%= current_user.rol_ref&.es_super_admin? ? 'bg-warning text-dark' : (current_user.tiene_permiso?('miembros', 'index') ? 'bg-info' : 'bg-light text-dark') %>">
                   <%= current_user.nombre_rol %>
                 </span>
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-person-circle"></i> <%= current_user.nombre_corto %>
+                  <i class="bi bi-person-circle"></i> <span class="d-lg-none d-xxl-inline"><%= current_user.nombre_corto %></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
+                  <li><span class="dropdown-item-text fw-semibold d-none d-lg-block d-xxl-none"><%= current_user.nombre_corto %></span></li>
                   <li><span class="dropdown-item-text text-muted small"><%= current_user.email %></span></li>
                   <li>
-                    <span class="dropdown-item-text d-lg-none">
+                    <span class="dropdown-item-text d-xxl-none">
                       <span class="badge rounded-pill <%= current_user.rol_ref&.es_super_admin? ? 'bg-warning text-dark' : (current_user.tiene_permiso?('miembros', 'index') ? 'bg-info' : 'bg-light text-dark') %>">
                         <%= current_user.nombre_rol %>
                       </span>

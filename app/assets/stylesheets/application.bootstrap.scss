@@ -870,3 +870,16 @@ a.red-tarjeta-enlace:focus-visible { outline: 3px solid $gold; outline-offset: 2
 body.denuncias .alert { display: block; }
 .denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
 .denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #d1fae5; color: #064e3b; }
+
+// Escritorio: con todos los menús del administrador la barra no cabía, la marca desaparecía y el menú
+// del usuario quedaba fuera de la pantalla. Cada enlace en una línea y, si aun así no caben, pasan a otra fila.
+@media (min-width: 992px) {
+  .navbar-main .navbar-brand { flex-shrink: 0; max-width: 14rem; }
+  .navbar-main .nav-link { white-space: nowrap; }
+  .navbar-main .navbar-nav.me-auto { flex-wrap: wrap; }
+}
+// Hasta 1399 px: enlaces más juntos y sin icono; el rol y el nombre del usuario van a su desplegable.
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .navbar-main .nav-link { padding: .5rem .55rem !important; }
+  .navbar-main .navbar-nav.me-auto .nav-link > .bi { display: none; }
+}

@@ -32,6 +32,12 @@ class MonitorTest < ActionDispatch::IntegrationTest
     assert_predicate error.traza, :present?
   end
 
+  test "un error de rails runner no se registra ni avisa" do
+    assert_no_difference -> { ErrorApp.count } do
+      Rails.error.report(lanzado(NameError, "consulta mal escrita"), handled: false, source: "application.runner.railties")
+    end
+  end
+
   test "cada huella avisa la primera vez y al volver tras darla por resuelta" do
     reportar = -> { Rails.error.report(lanzado(RuntimeError, "boom"), handled: false) }
 

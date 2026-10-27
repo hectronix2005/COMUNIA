@@ -14,8 +14,7 @@
     <thead class="table-dark">
       <tr>
         <th>Nombre</th>
-        <th>Codigo</th>
-        <th>Descripcion</th>
+        <th>Código</th>
         <th>Comunidad</th>
         <th>Grupo</th>
         <th>Usuarios</th>
@@ -53,9 +52,11 @@
         <% combos.each_with_index do |((tenant, grupo), usuarios), idx| %>
           <tr>
             <% if idx.zero? %>
-              <td class="fw-semibold" rowspan="<%= filas %>"><%= rol.nombre %></td>
+              <td rowspan="<%= filas %>">
+                <div class="fw-semibold"><%= rol.nombre %></div>
+                <% if rol.descripcion.present? %><div class="text-muted small"><%= rol.descripcion %></div><% end %>
+              </td>
               <td rowspan="<%= filas %>"><code><%= rol.codigo %></code></td>
-              <td class="text-muted small" rowspan="<%= filas %>"><%= rol.descripcion %></td>
             <% end %>
             <td>
               <% if tenant %>
@@ -66,14 +67,14 @@
             </td>
             <td>
               <% if grupo %>
-                <span class="badge bg-light text-dark border"><code><%= grupo.codigo %></code> <%= grupo.nombre_display %></span>
+                <span class="badge bg-light text-dark border text-wrap text-start"><code><%= grupo.codigo %></code> <%= grupo.nombre_display %></span>
               <% else %>
                 <span class="text-muted small">—</span>
               <% end %>
             </td>
             <td>
               <% if usuarios.any? %>
-                <button class="btn btn-sm btn-outline-secondary" type="button"
+                <button class="btn btn-sm btn-outline-secondary text-nowrap" type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#usuarios-rol-<%= rol.id %>-<%= idx %>"
                         aria-expanded="false">
@@ -106,21 +107,23 @@
                 <% end %>
               </td>
               <td rowspan="<%= filas %>">
-                <%= link_to role_path(rol), class: "btn btn-sm btn-outline-primary" do %>
-                  <i class="bi bi-eye"></i> Ver
-                <% end %>
-                <% if policy(rol).update? %>
-                  <%= link_to edit_role_path(rol), class: "btn btn-sm btn-outline-secondary" do %>
-                    <i class="bi bi-pencil"></i>
+                <div class="d-flex gap-1 flex-nowrap">
+                  <%= link_to role_path(rol), class: "btn btn-sm btn-outline-primary text-nowrap" do %>
+                    <i class="bi bi-eye"></i> Ver
                   <% end %>
-                <% end %>
-                <% if policy(rol).destroy? %>
-                  <%= button_to role_path(rol), method: :delete,
-                        class: "btn btn-sm btn-outline-danger",
-                        form: { data: { turbo_confirm: "¿Seguro que desea eliminar este rol?" } } do %>
-                    <i class="bi bi-trash"></i>
+                  <% if policy(rol).update? %>
+                    <%= link_to edit_role_path(rol), class: "btn btn-sm btn-outline-secondary" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
                   <% end %>
-                <% end %>
+                  <% if policy(rol).destroy? %>
+                    <%= button_to role_path(rol), method: :delete,
+                          class: "btn btn-sm btn-outline-danger",
+                          form: { data: { turbo_confirm: "¿Seguro que desea eliminar este rol?" } } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  <% end %>
+                </div>
               </td>
             <% end %>
           </tr>
