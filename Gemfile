@@ -80,7 +80,7 @@ gem "pdf-reader", "~> 2.12"
 gem "prawn", "~> 2.5"
 
 # Lectura de archivos Excel/CSV para conciliacion de cortes
-gem "roo", "~> 3.0"
+gem "roo", "~> 4.0"
 gem "csv", "~> 3.3"   # Ruby 3.4: csv ya no es default gem, requerido por roo
 
 # QR de asistencia a las reuniones (SVG en el servidor)
