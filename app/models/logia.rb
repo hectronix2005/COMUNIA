@@ -11,6 +11,7 @@ class Logia < ApplicationRecord
   has_many :miembros, dependent: :destroy
   has_many :conceptos_cobro, dependent: :destroy
   has_many :tarifas, dependent: :destroy
+  has_many :solicitudes_acceso, class_name: "SolicitudAcceso", dependent: :destroy
   has_one_attached :logo
   validates_attachment :logo, types: :image, max: 5.megabytes
 
@@ -39,6 +40,24 @@ class Logia < ApplicationRecord
 
   scope :tenants_raiz,   -> { where(tenant_id: nil) }
   scope :por_subdominio, ->(sub) { find_by(slug: sub) }
+
+  # ── Código para pedir acceso ─────────────────────────────────
+  # Lo comparten los administradores para que alguien pida entrar (PedirAccesoController). Seis letras y
+  # números sin los que se confunden (0/O, 1/I/L, 2/Z, 5/S, 8/B); cambiarlo anula el anterior.
+  ALFABETO_ACCESO = "ACDEFGHJKMNPQRTUVWXY34679".chars.freeze
+
+  def self.por_codigo_acceso(texto)
+    codigo = texto.to_s.upcase.gsub(/[^A-Z0-9]/, "")
+    find_by(codigo_acceso: codigo) if codigo.length == 6
+  end
+
+  def renovar_codigo_acceso!
+    update_column(:codigo_acceso, Array.new(6) { ALFABETO_ACCESO.sample(random: SecureRandom) }.join)
+  rescue ActiveRecord::RecordNotUnique
+    retry
+  end
+
+  def codigo_acceso_legible = codigo_acceso && "#{codigo_acceso[0, 3]}-#{codigo_acceso[3, 3]}"
 
   # ── Branding helpers ──────────────────────────────────────────
   def nombre_display  = nombre_app.presence || nombre

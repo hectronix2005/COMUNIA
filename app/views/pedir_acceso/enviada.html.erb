@@ -1,0 +1,12 @@
+<% content_for :title, "Solicitud enviada" %>
+<div class="login-wrapper">
+  <div class="login-card login-card-ancha text-center">
+    <div class="display-6 text-success mb-2"><i class="bi bi-hourglass-split"></i></div>
+    <h1 class="h4 fw-bold">Solicitud enviada</h1>
+    <p>
+      Ya la tienen los administradores de <%= @comunidad.presence || "tu comunidad" %>. Cuando la aprueben, entra con
+      tu correo y la contraseña que elegiste. Si tarda, escríbele a uno de ellos.
+    </p>
+    <%= link_to "Ir a entrar", new_user_session_path, class: "btn btn-primary" %>
+  </div>
+</div>

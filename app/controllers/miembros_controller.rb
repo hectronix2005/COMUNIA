@@ -9,6 +9,9 @@ class MiembrosController < ApplicationController
     @resumen_estados = base.group(:estado).count
     activos = base.where(estado: :activo)
     @acceso = { activos: activos.count, entraron: activos.joins(:user).where.not(users: { last_seen_at: nil }).count }
+    if policy(SolicitudAcceso).index?
+      @solicitudes_pendientes = policy_scope(SolicitudAcceso).pendiente.where(logia_id: logia_ids_de_la_organizacion).count
+    end
 
     @miembros = base.includes(:user, :logia)
 

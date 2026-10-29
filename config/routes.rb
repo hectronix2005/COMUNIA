@@ -157,6 +157,17 @@ Rails.application.routes.draw do
     resources :conceptos_cobro, path: "conceptos"
     resources :tarifas, only: [:index, :new, :create, :edit, :update, :destroy]
   end
+  # Pedir acceso con el código de la comunidad (público) y resolver esas solicitudes (administradores).
+  get  "pedir-acceso",         to: "pedir_acceso#new",     as: :pedir_acceso
+  post "pedir-acceso",         to: "pedir_acceso#create"
+  get  "pedir-acceso/enviada", to: "pedir_acceso#enviada", as: :pedir_acceso_enviada
+  scope "solicitudes", controller: :solicitudes_acceso do
+    get  "/",              action: :index,          as: :solicitudes_acceso
+    post "codigo",         action: :renovar_codigo, as: :renovar_codigo_acceso
+    get  ":id",            action: :show,           as: :solicitud_acceso, constraints: { id: /\d+/ }
+    post ":id/aprobar",    action: :aprobar,        as: :aprobar_solicitud_acceso, constraints: { id: /\d+/ }
+    post ":id/rechazar",   action: :rechazar,       as: :rechazar_solicitud_acceso, constraints: { id: /\d+/ }
+  end
   resources :miembros do
     collection do
       get  :acceso, action: :acceso_pendiente

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -391,7 +391,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_030000) do
     t.string "slug"
     t.bigint "tenant_id"
     t.bigint "categoria_id"
+    t.string "codigo_acceso"
     t.index ["categoria_id"], name: "index_logias_on_categoria_id"
+    t.index ["codigo_acceso"], name: "index_logias_on_codigo_acceso", unique: true
     t.index ["slug"], name: "index_logias_on_slug", unique: true
     t.index ["tenant_id", "codigo"], name: "index_logias_on_tenant_id_and_codigo", unique: true
     t.index ["tenant_id"], name: "index_logias_on_tenant_id"
@@ -939,6 +941,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_030000) do
     t.index ["nombre"], name: "index_roles_on_nombre", unique: true
   end
 
+  create_table "solicitudes_acceso", force: :cascade do |t|
+    t.bigint "logia_id", null: false
+    t.bigint "user_id"
+    t.string "nombre", null: false
+    t.string "apellido", null: false
+    t.string "email", null: false
+    t.text "prueba", null: false
+    t.string "estado", default: "pendiente", null: false
+    t.bigint "decidida_por_id"
+    t.datetime "decidida_at"
+    t.string "motivo"
+    t.bigint "miembro_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["decidida_por_id"], name: "index_solicitudes_acceso_on_decidida_por_id"
+    t.index ["logia_id", "estado"], name: "index_solicitudes_acceso_on_logia_id_and_estado"
+    t.index ["logia_id"], name: "index_solicitudes_acceso_on_logia_id"
+    t.index ["miembro_id"], name: "index_solicitudes_acceso_on_miembro_id"
+    t.index ["user_id"], name: "index_solicitudes_acceso_on_user_id"
+  end
+
   create_table "tarifas", force: :cascade do |t|
     t.bigint "logia_id", null: false
     t.decimal "monto", precision: 10, scale: 2, null: false
@@ -982,6 +1005,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_030000) do
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
     t.string "calendario_semilla"
+    t.boolean "espera_aprobacion", default: false, null: false
     t.index ["calendario_semilla"], name: "index_users_on_calendario_semilla", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -1086,6 +1110,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_030000) do
   add_foreign_key "rol_permisos", "permisos"
   add_foreign_key "rol_permisos", "roles", column: "rol_id"
   add_foreign_key "roles", "logias"
+  add_foreign_key "solicitudes_acceso", "logias"
+  add_foreign_key "solicitudes_acceso", "miembros", on_delete: :nullify
+  add_foreign_key "solicitudes_acceso", "users", column: "decidida_por_id", on_delete: :nullify
+  add_foreign_key "solicitudes_acceso", "users", on_delete: :nullify
   add_foreign_key "tarifas", "logias"
   add_foreign_key "tarifas", "users", column: "creado_por_id"
   add_foreign_key "users", "logias"

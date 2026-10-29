@@ -38,6 +38,12 @@ class Rack::Attack
     req.ip if req.path.end_with?("/invitacion")
   end
 
+  # Pedir acceso a una comunidad (también /t/:slug/pedir-acceso): formulario público con captcha que crea
+  # una cuenta en espera; además, contra probar códigos al azar.
+  throttle("pedir-acceso/ip", limit: 5, period: 1.hour) do |req|
+    req.ip if req.post? && req.path.match?(%r{(?:\A|/)pedir-acceso\z})
+  end
+
   # 4) POST /chat — máx 60 mensajes / minuto por usuario para mitigar floods.
   throttle("chat/ip", limit: 60, period: 1.minute) do |req|
     if req.post? && req.path.end_with?("/chat")

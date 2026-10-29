@@ -1,0 +1,57 @@
+<% content_for :title, "Pedir acceso" %>
+<div class="login-wrapper">
+  <div class="login-card login-card-ancha">
+    <h1 class="h4 fw-bold mb-1">Pide acceso a tu comunidad</h1>
+    <p class="small text-muted">
+      Usa el código que te dio un administrador de tu comunidad y cuéntale cómo perteneces a ella. Tu cuenta
+      quedará en espera hasta que lo apruebe; después entras con tu correo y tu contraseña.
+    </p>
+    <%= form_with url: pedir_acceso_path, method: :post, local: true, data: { turbo: false } do %>
+      <div class="mb-2">
+        <label class="form-label" for="pa-codigo">Código de la comunidad</label>
+        <input class="form-control text-uppercase" id="pa-codigo" name="codigo" required maxlength="20" autocomplete="off"
+               autocapitalize="characters" placeholder="Ej.: K7M-4QX" value="<%= @datos[:codigo] %>">
+      </div>
+      <div class="row g-2">
+        <div class="col-sm-6 mb-2">
+          <label class="form-label" for="pa-nombre">Nombre</label>
+          <input class="form-control" id="pa-nombre" name="nombre" required maxlength="60" autocomplete="given-name" value="<%= @datos[:nombre] %>">
+        </div>
+        <div class="col-sm-6 mb-2">
+          <label class="form-label" for="pa-apellido">Apellido</label>
+          <input class="form-control" id="pa-apellido" name="apellido" required maxlength="60" autocomplete="family-name" value="<%= @datos[:apellido] %>">
+        </div>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="pa-email">Correo</label>
+        <input class="form-control" id="pa-email" name="email" type="email" required maxlength="120" autocomplete="email" value="<%= @datos[:email] %>">
+      </div>
+      <div class="row g-2">
+        <div class="col-sm-6 mb-2">
+          <label class="form-label" for="pa-clave">Contraseña</label>
+          <input class="form-control" id="pa-clave" name="password" type="password" required minlength="10" maxlength="128" autocomplete="new-password" aria-describedby="pa-clave-ayuda">
+          <div id="pa-clave-ayuda" class="form-text">Mínimo 10 caracteres.</div>
+        </div>
+        <div class="col-sm-6 mb-2">
+          <label class="form-label" for="pa-clave2">Repítela</label>
+          <input class="form-control" id="pa-clave2" name="password_confirmation" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+        </div>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="pa-prueba">¿Cómo perteneces a la comunidad?</label>
+        <textarea class="form-control" id="pa-prueba" name="prueba" rows="3" required minlength="10" maxlength="1000" aria-describedby="pa-prueba-ayuda"><%= @datos[:prueba] %></textarea>
+        <div id="pa-prueba-ayuda" class="form-text">Por ejemplo: tu número de miembro, desde cuándo estás o quién te presentó. Solo lo ven sus administradores.</div>
+      </div>
+      <div class="form-check my-3">
+        <input class="form-check-input" type="checkbox" value="1" id="pa-acepto" name="acepto" required>
+        <label class="form-check-label small" for="pa-acepto">
+          Autorizo el tratamiento de mis datos personales para que los administradores de la comunidad revisen mi
+          solicitud y me den acceso (Ley 1581 de 2012), según la <%= link_to "política de privacidad", red_privacidad_path, target: "_blank" %>.
+        </label>
+      </div>
+      <%= render "red/shared/captcha" %>
+      <button class="btn btn-primary w-100" type="submit">Pedir acceso</button>
+    <% end %>
+    <p class="small mt-3 mb-0 text-center">¿Ya tienes cuenta? <%= link_to "Entra", new_user_session_path %></p>
+  </div>
+</div>

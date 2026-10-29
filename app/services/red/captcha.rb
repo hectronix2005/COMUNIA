@@ -12,6 +12,9 @@ module Red
 
     def site_key = ENV["TURNSTILE_SITE_KEY"].presence
 
+    # Sin clave, los formularios públicos solo se abren en desarrollo y pruebas.
+    def disponible? = configurado? || Rails.env.local?
+
     # En pruebas se sustituye con Red::Captcha.verificador = ->(token) { … }
     mattr_accessor :verificador
 

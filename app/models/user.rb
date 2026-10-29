@@ -45,6 +45,10 @@ class User < ApplicationRecord
   before_validation :generate_username, on: :create, if: -> { username.blank? }
   before_validation -> { self.rol = ROL_POR_CODIGO.fetch(rol_ref.codigo, "miembro") }, if: :rol_ref
 
+  # Quien pidió acceso con el código de su comunidad no entra hasta que un administrador lo apruebe.
+  def active_for_authentication? = super && !espera_aprobacion?
+  def inactive_message = espera_aprobacion? ? :espera_aprobacion : super
+
   def self.find_for_database_authentication(warden_conditions)
     login = warden_conditions[:email].to_s.strip
     return nil if login.blank?

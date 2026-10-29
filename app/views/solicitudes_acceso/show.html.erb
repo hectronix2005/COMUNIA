@@ -1,0 +1,79 @@
+<% content_for(:title, "Solicitud de #{@solicitud.nombre_completo}") %>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h4 mb-0"><%= @solicitud.nombre_completo %></h1>
+  <%= link_to "Todas las solicitudes", solicitudes_acceso_path, class: "btn btn-outline-secondary btn-sm" %>
+</div>
+
+<div class="card mb-3"><div class="card-body">
+  <dl class="row mb-0">
+    <dt class="col-sm-3">Pide entrar a</dt><dd class="col-sm-9"><%= @solicitud.logia.nombre_display %></dd>
+    <dt class="col-sm-3">Correo</dt><dd class="col-sm-9 text-break"><%= @solicitud.email %></dd>
+    <dt class="col-sm-3">Lo pidió</dt><dd class="col-sm-9"><%= l(@solicitud.created_at, format: :short) %></dd>
+    <dt class="col-sm-3">Su prueba</dt><dd class="col-sm-9" style="white-space: pre-line;"><%= @solicitud.prueba %></dd>
+  </dl>
+</div></div>
+
+<% if !@solicitud.pendiente? %>
+  <div class="alert alert-secondary">
+    Esta solicitud ya está <strong><%= @solicitud.estado %></strong>
+    <% if @solicitud.decidida_por %>por <%= @solicitud.decidida_por.nombre_corto %><% end %>.
+    <% if @solicitud.motivo.present? %><br>Motivo: <%= @solicitud.motivo %><% end %>
+  </div>
+<% else %>
+  <div class="card mb-3"><div class="card-body">
+    <h2 class="h6 fw-bold">Aprobar con su ficha</h2>
+    <p class="small text-muted">
+      Elige su ficha entre quienes aún no han entrado a la app. Su cuenta tomará el correo y la contraseña que eligió
+      al pedir acceso.
+    </p>
+    <% if @fichas.empty? %>
+      <p class="small mb-0">No hay fichas sin acceso en <%= @solicitud.logia.nombre_display %>. Si es alguien nuevo, créale una abajo.</p>
+    <% else %>
+      <%= form_with url: aprobar_solicitud_acceso_path(@solicitud), method: :post, class: "d-flex flex-wrap gap-2" do %>
+        <label class="visually-hidden" for="sa-ficha">Ficha</label>
+        <select class="form-select" id="sa-ficha" name="miembro_id" required style="max-width: 24rem;">
+          <option value="">Elige su ficha…</option>
+          <% @fichas.each do |m| %>
+            <option value="<%= m.id %>"><%= m.user.apellido %>, <%= m.user.nombre %> · Nº <%= m.numero_miembro %></option>
+          <% end %>
+        </select>
+        <button class="btn btn-success" type="submit"><i class="bi bi-check2 me-1"></i>Aprobar</button>
+      <% end %>
+    <% end %>
+  </div></div>
+
+  <% if policy(@solicitud).crear_ficha? %>
+    <div class="card mb-3"><div class="card-body">
+      <h2 class="h6 fw-bold">Aprobar con una ficha nueva</h2>
+      <p class="small text-muted">Si aún no está en la lista: se crea su ficha con su nombre y su correo.</p>
+      <%= form_with url: aprobar_solicitud_acceso_path(@solicitud), method: :post do %>
+        <input type="hidden" name="ficha" value="nueva">
+        <div class="row g-2 align-items-end">
+          <div class="col-sm-4">
+            <label class="form-label" for="sa-cedula">Cédula</label>
+            <input class="form-control" id="sa-cedula" name="cedula" required maxlength="30">
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label" for="sa-numero">Número de <%= current_logia.t_miembro.downcase %></label>
+            <input class="form-control" id="sa-numero" name="numero_miembro" required maxlength="30">
+          </div>
+          <div class="col-sm-4">
+            <button class="btn btn-outline-success w-100" type="submit">Crear ficha y aprobar</button>
+          </div>
+        </div>
+      <% end %>
+    </div></div>
+  <% end %>
+
+  <div class="card border-danger-subtle"><div class="card-body">
+    <h2 class="h6 fw-bold">Rechazar</h2>
+    <%= form_with url: rechazar_solicitud_acceso_path(@solicitud), method: :post, data: { turbo_confirm: "¿Rechazar la solicitud? Su cuenta en espera se borra." } do %>
+      <div class="d-flex flex-wrap gap-2">
+        <label class="visually-hidden" for="sa-motivo">Motivo</label>
+        <input class="form-control" id="sa-motivo" name="motivo" maxlength="300" placeholder="Motivo (opcional)" style="max-width: 28rem;">
+        <button class="btn btn-outline-danger" type="submit">Rechazar</button>
+      </div>
+    <% end %>
+  </div></div>
+<% end %>

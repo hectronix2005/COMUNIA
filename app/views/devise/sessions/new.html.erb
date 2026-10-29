@@ -77,6 +77,14 @@
       <% end %>
     </div>
 
+    <%# Sin captcha configurado el formulario no admite solicitudes: no se ofrece. %>
+    <% if Red::Captcha.disponible? %>
+      <div class="text-center small border-top pt-3">
+        ¿Tu comunidad te dio un código?
+        <%= link_to "Pide acceso", pedir_acceso_path, class: "fw-semibold" %>
+      </div>
+    <% end %>
+
   </div>
 </div>
 

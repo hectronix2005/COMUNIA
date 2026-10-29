@@ -169,6 +169,12 @@
   <% if @acceso[:entraron] < @acceso[:activos] && policy(Miembro).invitar_en_bloque? %>
     <%= link_to acceso_miembros_path, class: "ms-1" do %><i class="bi bi-send me-1"></i>Invitar a quienes faltan<% end %>
   <% end %>
+  <% if @solicitudes_pendientes %>
+    <%= link_to solicitudes_acceso_path, class: "ms-1" do %>
+      <i class="bi bi-person-plus me-1"></i>Solicitudes de acceso<% if @solicitudes_pendientes.positive? %>
+        <span class="badge bg-danger"><%= @solicitudes_pendientes %></span><% end %>
+    <% end %>
+  <% end %>
 </p>
 
 <%# Escritorio: tabla; móvil: una tarjeta por miembro. La logia solo se enseña si la lista mezcla varias. %>

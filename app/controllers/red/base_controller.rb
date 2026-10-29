@@ -5,12 +5,14 @@ module Red
   # Privacidad entre comunidades: lo que no existe y lo que no se puede ver responden igual
   # (`no_encontrado`), y ningún mensaje de error nombra una comunidad ajena.
   class BaseController < ::ApplicationController
+    include FormularioPublico
+
     layout "red"
 
     skip_before_action :authenticate_user!
     before_action :exigir_cuenta
 
-    helper_method :mi_perfil, :mis_comunidad_ids, :moderador?, :captcha_site_key, :alcance_opciones
+    helper_method :mi_perfil, :mis_comunidad_ids, :moderador?, :alcance_opciones
 
     rescue_from ActionController::ParameterMissing, with: :peticion_invalida
     rescue_from ActiveRecord::RecordNotFound, with: :no_encontrado
@@ -62,19 +64,6 @@ module Red
         f.any { redirect_back fallback_location: red_inicio_path, alert: "Revisa el formulario." }
       end
     end
-
-    # Solo escalares: un parámetro con forma de hash o lista cuenta como vacío.
-    def texto(clave, max = 200)
-      v = params[clave]
-      v.is_a?(String) ? v.strip[0, max] : nil
-    end
-
-    def captcha_site_key = Captcha.site_key
-
-    # En producción sin Turnstile no se aceptan formularios públicos sin cuenta (regla de seguridad).
-    def captcha_disponible? = Captcha.configurado? || Rails.env.local?
-
-    def captcha_valido? = Captcha.valido?(params["cf-turnstile-response"])
 
     # Opciones de alcance para formularios: las comunidades son SOLO las de quien edita.
     def alcance_opciones

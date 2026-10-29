@@ -1,0 +1,69 @@
+<% content_for(:title, "Solicitudes de acceso") %>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0"><i class="bi bi-person-plus me-2"></i>Solicitudes de acceso</h1>
+  <%= link_to "Volver a #{Logia.plural(current_logia.t_miembro).downcase}", miembros_path, class: "btn btn-outline-secondary btn-sm" %>
+</div>
+
+<div class="card mb-4"><div class="card-body">
+  <h2 class="h6 fw-bold">Código para pedir acceso</h2>
+  <p class="small text-muted">
+    Compártelo con quien deba entrar: lo escribe en <strong><%= pedir_acceso_url %></strong> junto con una prueba de que
+    pertenece, y tú lo apruebas aquí. Si el código circula donde no debe, cámbialo: el anterior deja de servir.
+  </p>
+  <% unless Red::Captcha.disponible? %>
+    <div class="alert alert-warning small py-2">
+      El formulario de pedir acceso está cerrado mientras no se configure el captcha (Cloudflare Turnstile).
+    </div>
+  <% end %>
+  <% @logias.each do |logia| %>
+    <div class="d-flex align-items-center flex-wrap gap-2 py-2 border-top" id="codigo-<%= logia.id %>">
+      <span class="me-auto"><%= logia.nombre_display %></span>
+      <% if logia.codigo_acceso %>
+        <code class="fs-5 text-body"><%= logia.codigo_acceso_legible %></code>
+        <% mensaje = "Para entrar a la app de #{logia.nombre_display}, abre #{pedir_acceso_url} y usa el código #{logia.codigo_acceso_legible}." %>
+        <%= link_to "https://wa.me/?text=#{ERB::Util.url_encode(mensaje)}", target: "_blank", rel: "noopener", class: "btn btn-sm btn-outline-success" do %>
+          <i class="bi bi-whatsapp me-1"></i>Compartir
+        <% end %>
+        <%= button_to "Cambiar", renovar_codigo_acceso_path(logia_id: logia.id), class: "btn btn-sm btn-outline-secondary",
+                      form: { data: { turbo_confirm: "¿Cambiar el código de #{logia.nombre_display}? El actual dejará de servir." } } %>
+      <% else %>
+        <%= button_to "Crear código", renovar_codigo_acceso_path(logia_id: logia.id), class: "btn btn-sm btn-primary" %>
+      <% end %>
+    </div>
+  <% end %>
+</div></div>
+
+<h2 class="h5">Por revisar <span class="badge bg-secondary"><%= @pendientes.size %></span></h2>
+<% if @pendientes.empty? %>
+  <p class="text-muted">No hay solicitudes pendientes.</p>
+<% else %>
+  <div class="list-group mb-4">
+    <% @pendientes.each do |s| %>
+      <%= link_to solicitud_acceso_path(s), class: "list-group-item list-group-item-action" do %>
+        <div class="d-flex justify-content-between gap-2">
+          <strong><%= s.nombre_completo %></strong>
+          <small class="text-muted text-nowrap"><%= l(s.created_at.to_date, format: :short) %></small>
+        </div>
+        <div class="small text-muted"><%= s.logia.nombre_display %> · <%= s.prueba.truncate(120) %></div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @resueltas.any? %>
+  <h2 class="h6 text-muted">Resueltas hace poco</h2>
+  <ul class="list-unstyled small">
+    <% @resueltas.each do |s| %>
+      <li class="py-1 border-bottom">
+        <% if s.aprobada? %>
+          <span class="badge bg-success">Aprobada</span>
+          <%= s.nombre_completo %><% if s.miembro %> → <%= link_to s.miembro.user.nombre_completo, miembro_path(s.miembro) %><% end %>
+        <% else %>
+          <span class="badge bg-secondary">Rechazada</span> <%= s.nombre_completo %>
+        <% end %>
+        <span class="text-muted">· <%= s.decidida_por&.nombre_corto %> · <%= l(s.decidida_at.to_date, format: :short) %></span>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

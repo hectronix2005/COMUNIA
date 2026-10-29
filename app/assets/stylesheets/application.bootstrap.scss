@@ -435,7 +435,7 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
 
 // ── Login — modern glass card ──
 .login-wrapper {
-  min-height: 100vh;
+  min-height: 100vh; padding: 1rem;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(160deg, $navy-dark 0%, $navy 50%, lighten($navy, 4%) 100%);
   position: relative; overflow: hidden;
@@ -460,6 +460,9 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
     animation: fadeInUp 0.4s ease-out;
 
     &:hover { transform: none; box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 24px 64px rgba(0,0,0,0.15); }
+    &.login-card-ancha { max-width: 560px; }
+
+    @media (max-width: 575.98px) { padding: 1.75rem 1.25rem; }
 
     .login-icon {
       display: inline-flex; align-items: center; justify-content: center;

@@ -7,6 +7,7 @@ es:
     failure:
       already_authenticated: Ya has iniciado sesión.
       inactive: Tu cuenta aún no ha sido activada.
+      espera_aprobacion: Tu solicitud de acceso aún espera la aprobación de un administrador de tu comunidad.
       invalid: "%{authentication_keys} o contraseña inválidos."
       locked: Tu cuenta está bloqueada.
       last_attempt: Tienes un intento más antes de que tu cuenta sea bloqueada.
