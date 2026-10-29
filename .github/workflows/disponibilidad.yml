@@ -17,15 +17,18 @@ concurrency:
 jobs:
   salud:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Producción responde
+        # Un corte de un minuto no avisa: 4 intentos en unos 4 minutos. Cada intento deja el error de curl y la
+        # IP a la que llegó, para distinguir un fallo de DNS, del relé de Funnel o de asus.
         run: |
-          for intento in 1 2 3; do
-            codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 https://comunia.tail0be41e.ts.net/salud || true)
-            [ "$codigo" = "200" ] && exit 0
-            echo "Intento $intento: código $codigo"
-            [ "$intento" = 3 ] || sleep 30
+          for intento in 1 2 3 4; do
+            salida=$(curl -sS -o /dev/null -w "%{http_code} %{remote_ip}" --max-time 20 https://comunia.tail0be41e.ts.net/salud 2>&1 || true)
+            codigo=$(echo "$salida" | tail -1 | cut -d" " -f1)
+            [ "$codigo" = "200" ] && { [ "$intento" = 1 ] || echo "Respondió en el intento $intento"; exit 0; }
+            echo "Intento $intento ($(date -u +%H:%M:%S)): $salida"
+            [ "$intento" = 4 ] || sleep 60
           done
-          echo "::error::COMUNIA no responde en /salud (último código: $codigo)"
+          echo "::error::COMUNIA no responde en /salud tras 4 intentos (último: $salida)"
           exit 1
