@@ -1,0 +1,9 @@
+<% content_for :title, "Esto es una demostración" %>
+<div class="card border-0 shadow-sm mx-auto" style="max-width: 560px">
+  <div class="card-body p-4">
+    <h1 class="h4 fw-bold"><i class="bi bi-eye me-2"></i>Esto es una demostración</h1>
+    <%= render "demo/explicacion" %>
+    <%= render "demo/opciones", clase: "mt-3" %>
+    <%= link_to "Seguir mirando", dashboard_path, class: "btn btn-link px-0 mt-2" %>
+  </div>
+</div>

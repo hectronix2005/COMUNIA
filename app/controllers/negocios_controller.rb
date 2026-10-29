@@ -43,7 +43,7 @@ class NegociosController < ApplicationController
 
   def show
     # Increment atómico en una sola query (antes eran update_all + reload).
-    @anuncio.increment!(:vistas_count)
+    @anuncio.increment!(:vistas_count) unless current_user.invitado?
   end
 
   def new

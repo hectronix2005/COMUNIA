@@ -11,7 +11,7 @@
     <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
   </div>
 
-  <%= render "dashboard/activar_avisos" %>
+  <%= render "dashboard/activar_avisos" unless current_user.invitado? %>
   <%= render "reuniones/proxima" %>
   <%= render "dashboard/mis_acuerdos" %>
   <%# Lo que le toca hoy a quien administra, antes que los módulos plegados. %>

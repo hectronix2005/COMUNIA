@@ -158,6 +158,11 @@ Rails.application.routes.draw do
     resources :tarifas, only: [:index, :new, :create, :edit, :update, :destroy]
   end
   # Pedir acceso con el código de la comunidad (público) y resolver esas solicitudes (administradores).
+  # Modo invitado: la comunidad de demostración, solo para mirar (DemoController).
+  post   "demo",            to: "demo#create",     as: :demo
+  delete "demo",            to: "demo#destroy"
+  get    "demo/participar", to: "demo#participar", as: :demo_participar
+
   get  "pedir-acceso",         to: "pedir_acceso#new",     as: :pedir_acceso
   post "pedir-acceso",         to: "pedir_acceso#create"
   get  "pedir-acceso/enviada", to: "pedir_acceso#enviada", as: :pedir_acceso_enviada

@@ -7,10 +7,13 @@ class ApplicationController < ActionController::Base
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
   before_action :confinar_cuenta_red
+  before_action :confinar_invitado
+  around_action :solo_lectura_para_invitado
   before_action :configure_permitted_parameters, if: :devise_controller?
   after_action  :track_last_seen
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from ActiveRecord::ReadOnlyError, with: :invitado_no_puede_guardar
 
   helper_method :current_miembro, :current_logia, :display_logia
 
@@ -55,12 +58,12 @@ class ApplicationController < ActionController::Base
   #   4. First logia (fallback for super-admins without subdomain)
   def resolve_tenant
     if session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?
-      return Logia.find_by(id: session[:preview_logia_id]) || Logia.ordenadas.first
+      return Logia.find_by(id: session[:preview_logia_id]) || Logia.reales.ordenadas.first
     end
     if (sub = tenant_subdomain) && (logia = Logia.find_by(slug: sub)) && tenant_permitido?(logia)
       return logia
     end
-    current_user&.logia || Logia.ordenadas.first
+    current_user&.logia || Logia.reales.ordenadas.first
   end
 
   # El tenant de la URL o de la sesión solo cuenta si es el del usuario: sin esto, cambiar /t/<slug>
@@ -181,6 +184,31 @@ class ApplicationController < ActionController::Base
     return unless current_user&.solo_red?
     return if devise_controller? || controller_path.start_with?("red/") || controller_path.in?(CONTROLADORES_PARA_CUENTAS_RED)
     redirect_to red_inicio_path
+  end
+
+  # Modo invitado (DemoController): la cuenta compartida solo mira la comunidad de demostración. Lo que guarda
+  # algo (todo lo que no es GET) lleva a «Entra o pide acceso»; las páginas se sirven sin poder escribir en la
+  # base, por si alguna guarda algo al mirarla. Salir sí se puede.
+  def solo_lectura_para_invitado(&)
+    return yield unless current_user&.invitado?
+    return yield if salida_del_invitado?
+    return invitado_no_puede_guardar unless request.get? || request.head?
+    ActiveRecord::Base.while_preventing_writes(&)
+  end
+
+  def salida_del_invitado?
+    (controller_path == "demo" && action_name == "destroy") || (controller_path == "devise/sessions" && action_name == "destroy")
+  end
+
+  def invitado_no_puede_guardar
+    return head(:forbidden) if request.format.json?
+    redirect_to demo_participar_path, status: :see_other
+  end
+
+  # La red y las denuncias son de personas reales: el invitado no entra.
+  def confinar_invitado
+    return unless current_user&.invitado?
+    redirect_to dashboard_path if controller_path.start_with?("red/", "denuncias/") || controller_path == "push_subscriptions"
   end
 
   def user_not_authorized

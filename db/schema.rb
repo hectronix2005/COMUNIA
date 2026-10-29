@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -392,8 +392,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_010000) do
     t.bigint "tenant_id"
     t.bigint "categoria_id"
     t.string "codigo_acceso"
+    t.boolean "demo", default: false, null: false
     t.index ["categoria_id"], name: "index_logias_on_categoria_id"
     t.index ["codigo_acceso"], name: "index_logias_on_codigo_acceso", unique: true
+    t.index ["demo"], name: "index_logias_on_demo", unique: true, where: "demo"
     t.index ["slug"], name: "index_logias_on_slug", unique: true
     t.index ["tenant_id", "codigo"], name: "index_logias_on_tenant_id_and_codigo", unique: true
     t.index ["tenant_id"], name: "index_logias_on_tenant_id"
@@ -1006,8 +1008,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_010000) do
     t.integer "invitations_count", default: 0
     t.string "calendario_semilla"
     t.boolean "espera_aprobacion", default: false, null: false
+    t.boolean "invitado", default: false, null: false
     t.index ["calendario_semilla"], name: "index_users_on_calendario_semilla", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["invitado"], name: "index_users_on_invitado", unique: true, where: "invitado"
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"

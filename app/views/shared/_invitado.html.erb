@@ -1,0 +1,25 @@
+<%# Modo invitado (DemoController): aviso fijo y la ventana que se abre al intentar guardar algo. %>
+<div class="alert alert-info d-flex flex-wrap align-items-center gap-2 py-2 aviso-invitado"
+     data-controller="invitado" data-action="invitado:bloqueado->invitado#mostrar">
+  <span class="flex-grow-1 small">
+    <i class="bi bi-eye me-1"></i><strong>Demostración.</strong> Las personas y los datos son ficticios. Mira todo lo que quieras; para participar,
+    necesitas tu cuenta.
+  </span>
+  <%= link_to "Participar", demo_participar_path, class: "btn btn-sm btn-primary" %>
+
+  <div class="modal fade" tabindex="-1" aria-labelledby="titulo-invitado" aria-hidden="true" data-invitado-target="modal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h2 class="modal-title h5 fw-bold" id="titulo-invitado">Esto es una demostración</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body"><%= render "demo/explicacion" %></div>
+        <div class="modal-footer border-0 justify-content-start">
+          <%= render "demo/opciones" %>
+          <button type="button" class="btn btn-link" data-bs-dismiss="modal">Seguir mirando</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

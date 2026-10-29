@@ -65,6 +65,8 @@ class User < ApplicationRecord
   end
 
   def touch_last_seen!
+    return if invitado? # la cuenta compartida de la demostración solo mira
+
     update_column(:last_seen_at, Time.current) if last_seen_at.nil? || last_seen_at < 2.minutes.ago
   end
 

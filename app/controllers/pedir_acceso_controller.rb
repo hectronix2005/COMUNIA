@@ -5,7 +5,7 @@ class PedirAccesoController < ApplicationController
   include FormularioPublico
 
   skip_before_action :authenticate_user!
-  before_action { redirect_to root_path if user_signed_in? }
+  before_action { redirect_to(current_user.invitado? ? demo_participar_path : root_path) if user_signed_in? }
 
   def new
     @datos = {}

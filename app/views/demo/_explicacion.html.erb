@@ -1,0 +1,11 @@
+<p>
+  Para dar «Me gusta», comentar, confirmar asistencia, votar o escribir en el chat, entra con tu cuenta.
+</p>
+<p class="mb-0 text-muted small">
+  <% if Red::Captcha.disponible? %>
+    ¿Aún no tienes cuenta? Pide a un administrador de tu comunidad su código de acceso y envía tu solicitud: cuando
+    la aprueben, entras con tu correo.
+  <% else %>
+    ¿Aún no tienes cuenta? Pide a un administrador de tu comunidad que te invite.
+  <% end %>
+</p>

@@ -38,6 +38,11 @@ class Rack::Attack
     req.ip if req.path.end_with?("/invitacion")
   end
 
+  # Entrar a la demostración (DemoController) abre una sesión sin captcha: se limita igual.
+  throttle("demo/ip", limit: 30, period: 1.hour) do |req|
+    req.ip if req.post? && req.path.match?(%r{(?:\A|/)demo\z})
+  end
+
   # Pedir acceso a una comunidad (también /t/:slug/pedir-acceso): formulario público con captcha que crea
   # una cuenta en espera; además, contra probar códigos al azar.
   throttle("pedir-acceso/ip", limit: 5, period: 1.hour) do |req|

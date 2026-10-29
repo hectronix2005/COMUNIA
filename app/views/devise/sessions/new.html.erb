@@ -85,6 +85,15 @@
       </div>
     <% end %>
 
+    <%# Modo invitado (DemoController): una comunidad ficticia para ver cómo funciona, sin guardar nada. %>
+    <% if Demo.disponible? %>
+      <div class="text-center small <%= 'border-top' unless Red::Captcha.disponible? %> pt-3">
+        ¿Aún no tienes cuenta?
+        <%= button_to "Ver una demostración", demo_path, class: "btn btn-link btn-sm fw-semibold p-0 align-baseline",
+              form: { class: "d-inline" } %>
+      </div>
+    <% end %>
+
   </div>
 </div>
 

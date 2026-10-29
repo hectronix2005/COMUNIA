@@ -35,6 +35,8 @@ class Logia < ApplicationRecord
   before_validation :generar_slug, if: -> { tenant_id.nil? && slug.blank? && nombre.present? }
 
   scope :ordenadas,      -> { order(:nombre) }
+  # Sin la comunidad de demostración del modo invitado (Demo).
+  scope :reales,         -> { where(demo: false) }
   # La organización a la que pertenece: ella misma si es raíz.
   def organizacion = tenant || self
 

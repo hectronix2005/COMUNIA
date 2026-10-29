@@ -376,6 +376,7 @@
 
       <main class="flex-grow-1 py-4">
         <div class="container-fluid px-3 px-md-4 contenido-app">
+          <%= render "shared/invitado" if current_user&.invitado? %>
           <%= render "shared/flash" %>
           <div class="content-animate">
             <%= yield %>

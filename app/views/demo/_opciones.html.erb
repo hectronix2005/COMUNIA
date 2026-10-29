@@ -1,0 +1,13 @@
+<%# Cómo participar: entrar con la cuenta propia o pedir acceso a la comunidad. Cierra la sesión del invitado. %>
+<div class="d-flex flex-wrap gap-2 <%= local_assigns[:clase] %>">
+  <%= button_to demo_path(destino: "login"), method: :delete, class: "btn btn-primary",
+        form: { data: { invitado_libre: true } } do %>
+    <i class="bi bi-box-arrow-in-right me-1"></i>Entrar con mi cuenta
+  <% end %>
+  <% if Red::Captcha.disponible? %>
+    <%= button_to demo_path(destino: "pedir"), method: :delete, class: "btn btn-outline-primary",
+          form: { data: { invitado_libre: true } } do %>
+      <i class="bi bi-person-plus me-1"></i>Pedir acceso a mi comunidad
+    <% end %>
+  <% end %>
+</div>
