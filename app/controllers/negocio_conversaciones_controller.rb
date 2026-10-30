@@ -5,6 +5,7 @@ class NegocioConversacionesController < ApplicationController
   def index
     @conversaciones = NegocioConversacion
                         .de_usuario(current_user)
+                        .de_logias(logia_ids_visibles)
                         .includes(:negocio_anuncio, :comprador, :vendedor, :mensajes)
                         .ordenadas
   end
@@ -37,8 +38,9 @@ class NegocioConversacionesController < ApplicationController
 
   private
 
+  # Solo las de anuncios de la comunidad en que se está: las de otra se ven entrando en ella.
   def set_conversacion
-    @conversacion = NegocioConversacion.find(params[:id])
+    @conversacion = NegocioConversacion.de_logias(logia_ids_visibles).find(params[:id])
   end
 
   def authorize_conversacion!

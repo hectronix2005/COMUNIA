@@ -89,12 +89,14 @@ class AlcanceTenantsTest < ActionDispatch::IntegrationTest
     sign_in @yo
     post "/chat/typing", params: { stream: "chat_tenant_#{@b.id}" }
     assert_response :forbidden
-    post "/chat/typing", params: { stream: "chat_dm_#{[@yo.id, @otro.id].sort.join('_')}" }
+    post "/chat/typing", params: { stream: ChatMensaje.stream_dm(@yo.logia.organizacion, @yo.id, @otro.id) }
     assert_response :forbidden
     post "/chat/typing", params: { stream: "chat_tenant_#{@a.id}" }
     assert_response :ok
-    post "/chat/typing", params: { stream: "chat_dm_#{[@yo.id, @vecino.id].sort.join('_')}" }
+    post "/chat/typing", params: { stream: ChatMensaje.stream_dm(@yo.logia.organizacion, @yo.id, @vecino.id) }
     assert_response :ok
+    post "/chat/typing", params: { stream: "chat_dm_#{[@yo.id, @vecino.id].sort.join('_')}" }
+    assert_response :forbidden
   end
 
   test "dentro de la organización se ve todo y se confirma asistencia" do

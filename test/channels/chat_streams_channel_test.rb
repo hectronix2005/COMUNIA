@@ -35,16 +35,19 @@ class ChatStreamsChannelTest < ActionCable::Channel::TestCase
     assert subscription.rejected?
   end
 
-  test "un privado, solo para sus dos y mientras compartan comunidad" do
-    dm = "chat_dm_#{[@lucia.id, @mario.id].sort.join('_')}"
+  test "un privado, solo para sus dos y mientras los dos sigan en su comunidad" do
+    dm = ChatMensaje.stream_dm(@luz, @lucia.id, @mario.id)
     escuchar(@lucia, dm)
     assert subscription.confirmed?
 
     escuchar(@andres, dm)
     assert subscription.rejected?
 
-    escuchar(@andres, "chat_dm_#{[@lucia.id, @andres.id].sort.join('_')}")
+    escuchar(@andres, ChatMensaje.stream_dm(@andes, @lucia.id, @andres.id))
     assert subscription.rejected?
+
+    escuchar(@lucia, "chat_dm_#{[@lucia.id, @mario.id].sort.join('_')}")
+    assert subscription.rejected?, "el formato viejo, sin comunidad, ya no se escucha"
   end
 
   test "un nombre sin firma o desconocido no se escucha" do

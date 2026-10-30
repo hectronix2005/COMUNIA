@@ -21,6 +21,13 @@ class ChatMensaje < ApplicationRecord
   scope :unread_dm_for, ->(user_id) {
     where(canal: "dm", destinatario_id: user_id, leido_at: nil)
   }
+  # Los privados también son de una comunidad (la logia desde la que se escribieron): dos personas que comparten
+  # dos comunidades tienen una conversación en cada una, y en una no sale lo de la otra.
+  scope :en_logias, ->(logia_ids) { where(logia_id: logia_ids) }
+
+  def self.stream_dm(organizacion, a, b)
+    "chat_dm_#{organizacion.id}_#{[a, b].map(&:to_i).sort.join('_')}"
+  end
 
   after_create_commit :broadcast_mensaje
   after_create_commit :notificar_destinatarios
@@ -31,7 +38,7 @@ class ChatMensaje < ApplicationRecord
 
   def stream_name
     case canal
-    when "dm"     then "chat_dm_#{[user_id, destinatario_id].sort.join('_')}"
+    when "dm"     then ChatMensaje.stream_dm(logia.organizacion, user_id, destinatario_id)
     when "tenant" then "chat_tenant_#{logia_id}"
     else               "chat_logia_#{logia_id}"
     end
@@ -65,15 +72,15 @@ class ChatMensaje < ApplicationRecord
     leido_at.present?
   end
 
-  # Hash { partner_user_id => ChatMensaje }
-  def self.ultimo_mensaje_dm(user_id)
-    sql = <<~SQL
+  # Hash { partner_user_id => ChatMensaje }, solo de los privados escritos en esas logias.
+  def self.ultimo_mensaje_dm(user_id, logia_ids)
+    sql = sanitize_sql_array([<<~SQL, { u: user_id.to_i, logias: Array(logia_ids).map(&:to_i).presence || [0] }])
       SELECT DISTINCT ON (partner_id) *
       FROM (
         SELECT *,
-          CASE WHEN user_id = #{user_id.to_i} THEN destinatario_id ELSE user_id END AS partner_id
+          CASE WHEN user_id = :u THEN destinatario_id ELSE user_id END AS partner_id
         FROM chat_mensajes
-        WHERE canal = 'dm' AND (user_id = #{user_id.to_i} OR destinatario_id = #{user_id.to_i})
+        WHERE canal = 'dm' AND (user_id = :u OR destinatario_id = :u) AND logia_id IN (:logias)
       ) sub
       ORDER BY partner_id, created_at DESC
     SQL

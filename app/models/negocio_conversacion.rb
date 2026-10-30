@@ -13,6 +13,7 @@ class NegocioConversacion < ApplicationRecord
   validate  :comprador_no_es_vendedor
 
   scope :de_usuario, ->(u) { where("comprador_id = :id OR vendedor_id = :id", id: u.id) }
+  scope :de_logias, ->(logia_ids) { where(negocio_anuncio_id: NegocioAnuncio.where(logia_id: logia_ids).select(:id)) }
   scope :ordenadas,  -> { order(Arel.sql("COALESCE(ultimo_mensaje_at, created_at) DESC")) }
 
   def otro_usuario(user)

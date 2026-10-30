@@ -73,9 +73,10 @@ class ChatMensajeTest < ActiveSupport::TestCase
   test "ultimo_mensaje_dm returns latest per partner" do
     ChatMensaje.create!(logia: @logia, user: @alice, destinatario: @bob, contenido: "Older", canal: "dm", created_at: 1.hour.ago)
     ChatMensaje.create!(logia: @logia, user: @bob, destinatario: @alice, contenido: "Newer", canal: "dm", created_at: 5.minutes.ago)
-    result = ChatMensaje.ultimo_mensaje_dm(@alice.id)
+    result = ChatMensaje.ultimo_mensaje_dm(@alice.id, [@logia.id])
     assert result.key?(@bob.id)
     assert_equal "Newer", result[@bob.id].contenido
+    assert_empty ChatMensaje.ultimo_mensaje_dm(@alice.id, [@logia.id + 1_000_000])
   end
 
   test "dm_entre returns both directions" do

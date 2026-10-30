@@ -7,20 +7,20 @@ class ChatController < ApplicationController
     @con_id = params[:con].presence&.to_i
 
     # Last message preview + unread counts for sidebar
-    @ultimo_dm      = ChatMensaje.ultimo_mensaje_dm(current_user.id)
-    @unread_counts  = ChatMensaje.unread_dm_for(current_user.id).group(:user_id).count
+    @ultimo_dm      = ChatMensaje.ultimo_mensaje_dm(current_user.id, logia_ids_visibles)
+    @unread_counts  = ChatMensaje.unread_dm_for(current_user.id).en_logias(logia_ids_visibles).group(:user_id).count
 
     if @con_id
       @destinatario = User.find_by(id: @con_id)
       return redirect_to chat_path unless @destinatario && @miembros_chat.map(&:id).include?(@con_id)
 
       @canal    = "dm"
-      @mensajes = ChatMensaje.dm_entre(current_user.id, @con_id)
+      @mensajes = ChatMensaje.dm_entre(current_user.id, @con_id).en_logias(logia_ids_visibles)
                              .includes(:user).order(:created_at).last(100)
-      @stream   = "chat_dm_#{[current_user.id, @con_id].sort.join('_')}"
+      @stream   = ChatMensaje.stream_dm(current_logia.organizacion, current_user.id, @con_id)
 
       # Mark as read + broadcast updated checks to sender
-      unread_msgs = ChatMensaje.unread_dm_for(current_user.id).where(user_id: @con_id)
+      unread_msgs = ChatMensaje.unread_dm_for(current_user.id).en_logias(logia_ids_visibles).where(user_id: @con_id)
       msg_ids = unread_msgs.pluck(:id)
       if msg_ids.any?
         unread_msgs.update_all(leido_at: Time.current)
@@ -88,11 +88,11 @@ class ChatController < ApplicationController
     # When sending a DM, auto-mark the other person's unread messages as read
     # (if you're replying, you obviously read their messages)
     if con_id
-      unread = ChatMensaje.unread_dm_for(current_user.id).where(user_id: con_id)
+      unread = ChatMensaje.unread_dm_for(current_user.id).en_logias(logia_ids_visibles).where(user_id: con_id)
       ids_to_mark = unread.pluck(:id)
       if ids_to_mark.any?
         unread.update_all(leido_at: Time.current)
-        stream = "chat_dm_#{[current_user.id, con_id].sort.join('_')}"
+        stream = ChatMensaje.stream_dm(current_logia.organizacion, current_user.id, con_id)
         ids_to_mark.each do |mid|
           m = ChatMensaje.find(mid)
           m.broadcast_replace_to(
@@ -129,7 +129,7 @@ class ChatController < ApplicationController
 
     base = case params[:canal]
     when "dm"
-      ChatMensaje.dm_entre(current_user.id, params[:con].to_i)
+      ChatMensaje.dm_entre(current_user.id, params[:con].to_i).en_logias(logia_ids_visibles)
     when "logia"
       ChatMensaje.where(logia: current_logia, canal: "logia")
     else
@@ -169,26 +169,27 @@ class ChatController < ApplicationController
       .order(:apellido, :nombre)
   end
 
-  # Los mensajes que el usuario puede ver: sus privados y los canales de su organización.
+  # Los mensajes que el usuario puede ver: sus privados y los canales, todos de la organización en que está.
   def mensaje_visible
-    ChatMensaje.where(canal: "dm").where("user_id = :u OR destinatario_id = :u", u: current_user.id)
-               .or(ChatMensaje.where(canal: %w[logia tenant], logia_id: logia_ids_visibles))
+    ChatMensaje.en_logias(logia_ids_visibles)
+               .merge(ChatMensaje.where(canal: "dm").where("user_id = :u OR destinatario_id = :u", u: current_user.id)
+                                 .or(ChatMensaje.where(canal: %w[logia tenant])))
                .find(params[:id])
   end
 
   # «Está escribiendo» solo a los canales que el usuario tiene abiertos en index.
   def stream_permitido?(stream)
     return true if stream.in?(["chat_logia_#{current_logia.id}", "chat_tenant_#{tenant_root_id}"])
-    ids = stream.match(/\Achat_dm_(\d+)_(\d+)\z/)&.captures&.map(&:to_i) or return false
+    org_id, *ids = stream.match(/\Achat_dm_(\d+)_(\d+)_(\d+)\z/)&.captures&.map(&:to_i)
+    return false unless org_id && org_id == current_logia.organizacion.id
     otro = ids.include?(current_user.id) && (ids - [current_user.id]).first
     otro.present? && tenant_members.exists?(id: otro)
   end
 
   def dm_recientes_users
-    partner_ids = ChatMensaje.where(canal: "dm")
+    partner_ids = ChatMensaje.where(canal: "dm").en_logias(logia_ids_visibles)
       .where("user_id = :uid OR destinatario_id = :uid", uid: current_user.id)
-      .select("DISTINCT CASE WHEN user_id = #{current_user.id} THEN destinatario_id ELSE user_id END AS partner_id")
-      .map(&:partner_id)
+      .pluck(:user_id, :destinatario_id).flatten.uniq - [current_user.id]
 
     return [] if partner_ids.empty?
 

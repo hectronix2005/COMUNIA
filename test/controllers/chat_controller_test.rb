@@ -101,7 +101,7 @@ class ChatControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "typing returns ok" do
-    post chat_typing_path, params: { stream: "chat_dm_#{[@alice.id, @bob.id].sort.join('_')}" }
+    post chat_typing_path, params: { stream: ChatMensaje.stream_dm(@alice.logia.organizacion, @alice.id, @bob.id) }
     assert_response :ok
   end
 
