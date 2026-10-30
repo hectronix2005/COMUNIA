@@ -1,6 +1,11 @@
 <turbo-frame id="notificaciones-lista">
   <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
-    <strong class="small">Notificaciones</strong>
+    <div class="min-w-0">
+      <strong class="small">Notificaciones</strong>
+      <% unless platform_admin_context? || current_user.solo_red? %>
+        <div class="texto-mini text-muted text-truncate">Solo de <%= current_logia.organizacion.nombre_display %></div>
+      <% end %>
+    </div>
     <% if @notificaciones.any? { |n| !n.leida } %>
       <%= button_to leer_todas_notificaciones_path, method: :post,
             class: "btn btn-link btn-sm p-0 text-decoration-none", style: "font-size:.72rem;" do %>
@@ -24,7 +29,7 @@
             else ["bi-bell-fill", "#6c757d"]
            end
         %>
-        <a href="<%= n.url || '#' %>"
+        <a href="<%= n.enlace %>" data-turbo-frame="_top"
            class="list-group-item list-group-item-action d-flex gap-2 py-2 px-3 <%= n.leida ? '' : 'bg-light' %>"
            data-action="click->notifications#markRead"
            data-notification-id="<%= n.id %>"
@@ -36,6 +41,9 @@
               <div class="text-muted text-truncate texto-chico"><%= n.cuerpo %></div>
             <% end %>
             <div class="text-muted texto-mini">
+              <% if (rotulo = platform_admin_context? ? (n.organizacion&.nombre_display || n.origen) : n.origen) %>
+                <span class="badge rounded-pill text-bg-light border me-1"><%= rotulo %></span>
+              <% end %>
               <%= time_ago_in_words(n.created_at) %>
             </div>
           </div>
@@ -48,4 +56,16 @@
       <% end %>
     <% end %>
   </div>
+
+  <% if @otras_comunidades.any? %>
+    <div class="border-top px-3 py-2 bg-light texto-chico">
+      <div class="text-muted mb-1">En tus otras comunidades</div>
+      <% @otras_comunidades.each do |comunidad, sin_leer| %>
+        <a href="/t/<%= comunidad.slug %>/dashboard" data-turbo-frame="_top" class="d-flex justify-content-between text-decoration-none py-1">
+          <span class="text-truncate"><%= comunidad.nombre_display %></span>
+          <span class="badge rounded-pill bg-danger"><%= sin_leer > 99 ? "99+" : sin_leer %></span>
+        </a>
+      <% end %>
+    </div>
+  <% end %>
 </turbo-frame>

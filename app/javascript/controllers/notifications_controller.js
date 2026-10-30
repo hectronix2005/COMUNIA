@@ -2,6 +2,9 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["panel", "badge", "frame"]
+  // La lista se pide con el prefijo de la comunidad que se mira (/t/<slug>/notificaciones): sin él, valdría la
+  // última comunidad abierta en otra pestaña.
+  static values = { url: { type: String, default: "/notificaciones" } }
 
   connect() {
     this.open = false
@@ -29,7 +32,7 @@ export default class extends Controller {
       this.panelTarget.classList.toggle("show", this.open)
     }
     if (this.open && this.hasFrameTarget) {
-      this.frameTarget.src = "/notificaciones"
+      this.frameTarget.src = this.urlValue
     }
   }
 

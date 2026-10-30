@@ -298,13 +298,14 @@
 
             <ul class="navbar-nav align-items-lg-center">
               <%# ── Notification bell ── %>
-              <li class="nav-item me-2 dropdown" data-controller="notifications">
+              <li class="nav-item me-2 dropdown" data-controller="notifications"
+                  data-notifications-url-value="<%= notificaciones_path %>">
                 <%= turbo_stream_from "notificaciones_#{current_user.id}" %>
                 <a href="#" class="nav-link position-relative" role="button"
                    data-action="click->notifications#togglePanel"
                    style="padding:.4rem .5rem;">
                   <i class="bi bi-bell texto-medio"></i>
-                  <% badge_count = current_user.notificaciones.no_leidas.count %>
+                  <% badge_count = notificaciones_visibles.no_leidas.count %>
                   <span id="notification-badge"
                     <% if badge_count > 0 %>
                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"

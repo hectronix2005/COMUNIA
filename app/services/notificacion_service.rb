@@ -9,8 +9,10 @@ class NotificacionService
     notificacion
   end
 
-  def self.broadcast_badge(user)
-    count = user.notificaciones.no_leidas.count
+  # El contador es el de la comunidad activa de la persona (la que tiene abierta): un aviso de otra de sus
+  # comunidades no lo sube.
+  def self.broadcast_badge(user, count = nil)
+    count ||= user.notificaciones.visibles_en(user.solo_red? ? nil : user.logia&.organizacion).no_leidas.count
     Turbo::StreamsChannel.broadcast_replace_to(
       "notificaciones_#{user.id}",
       target: "notification-badge",

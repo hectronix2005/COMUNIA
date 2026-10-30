@@ -11,7 +11,7 @@ class SendPushNotificationJob < ApplicationJob
     payload = {
       title: notificacion.titulo,
       body:  notificacion.cuerpo || "",
-      url:   notificacion.url || "/dashboard",
+      url:   notificacion.enlace,
       badge_count: badge_count,
       tag:   "#{notificacion.tipo}_#{notificacion.metadata['sender_id'] || notificacion.id}"
     }.to_json

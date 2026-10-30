@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::ReadOnlyError, with: :invitado_no_puede_guardar
 
-  helper_method :current_miembro, :current_logia, :display_logia
+  helper_method :current_miembro, :current_logia, :display_logia, :notificaciones_visibles
 
   def current_miembro
     @current_miembro ||= current_user&.miembro
@@ -39,6 +39,13 @@ class ApplicationController < ActionController::Base
     end
     # nil implícito → branding neutro de plataforma
     @display_logia
+  end
+
+  # Los avisos de la comunidad que se mira y los personales (Notificacion.visibles_en); los de sus otras
+  # comunidades no se mezclan. El superadmin en el panel de plataforma los ve todos.
+  def notificaciones_visibles
+    return current_user.notificaciones if platform_admin_context?
+    current_user.notificaciones.visibles_en(current_user.solo_red? ? nil : current_logia&.organizacion)
   end
 
   private
