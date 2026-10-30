@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Vigilante del acceso público de COMUNIA (crontab de asus_2025, cada 5 min; decisión de Héctor, 29-oct-2026).
+# Vigilante del acceso público de COMUNIA (crontab de asus_2025, cada minuto; decisión de Héctor, 29-oct-2026).
 # El 29-oct, de 05:03 a 06:37 UTC, el nodo Tailscale «comunia» perdía cada ~30 s la conexión con el control y
 # con DERP, y el relé de Funnel cortaba el TLS: por dentro del tailnet todo respondía, desde fuera nada.
 # Reiniciar solo el contenedor ts lo arregló.
 #  1. Prueba /salud por las IPs públicas del relé (DNS público: desde asus el nombre resuelve al tailnet y
 #     un curl normal no pasa por Funnel).
-#  2. Si fallan todas, suma un fallo; con 2 seguidos (unos 10 min) reinicia comunia-ts-1, como mucho una
-#     vez cada 30 min. No toca web ni db.
+#  2. Si fallan todas, suma un fallo; con 2 seguidos (unos 2 min) reinicia comunia-ts-1, como mucho una
+#     vez cada 30 min. No toca web ni db. Era cada 5 min, pero el corte del 29-oct a las 21:09 UTC duró ~15 min
+#     hasta el reinicio: desde el 29-oct-2026 por la noche prueba cada minuto (Héctor).
 # Registro en ~/.local/state/comunia-funnel/vigila.log. Quitarlo: borrar su línea del crontab.
 set -uo pipefail
 
@@ -18,6 +19,10 @@ LOG=$DIR/vigila.log
 FALLOS=$DIR/fallos
 ULTIMO_REINICIO=$DIR/ultimo-reinicio
 
+# Cada minuto: si una prueba lenta aún no ha terminado, la siguiente no se le cruza.
+exec 9> "$DIR/lock"
+flock -n 9 || exit 0
+
 registrar() { echo "$(date -u +%FT%TZ) $*" >> "$LOG"; }
 
 ips=$(curl -s --max-time 10 -H "accept: application/dns-json" "https://cloudflare-dns.com/dns-query?name=$HOST&type=A" |
@@ -27,7 +32,7 @@ ips=$(curl -s --max-time 10 -H "accept: application/dns-json" "https://cloudflar
 
 detalle=""
 for ip in $ips; do
-  codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 --resolve "$HOST:443:$ip" "https://$HOST/salud")
+  codigo=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 --resolve "$HOST:443:$ip" "https://$HOST/salud")
   if [ "$codigo" = "200" ]; then
     [ -s "$FALLOS" ] && registrar "responde de nuevo por $ip"
     rm -f "$FALLOS"
