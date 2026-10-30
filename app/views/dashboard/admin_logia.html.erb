@@ -180,7 +180,10 @@
           <% end %>
         </div>
 
-        <% ultimos = ChatMensaje.where(logia: current_logia).includes(:user).order(created_at: :desc).limit(3).reverse %>
+        <%# Solo los canales de la comunidad: los privados no se asoman al panel de nadie. %>
+        <% ultimos = ChatMensaje.where(canal: "logia", logia: current_logia)
+                                .or(ChatMensaje.where(canal: "tenant", logia_id: current_logia.tenant_id || current_logia.id))
+                                .includes(:user).order(created_at: :desc).limit(3).reverse %>
         <% if ultimos.any? %>
           <h2 class="seccion-titulo">Últimos mensajes</h2>
           <ul class="list-unstyled border rounded-3 p-3 mb-0">

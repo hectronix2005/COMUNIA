@@ -95,6 +95,30 @@ class DatosPorComunidadTest < ActionDispatch::IntegrationTest
     assert_equal [], sin_nada.logia_ids_accesibles
   end
 
+  test "el panel del admin no enseña privados y no se asignan cargos de otra comunidad" do
+    rol_admin = Rol.find_or_create_by!(codigo: "admin_logia") { _1.nombre = "Admin" }
+    %w[index show update].each { rol_admin.permisos << Permiso.find_or_create_by!(recurso: "miembros", accion: _1) unless rol_admin.tiene_permiso?("miembros", _1) }
+    admin = User.create!(nombre: "Ada", apellido: "Prueba", email: "ada_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", logia: @luz, rol: :admin_logia, rol_ref: rol_admin)
+    otro = usuario("Beto", @luz)
+    ChatMensaje.create!(logia: @luz, user: @de_luz, destinatario: otro, canal: "dm", contenido: "Secreto entre los dos")
+    ChatMensaje.create!(logia: @luz, user: @de_luz, canal: "logia", contenido: "Hola a todos")
+
+    sign_in admin
+    get "/t/#{@luz.slug}/dashboard"
+    assert_response :ok
+    assert_includes response.body, "Hola a todos"
+    assert_not_includes response.body, "Secreto entre los dos"
+
+    ficha = Miembro.create!(user: @de_luz, logia: @luz, numero_miembro: "N#{SecureRandom.hex(3)}",
+                            cedula: SecureRandom.hex(4), estado: :activo)
+    ajeno = Cargo.create!(logia: @andes, nombre: "Cargo secreto de Andes")
+    post "/t/#{@luz.slug}/miembros/#{ficha.id}/cargos", params: { miembro_cargo: { cargo_id: ajeno.id, desde: Date.current } }
+    assert_empty ficha.miembro_cargos.reload
+    follow_redirect!
+    assert_not_includes response.body, "Cargo secreto de Andes"
+  end
+
   private
 
   def usuario(nombre, logia)
