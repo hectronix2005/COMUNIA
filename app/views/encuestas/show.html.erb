@@ -54,7 +54,7 @@
                 <span class="fw-bold"><%= op.votos_count %> (<%= op.porcentaje(@total_votos) %>%)</span>
               </div>
               <div class="progress" style="height:8px;border-radius:4px;">
-                <div class="progress-bar" style="width:<%= op.porcentaje(@total_votos) %>%;background:#1a2744;border-radius:4px;"></div>
+                <div class="progress-bar" style="width:<%= op.porcentaje(@total_votos) %>%;background:var(--c-petroleo);border-radius:4px;"></div>
               </div>
               <% unless @encuesta.anonima? %>
                 <div class="mt-1">

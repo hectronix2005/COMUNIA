@@ -1,13 +1,8 @@
 <% content_for(:title, "Inicio") %>
 
 <div>
-  <div class="page-header">
-    <div>
-      <h1 class="h3 fw-bold">Hola, <%= current_user.nombre %></h1>
-      <p class="text-muted mb-0"><%= (current_miembro&.logia || current_logia).ruta_comunidad %></p>
-    </div>
-    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
-  </div>
+  <%= render "dashboard/saludo", titulo: safe_join(["Hola, ", tag.em(current_user.nombre)]),
+             detalle: (current_miembro&.logia || current_logia).ruta_comunidad %>
 
   <%= render "dashboard/activar_avisos" unless current_user.invitado? %>
   <%= render "reuniones/proxima" %>
@@ -141,7 +136,7 @@
 <%# ---- Tabla de Cobros ---- %>
   <% cobros_seleccionables = @cobros.select(&:puede_adjuntar_soporte?) %>
 
-  <div class="card" id="mis-cobros">
+  <div class="card" id="mis-cobros" data-recorrido="cobros">
     <div class="card-header">
       <h5 class="card-title mb-0"><i class="bi bi-receipt me-2"></i>Mis cobros</h5>
     </div>
@@ -245,7 +240,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #1a2744 0%, #1e3a5f 100%);
+    background: linear-gradient(135deg, var(--c-petroleo) 0%, var(--c-petroleo-claro) 100%);
     padding: 0.75rem 1rem;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
     z-index: 1050;
@@ -263,7 +258,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #c5a24d;
+    color: var(--c-ambar-claro);
     font-size: 1.1rem;
   }
   tr.table-row-selected {

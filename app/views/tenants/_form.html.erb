@@ -126,9 +126,9 @@
               <input type="color" value="<%= logia.color_display %>"
                      class="form-control form-control-color"
                      oninput="document.getElementById('tenant_color_text').value=this.value">
-              <%= f.text_field :color_primario, class: "form-control", placeholder: "#1B2A4A",
+              <%= f.text_field :color_primario, class: "form-control", placeholder: "#0D3436",
                                id: "tenant_color_text",
-                               value: (logia.color_primario.presence || "#1B2A4A") %>
+                               value: (logia.color_primario.presence || "#0D3436") %>
             </div>
           </div>
           <div class="col-md-3">

@@ -1,6 +1,6 @@
 <% content_for(:title, "Directorio") %>
 
-<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2" data-recorrido="directorio">
   <div>
     <h4 class="mb-0 fw-bold"><i class="bi bi-person-vcard me-2 text-oro"></i>Directorio</h4>
     <small class="text-muted"><%= @miembros.total_count %> miembros activos</small>
@@ -64,7 +64,7 @@
           <% if m.cargos.any? %>
             <div class="mt-1">
               <% m.miembro_cargos.vigentes.includes(:cargo).each do |mc| %>
-                <span class="badge" style="background:#c5a24d;color:#fff;font-size:.64rem;"><%= mc.cargo.nombre %></span>
+                <span class="badge" style="background:var(--c-ambar-suave);color:var(--c-ambar-oscuro);font-size:.64rem;"><%= mc.cargo.nombre %></span>
               <% end %>
             </div>
           <% end %>

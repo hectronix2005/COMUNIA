@@ -1,0 +1,61 @@
+<% content_for :title, "Guía · #{current_logia.nombre_display}" %>
+<section class="guia-cabecera" data-recorrido="guia">
+  <h1>Qué puedes hacer en <em><%= current_logia.nombre_display %></em></h1>
+  <p>Cada sección, en una frase y con un enlace para ir. Si prefieres que te lo enseñemos, repite el recorrido: te lleva pantalla a pantalla.</p>
+  <% if recorrido_disponible? %>
+    <button type="button" class="btn btn-acento" data-action="recorrido#empezar">
+      <i class="bi bi-signpost-split me-1"></i>Repetir el recorrido
+    </button>
+  <% end %>
+</section>
+
+<h2 class="h5 fw-bold mb-3">Primeros pasos</h2>
+<ol class="guia-pasos">
+  <% if current_user.miembro.present? %>
+    <li>
+      <strong>Completa tu ficha</strong>
+      <span>Foto y teléfono, para que los demás te encuentren.</span><br>
+      <%= link_to "Abrir mi ficha", edit_directorio_path(current_user.miembro) %>
+    </li>
+  <% end %>
+  <li>
+    <strong>Activa los avisos</strong>
+    <span>Te llegan las convocatorias al teléfono.</span><br>
+    <%= link_to "Ir al inicio", dashboard_path %>
+  </li>
+  <li>
+    <strong>Instala la app</strong>
+    <span>Un toque desde la pantalla de inicio.</span><br>
+    <%= link_to "Cómo instalarla", bienvenida_path %>
+  </li>
+  <li>
+    <strong>Confirma el próximo encuentro</strong>
+    <span>Quien organiza sabe con quién cuenta.</span><br>
+    <%= link_to "Ver la agenda", calendario_index_path %>
+  </li>
+  <li>
+    <strong>Saluda en el muro</strong>
+    <span>Una línea basta para empezar.</span><br>
+    <%= link_to "Ir al muro", publicaciones_path %>
+  </li>
+</ol>
+
+<% secciones_de_la_guia.each do |titulo, items| %>
+  <section class="guia-seccion">
+    <h2 class="h5 fw-bold mb-3"><%= titulo %></h2>
+    <div class="row g-3">
+      <% items.each do |item| %>
+        <div class="col-md-6 col-xl-4">
+          <div class="guia-item">
+            <span class="guia-icono"><i class="bi <%= item[:icono] %>"></i></span>
+            <div>
+              <h3><%= item[:titulo] %></h3>
+              <p><%= item[:texto] %></p>
+              <%= link_to item[:ruta], class: "guia-ir" do %>Llévame <i class="bi bi-arrow-right"></i><% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>

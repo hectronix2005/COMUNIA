@@ -1,7 +1,7 @@
 <%# Próxima reunión en el panel, con la respuesta a un clic: el motivo para entrar antes de cada encuentro. %>
 <% if (reunion = proxima_reunion) %>
   <% respuesta = reunion.respuesta_de(current_user) %>
-  <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid <%= reunion.logia.color_display %> !important;">
+  <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid var(--c-ambar) !important;" data-recorrido="proxima">
     <div class="card-body d-flex flex-wrap align-items-center gap-3">
       <div class="text-center flex-shrink-0" style="width:56px;">
         <div class="fw-bold fs-4 lh-1"><%= reunion.inicio.day %></div>

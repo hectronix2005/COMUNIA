@@ -5,7 +5,7 @@
     <h4 class="fw-bold mb-3"><i class="bi bi-newspaper me-2 text-oro"></i>Muro</h4>
 
     <%# Compose box %>
-    <div class="card mb-3">
+    <div class="card mb-3" data-recorrido="muro">
       <div class="card-body py-3">
         <%= form_with model: @nueva, url: publicaciones_path, local: true, class: "d-flex flex-column gap-2" do |f| %>
           <div class="d-flex gap-2 align-items-start">

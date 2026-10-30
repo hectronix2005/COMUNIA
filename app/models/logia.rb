@@ -18,6 +18,8 @@ class Logia < ApplicationRecord
   validates_attachment :logo, types: :image, max: 5.megabytes
 
   validates :nombre, presence: true
+  # El color va dentro del CSS de la página (cabecera, logo): solo un hexadecimal, nada que cierre la regla.
+  validates :color_primario, format: { with: /\A#\h{6}\z/, message: "debe ser un color como #0D3436" }, allow_blank: true
   # Dos niveles, organización y logias: el alcance (logia_ids_accesibles, la organización de la URL) no
   # ve más abajo. Solo al cambiar el padre, para que lo ya guardado se pueda seguir editando.
   validate if: :will_save_change_to_tenant_id? do
@@ -69,7 +71,7 @@ class Logia < ApplicationRecord
   def nombre_display  = nombre_app.presence || nombre
   def icono_display   = icono.presence || "🏛️"
   def lema_display    = lema.presence || ""
-  def color_display   = color_primario.presence || "#1B2A4A"
+  def color_display   = color_primario.to_s.match?(/\A#\h{6}\z/) ? color_primario : "#0D3436"
 
   # ── Palabras y módulos ────────────────────────────────────────
   # Cada palabra sale de la propia logia, si no de su comunidad, si no de la categoría de la comunidad, y si

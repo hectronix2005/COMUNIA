@@ -2,7 +2,8 @@
 <% content_for :head do %>
   <meta name="view-transition" content="same-origin">
   <style>
-    :root { --wa-teal:#008069; --wa-teal-dark:#005c4b; --wa-green-bubble:#d9fdd3; --wa-bg:#efeae2; --wa-sidebar:#fff; --wa-panel-header:#f0f2f5; --wa-border:#e9edef; --wa-unread:#25d366; --wa-blue-check:#53bdeb; --wa-text:#111b21; --wa-text-secondary:#667781; --wa-hover:#f5f6f6; }
+    /* Paleta de COMUNIA (rediseño del 29-oct-2026): los nombres --wa-* quedan por la forma, no por el color. */
+    :root { --wa-teal:var(--c-petroleo); --wa-teal-dark:var(--c-petroleo-oscuro); --wa-green-bubble:var(--c-ambar-suave); --wa-bg:#E9EFEE; --wa-sidebar:#fff; --wa-panel-header:#F7F9F8; --wa-border:var(--c-borde); --wa-unread:var(--c-ambar); --wa-blue-check:#1F6F8B; --wa-text:var(--c-texto); --wa-text-secondary:var(--c-gris); --wa-hover:var(--c-fondo); }
     .wa-texto { color:var(--wa-text); }
     .wa-secundario { color:var(--wa-text-secondary); }
     .wa-fondo-teal { background:var(--wa-teal); }
@@ -36,7 +37,7 @@
     /* ── Sidebar Items ── */
     .chat-item { display:flex; align-items:center; gap:12px; padding:10px 16px; cursor:pointer; text-decoration:none; color:inherit; transition:background .1s; border-bottom:none; }
     .chat-item:hover { background:var(--wa-hover); }
-    .chat-item.active { background:#f0f2f5; }
+    .chat-item.active { background:var(--c-petroleo-suave); }
     .chat-item-info { flex:1; min-width:0; border-bottom:1px solid var(--wa-border); padding-bottom:10px; }
     .chat-item:last-child .chat-item-info { border-bottom:none; }
     .chat-section-label { padding:8px 20px; font-size:.72rem; font-weight:500; color:var(--wa-teal); text-transform:uppercase; letter-spacing:.04em; background:var(--wa-panel-header); }
@@ -129,7 +130,7 @@
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
     /* ── Unread badge ── */
-    .unread-badge { background:var(--wa-unread); color:#fff; font-size:.66rem; min-width:20px; height:20px; padding:0 5px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:600; }
+    .unread-badge { background:var(--wa-unread); color:#1E1405; font-size:.66rem; min-width:20px; height:20px; padding:0 5px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:600; }
 
     /* ── Search overlay ── */
     .chat-search-overlay { position:absolute; top:0; right:0; width:100%; max-width:360px; height:100%; background:#fff; z-index:20; border-left:1px solid var(--wa-border); display:flex; flex-direction:column; }
@@ -184,7 +185,7 @@
 <div class="chat-layout <%= 'chat-layout--open' if @canal == 'dm' && @con_id || @canal != 'tenant' && params[:canal].present? %>">
 
   <%# ══════════════ SIDEBAR ══════════════ %>
-  <div class="chat-sidebar">
+  <div class="chat-sidebar" data-recorrido="chat">
     <div class="chat-sidebar-header">
       <div class="chat-avatar chat-avatar-header wa-fondo-teal">
         <i class="bi bi-person-fill fs-6"></i>
@@ -197,7 +198,7 @@
 
     <div class="chat-sidebar-search">
       <div class="position-relative">
-        <i class="bi bi-search position-absolute" style="left:10px;top:50%;transform:translateY(-50%);color:#8696a0;font-size:.78rem;"></i>
+        <i class="bi bi-search position-absolute" style="left:10px;top:50%;transform:translateY(-50%);color:var(--wa-text-secondary);font-size:.78rem;"></i>
         <input type="text" id="dm-search" placeholder="Buscar o iniciar un chat" autocomplete="off">
       </div>
     </div>

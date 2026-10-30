@@ -7,7 +7,8 @@ Rails.application.routes.draw do
   get "manifest"      => "pwa#manifest", as: :pwa_manifest, defaults: { format: "json" }
   get "service-worker" => "pwa#service_worker", as: :pwa_service_worker
 
-  root "dashboard#index"
+  # Portada pública: quien no tiene sesión ve qué es COMUNIA; con sesión, o dentro de una comunidad, sigue de largo.
+  root "portada#show"
 
   # Entrada/salida de contexto de tenant. El middleware TenantPathPrefix
   # reescribe /t/:slug/<resto> → /<resto> con SCRIPT_NAME=/t/:slug, por lo
@@ -33,6 +34,8 @@ Rails.application.routes.draw do
   patch "completa-tus-datos", to: "completar_datos#update"
 
   get "dashboard", to: "dashboard#index", as: :dashboard
+  get   "guia",      to: "guia#show",      as: :guia
+  patch "recorrido", to: "recorrido#update", as: :recorrido
 
   # ── Panel del operador de DENUNCIAPP (host de COMUNIA, solo superadmin) ──
   scope "denuncias/admin", module: :denuncias, controller: :admin do

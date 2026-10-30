@@ -2,7 +2,7 @@
   logia = display_logia
   app_name      = logia&.nombre_display || "COMUNIA"
   short_name    = (logia&.nombre_display || "COMUNIA").to_s.split(/\s+/).first(2).join(" ")[0, 14]
-  theme_color   = logia&.color_display || "#1B2A4A"
+  theme_color   = logia&.color_display || "#0D3436"
   bg_color      = "#F5F6FA"
   description   = logia&.lema_display.presence || "Plataforma COMUNIA — gestión integral para organizaciones."
   start_url     = request.script_name.present? ? "#{request.script_name}/dashboard" : "/dashboard"

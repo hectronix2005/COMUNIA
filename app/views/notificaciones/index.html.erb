@@ -19,7 +19,7 @@
       <% @notificaciones.each do |n| %>
         <% icon, color = case n.tipo
             when "chat_dm"    then ["bi-chat-dots-fill", "#6f42c1"]
-            when "chat_canal" then ["bi-megaphone-fill", "#1B2A4A"]
+            when "chat_canal" then ["bi-megaphone-fill", "var(--c-petroleo)"]
             when "cumpleanos" then ["bi-balloon-heart-fill", "#fd7e14"]
             else ["bi-bell-fill", "#6c757d"]
            end

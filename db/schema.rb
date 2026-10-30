@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -1027,6 +1027,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_020000) do
     t.boolean "invitado", default: false, null: false
     t.string "celular"
     t.boolean "debe_completar_datos", default: false, null: false
+    t.datetime "recorrido_visto_at"
     t.index ["calendario_semilla"], name: "index_users_on_calendario_semilla", unique: true
     t.index ["celular"], name: "index_users_on_celular", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true

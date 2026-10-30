@@ -1,0 +1,144 @@
+<% content_for :title, "COMUNIA · Tu comunidad, en un solo lugar" %>
+<%# Portada pública (PortadaController): solo sin sesión y fuera de una comunidad. %>
+<div class="portada">
+  <header class="portada-cabecera">
+    <div class="portada-ancho">
+      <%= link_to root_path, class: "portada-marca" do %>
+        <i class="bi bi-people-fill" aria-hidden="true"></i>COMUNIA
+      <% end %>
+      <%= link_to "Ingresar", new_user_session_path, class: "btn btn-sm btn-acento" %>
+    </div>
+  </header>
+
+  <section class="portada-hero">
+    <div class="portada-ancho">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <h1>Tu comunidad, <em>en un solo lugar.</em></h1>
+          <p class="portada-lema">
+            Encuentros, avisos, cuotas y conversación para clubes, egresados, vecinos y logias.
+            Sin grupos de WhatsApp que se pierden ni hojas de cálculo.
+          </p>
+          <div class="portada-botones">
+            <%= link_to new_user_session_path, class: "btn btn-lg btn-acento" do %>
+              <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
+            <% end %>
+            <% if Demo.disponible? %>
+              <%= button_to demo_path, class: "btn btn-lg btn-claro", form: { class: "d-inline" } do %>
+                <i class="bi bi-play-circle me-1"></i>Ver una demostración
+              <% end %>
+            <% end %>
+          </div>
+          <% if Red::Captcha.disponible? %>
+            <p class="small mt-3 mb-0" style="color: rgba(255,255,255,.7);">
+              ¿Tu comunidad te dio un código? <%= link_to "Pide acceso", pedir_acceso_path, class: "text-white fw-semibold" %>
+            </p>
+          <% end %>
+        </div>
+        <div class="col-lg-5" aria-hidden="true">
+          <div class="portada-muestra">
+            <div class="muestra-tarjeta">
+              <div class="muestra-titulo">Próximo encuentro <span>Faltan 6 días</span></div>
+              <div class="muestra-evento">
+                <div class="muestra-fecha">4<small>NOV</small></div>
+                <div class="muestra-que">Reunión mensual<small>miércoles · 6:00 p. m.</small></div>
+                <div class="muestra-ok">Asistiré</div>
+              </div>
+            </div>
+            <div class="muestra-cifras">
+              <div>2<small>Por pagar</small></div>
+              <div>7<small>Pagados</small></div>
+              <div>12<small>Avisos</small></div>
+            </div>
+            <div class="muestra-globo">
+              <b>Recorrido · paso 2 de 8</b>
+              Aquí confirmas si vas al encuentro. Quien organiza lo ve al instante.
+              <div class="pasos"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="portada-seccion">
+    <div class="portada-ancho">
+      <div class="portada-antetitulo">Qué puedes hacer</div>
+      <h2 class="portada-titulo">Todo lo que tu comunidad necesita para seguir unida</h2>
+      <p class="portada-texto mb-4">Cada comunidad activa solo lo que usa. Esto es lo que encontrarás dentro.</p>
+      <div class="row g-3">
+        <% [
+             ["bi-calendar-check", "Agenda y asistencia", "Los encuentros del mes y quién va. Confirmas con un toque y lo llevas al calendario del teléfono."],
+             ["bi-bell", "Avisos al teléfono", "Convocatorias y recordatorios que llegan solos, sin tener que entrar a mirar."],
+             ["bi-chat-heart", "Muro y chat", "Noticias de la comunidad, comentarios y conversación en grupo o en privado."],
+             ["bi-person-vcard", "Directorio", "Quién es quién y cómo contactarlo, con la ficha que cada persona mantiene al día."],
+             ["bi-wallet2", "Cuotas", "Lo pendiente y lo pagado. Envías el soporte desde el teléfono y tesorería lo valida."],
+             ["bi-journal-bookmark", "Biblioteca y encuestas", "Documentos, lecturas y votaciones de la comunidad, todo en el mismo sitio."]
+           ].each do |icono, titulo, texto| %>
+          <div class="col-md-6 col-lg-4">
+            <div class="funcion">
+              <span class="funcion-icono"><i class="bi <%= icono %>"></i></span>
+              <h3><%= titulo %></h3>
+              <p><%= texto %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="portada-seccion pt-0">
+    <div class="portada-ancho">
+      <div class="portada-antetitulo">Para quién</div>
+      <h2 class="portada-titulo">Para cualquier comunidad que se reúne</h2>
+      <p class="portada-texto mb-4">Cada una con su nombre, su logo y su forma de organizarse.</p>
+      <div class="para-quien">
+        <span><i class="bi bi-trophy"></i>Clubes</span>
+        <span><i class="bi bi-mortarboard"></i>Egresados</span>
+        <span><i class="bi bi-house-heart"></i>Vecinos y conjuntos</span>
+        <span><i class="bi bi-bank"></i>Logias y fraternidades</span>
+        <span><i class="bi bi-people"></i>Asociaciones</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="portada-seccion pt-0">
+    <div class="portada-ancho">
+      <div class="portada-antetitulo">Cómo empezar</div>
+      <h2 class="portada-titulo mb-4">Tres pasos y ya estás dentro</h2>
+      <div class="portada-pasos">
+        <div class="portada-paso">
+          <h3>Recibe tu acceso</h3>
+          <p>Quien administra tu comunidad te da de alta y te envía tu usuario, por correo o al celular.</p>
+        </div>
+        <div class="portada-paso">
+          <h3>Ingresa y sigue el recorrido</h3>
+          <p>La primera vez te enseñamos, pantalla a pantalla, dónde está cada cosa.</p>
+        </div>
+        <div class="portada-paso">
+          <h3>Instálala en tu teléfono</h3>
+          <p>Añádela a la pantalla de inicio y activa los avisos para no perderte nada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="portada-seccion pt-0">
+    <div class="portada-ancho">
+      <div class="portada-cierre">
+        <h2 class="portada-titulo text-white">¿Ya tienes cuenta?</h2>
+        <p class="mb-4">Entra con tu usuario, correo o celular.</p>
+        <%= link_to new_user_session_path, class: "btn btn-lg btn-acento" do %>
+          <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <footer class="portada-pie">
+    <div class="portada-ancho d-flex flex-wrap justify-content-between gap-2">
+      <span>COMUNIA · comunidades certificadas</span>
+      <%= link_to "Red de comunidades", red_inicio_path %>
+    </div>
+  </footer>
+</div>

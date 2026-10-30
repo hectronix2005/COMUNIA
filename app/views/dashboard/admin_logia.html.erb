@@ -2,14 +2,8 @@
 
 <div>
 
-  <%# ---- Page Header ---- %>
-  <div class="page-header mb-4">
-    <div>
-      <h1 class="h3 fw-bold"><%= @logia.icono_display %> <%= @logia.nombre_display %></h1>
-      <p class="text-muted mb-0"><%= @logia.ruta_comunidad %> <span class="badge bg-secondary ms-1"><%= @logia.codigo %></span></p>
-    </div>
-    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= l(Date.current, format: :long) %></div>
-  </div>
+  <%= render "dashboard/saludo", titulo: safe_join(["Hola, ", tag.em(current_user.nombre)]),
+             detalle: "#{@logia.ruta_comunidad} · #{@logia.codigo}" %>
 
   <%= render "dashboard/activar_avisos" unless current_user.invitado? %>
   <%= render "reuniones/proxima" %>

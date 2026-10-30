@@ -1,0 +1,16 @@
+<%# Saludo del inicio: quién eres, dónde estás y la entrada a la Guía y al recorrido. %>
+<section class="saludo" data-recorrido="saludo">
+  <div class="saludo-fecha"><%= l(Date.current, format: :long) %></div>
+  <h1 class="saludo-titulo"><%= titulo %></h1>
+  <p class="saludo-detalle"><%= detalle %></p>
+  <div class="saludo-acciones">
+    <%= link_to guia_path, class: "btn btn-sm btn-acento" do %>
+      <i class="bi bi-signpost-split me-1"></i>Qué puedo hacer aquí
+    <% end %>
+    <% if recorrido_disponible? %>
+      <button type="button" class="btn btn-sm btn-claro" data-action="recorrido#empezar">
+        <i class="bi bi-play-circle me-1"></i>Ver el recorrido
+      </button>
+    <% end %>
+  </div>
+</section>

@@ -2,98 +2,112 @@
   <meta name="turbo-cache-control" content="no-cache">
 <% end %>
 <div class="login-wrapper" data-turbo-cache="false">
-  <div class="login-card">
+  <div class="ingreso">
 
-    <%# ── Franja de logo: rompe el padding de la card ──────────── %>
-    <% if display_logia&.logo&.attached? %>
-      <div style="background: <%= display_logia.color_display %>; margin: -2.5rem -2.5rem 1.5rem -2.5rem; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; display:flex; align-items:center; justify-content:center;">
-        <%= image_tag display_logia.logo, style: "max-height:90px; max-width:100%; object-fit:contain;", alt: display_logia.nombre_display %>
-      </div>
-    <% end %>
-
-    <div class="text-center mb-4">
-      <% unless display_logia&.logo&.attached? %>
-        <div class="login-icon mb-3">
-          <% if display_logia %>
-            <span class="icono-grande"><%= display_logia.icono_display %></span>
-          <% else %>
-            <span style="font-size: 2.5rem; font-weight: 900; color: #6c757d; letter-spacing: -1px;">C·</span>
-          <% end %>
+    <%# ── Lado izquierdo: quién es. Dentro de una comunidad, su logo sobre su color; fuera, COMUNIA. ── %>
+    <div class="ingreso-lado">
+      <% if display_logia&.logo&.attached? %>
+        <div class="ingreso-logo ingreso-logo-imagen">
+          <%= image_tag display_logia.logo, alt: display_logia.nombre_display %>
         </div>
+      <% elsif display_logia %>
+        <div class="ingreso-logo"><span><%= display_logia.icono_display %></span></div>
+      <% else %>
+        <div class="ingreso-logo"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
       <% end %>
-      <h2 class="fw-bold" style="color: <%= display_logia&.color_display || '#6c757d' %>; letter-spacing: 1px;">
-        <%= display_logia&.nombre_display || "COMUNIA" %>
-      </h2>
-      <% if display_logia&.lema_display.present? %>
-        <p class="text-muted"><%= display_logia.lema_display %></p>
+
+      <h1 class="ingreso-nombre">
+        <% if display_logia %>
+          <%= display_logia.nombre_display %>
+        <% else %>
+          Te damos la <em>bienvenida</em>
+        <% end %>
+      </h1>
+      <p class="ingreso-lema">
+        <%= display_logia&.lema_display.presence || "Entra a tu comunidad: encuentros, avisos, cuotas y conversación." %>
+      </p>
+      <ul class="ingreso-puntos">
+        <li><i class="bi bi-calendar-check"></i>Confirma tu asistencia con un toque</li>
+        <li><i class="bi bi-bell"></i>Recibe los avisos en tu teléfono</li>
+        <li><i class="bi bi-chat-heart"></i>Conversa con toda la comunidad</li>
+      </ul>
+      <% unless request.script_name.present? %>
+        <%= link_to root_path, class: "ingreso-volver" do %>
+          <i class="bi bi-arrow-left me-1"></i>Qué es COMUNIA
+        <% end %>
       <% end %>
     </div>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "needs-validation" }) do |f| %>
-      <div class="form-floating mb-3">
-        <%= f.text_field :email,
-            autofocus: true,
-            autocomplete: "username",
-            class: "form-control",
-            placeholder: "usuario, correo o celular",
-            id: "login-username" %>
-        <label for="login-username"><i class="bi bi-person me-1"></i> Usuario, correo o celular</label>
-      </div>
+    <div class="login-card">
+      <h2 class="fw-bold mb-1" style="color: var(--c-petroleo); letter-spacing: -.02em;">Ingresar</h2>
+      <p class="text-muted small mb-4">Con tu usuario, correo o celular.</p>
 
-      <div class="form-floating mb-3 position-relative">
-        <%= f.password_field :password,
-            autocomplete: "current-password",
-            class: "form-control",
-            placeholder: "Contrase\u00F1a",
-            id: "login-password" %>
-        <label for="login-password"><i class="bi bi-lock me-1"></i> Contrase&ntilde;a</label>
-        <button type="button"
-                class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3"
-                style="z-index: 5; text-decoration: none;"
-                onclick="togglePasswordVisibility(this)"
-                tabindex="-1"
-                aria-label="Mostrar contrase&ntilde;a">
-          <i class="bi bi-eye"></i>
-        </button>
-      </div>
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "needs-validation" }) do |f| %>
+        <div class="form-floating mb-3">
+          <%= f.text_field :email,
+              autofocus: true,
+              autocomplete: "username",
+              class: "form-control",
+              placeholder: "usuario, correo o celular",
+              id: "login-username" %>
+          <label for="login-username"><i class="bi bi-person me-1"></i> Usuario, correo o celular</label>
+        </div>
 
-      <% if devise_mapping.rememberable? %>
-        <div class="mb-3 form-check form-switch">
-          <%= f.check_box :remember_me, class: "form-check-input", role: "switch", id: "remember-me" %>
-          <label class="form-check-label" for="remember-me">Recordarme</label>
+        <div class="form-floating mb-3 position-relative">
+          <%= f.password_field :password,
+              autocomplete: "current-password",
+              class: "form-control",
+              placeholder: "Contrase\u00F1a",
+              id: "login-password" %>
+          <label for="login-password"><i class="bi bi-lock me-1"></i> Contrase&ntilde;a</label>
+          <button type="button"
+                  class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3"
+                  style="z-index: 5; text-decoration: none;"
+                  onclick="togglePasswordVisibility(this)"
+                  tabindex="-1"
+                  aria-label="Mostrar contrase&ntilde;a">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="mb-3 form-check form-switch">
+            <%= f.check_box :remember_me, class: "form-check-input", role: "switch", id: "remember-me" %>
+            <label class="form-check-label" for="remember-me">Recordarme</label>
+          </div>
+        <% end %>
+
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-primary btn-lg w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+          </button>
         </div>
       <% end %>
 
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-primary btn-lg w-100">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
-        </button>
+      <div class="text-center mb-4">
+        <%= link_to new_password_path(resource_name), class: "text-muted small text-decoration-none" do %>
+          <i class="bi bi-question-circle me-1"></i>&iquest;Olvidaste tu contrase&ntilde;a?
+        <% end %>
       </div>
-    <% end %>
 
-    <div class="text-center mb-4">
-      <%= link_to new_password_path(resource_name), class: "text-muted small text-decoration-none" do %>
-        <i class="bi bi-question-circle me-1"></i>&iquest;Olvidaste tu contrase&ntilde;a?
+      <%# Sin captcha configurado el formulario no admite solicitudes: no se ofrece. %>
+      <% if Red::Captcha.disponible? %>
+        <div class="text-center small border-top pt-3">
+          ¿Tu comunidad te dio un código?
+          <%= link_to "Pide acceso", pedir_acceso_path, class: "fw-semibold" %>
+        </div>
       <% end %>
+
+      <%# Modo invitado (DemoController): una comunidad ficticia para ver cómo funciona, sin guardar nada. %>
+      <% if Demo.disponible? %>
+        <div class="text-center small <%= 'border-top' unless Red::Captcha.disponible? %> pt-3">
+          ¿Aún no tienes cuenta?
+          <%= button_to "Ver una demostración", demo_path, class: "btn btn-link btn-sm fw-semibold p-0 align-baseline",
+                form: { class: "d-inline" } %>
+        </div>
+      <% end %>
+
     </div>
-
-    <%# Sin captcha configurado el formulario no admite solicitudes: no se ofrece. %>
-    <% if Red::Captcha.disponible? %>
-      <div class="text-center small border-top pt-3">
-        ¿Tu comunidad te dio un código?
-        <%= link_to "Pide acceso", pedir_acceso_path, class: "fw-semibold" %>
-      </div>
-    <% end %>
-
-    <%# Modo invitado (DemoController): una comunidad ficticia para ver cómo funciona, sin guardar nada. %>
-    <% if Demo.disponible? %>
-      <div class="text-center small <%= 'border-top' unless Red::Captcha.disponible? %> pt-3">
-        ¿Aún no tienes cuenta?
-        <%= button_to "Ver una demostración", demo_path, class: "btn btn-link btn-sm fw-semibold p-0 align-baseline",
-              form: { class: "d-inline" } %>
-      </div>
-    <% end %>
-
   </div>
 </div>
 

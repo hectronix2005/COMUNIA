@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="<%= (_logia&.nombre_display || 'COMUNIA').to_s[0,14] %>">
-    <meta name="theme-color" content="<%= _logia&.color_display || '#1B2A4A' %>">
+    <meta name="theme-color" content="#0D3436">
     <meta name="format-detection" content="telephone=no">
     <meta name="vapid-public-key" content="<%= Rails.application.config.x.vapid[:public_key] %>">
     <%= csrf_meta_tags %>
@@ -17,13 +17,9 @@
 
     <%= yield :head %>
 
-    <%# Inject tenant primary color as CSS variable %>
-    <% if (logia_color = _logia&.color_display) %>
-      <style>
-        :root { --bs-primary: <%= logia_color %>; --tenant-primary: <%= logia_color %>; }
-        .btn-primary, .navbar-main { background-color: <%= logia_color %> !important; border-color: <%= logia_color %> !important; }
-        .navbar-main .nav-link:hover, .navbar-main .nav-link.active { color: rgba(255,255,255,0.9) !important; }
-      </style>
+    <%# El color propio de la comunidad solo tiñe su logo en la cabecera (decisión de Héctor, 29-oct-2026). %>
+    <% if _logia %>
+      <style>:root { --color-comunidad: <%= _logia.color_display %>; }</style>
     <% end %>
 
     <%# PWA manifest dinámico (con branding del tenant activo). %>
@@ -38,20 +34,30 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="d-flex flex-column min-vh-100">
+  <%# El recorrido guiado vive en el body para que el botón de la Guía y el del inicio lo alcancen. %>
+  <% recorrido = recorrido_disponible? %>
+  <body class="d-flex flex-column min-vh-100"
+        <% if recorrido %>
+          data-controller="recorrido"
+          data-recorrido-pasos-value="<%= pasos_del_recorrido.to_json %>"
+          data-recorrido-automatico-value="<%= recorrido_automatico? %>"
+          data-recorrido-marcar-url-value="<%= recorrido_path unless current_user.invitado? %>"
+        <% end %>>
     <% if user_signed_in? && !current_user.debe_completar_datos? %>
       <nav class="navbar navbar-expand-lg navbar-main">
         <div class="container-fluid px-4">
           <%= link_to root_path, class: "navbar-brand fw-bold" do %>
             <% if _logia %>
-              <% if _logia.logo.attached? %>
-                <%= image_tag _logia.logo, height: 28, class: "me-1", alt: _logia.nombre_display, style: "max-height:28px;max-width:70px;object-fit:contain;" %>
-              <% else %>
-                <%= _logia.icono_display %>
-              <% end %>
-              <%= _logia.nombre_display %>
+              <span class="marca-chip">
+                <% if _logia.logo.attached? %>
+                  <%= image_tag _logia.logo, alt: "" %>
+                <% else %>
+                  <%= _logia.icono_display %>
+                <% end %>
+              </span>
+              <span class="text-truncate"><%= _logia.nombre_display %></span>
             <% else %>
-              <i class="bi bi-grid-3x3-gap me-1"></i>COMUNIA
+              <span class="marca-chip"><i class="bi bi-grid-3x3-gap"></i></span>COMUNIA
             <% end %>
           <% end %>
 
@@ -127,7 +133,7 @@
                     </a>
                     <ul class="dropdown-menu">
                       <% if _puede_cobros %>
-                        <li><%= link_to cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? Logia.plural(current_logia.t_cobro) : "Mis #{Logia.plural(current_logia.t_cobro)}" %><% end %></li>
+                        <li><%= link_to (current_user.tiene_cargo?("Tesorero") ? cobros_path : dashboard_path(anchor: "mis-cobros")), class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? Logia.plural(current_logia.t_cobro) : "Mis #{Logia.plural(current_logia.t_cobro)}" %><% end %></li>
                       <% end %>
                       <% if _puede_periodos %>
                         <li><%= link_to periodo_cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/periodos')}" do %><i class="bi bi-calendar-check me-2"></i>Periodos<% end %></li>
@@ -350,6 +356,14 @@
                       </li>
                     <% end %>
                   <% end %>
+                  <% unless platform_admin_context? %>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <%= link_to guia_path, class: "dropdown-item #{'active' if current_page?(guia_path)}" do %>
+                        <i class="bi bi-signpost-split me-2"></i>Guía y recorrido
+                      <% end %>
+                    </li>
+                  <% end %>
                   <% if current_user.rol_ref&.es_super_admin? %>
                     <li>
                       <%= link_to denuncias_admin_path, class: "dropdown-item" do %>
@@ -372,8 +386,8 @@
 
       <%# ── Banner de vista previa ──────────────────────────── %>
       <% if previewing_tenant? %>
-        <div class="d-flex align-items-center justify-content-between px-4 py-2"
-             style="background: #ff6b00; color: #fff; font-size: 0.85rem;">
+        <div class="d-flex align-items-center justify-content-between px-4 py-2 texto-reducido"
+             style="background: var(--c-ambar); color: #1E1405;">
           <span>
             <i class="bi bi-eye-fill me-2"></i>
             <strong>Vista previa:</strong> estás viendo la comunidad
@@ -423,7 +437,7 @@
               &mdash; <%= _logia.lema_display %>
             <% end %>
           <% else %>
-            <i class="bi bi-grid-3x3-gap me-1"></i>COMUNIA &copy; <%= Date.current.year %>
+            COMUNIA &copy; <%= Date.current.year %>
           <% end %>
         </div>
       </footer>
