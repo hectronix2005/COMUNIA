@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_29_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -441,7 +441,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_010000) do
     t.bigint "user_id", null: false
     t.bigint "logia_id", null: false
     t.string "numero_miembro", null: false
-    t.string "cedula", null: false
+    t.string "cedula"
     t.string "grado"
     t.integer "estado", default: 0, null: false
     t.datetime "created_at", null: false
@@ -995,7 +995,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_010000) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email", default: "", null: false
+    t.string "email"
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
@@ -1025,7 +1025,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_29_010000) do
     t.string "calendario_semilla"
     t.boolean "espera_aprobacion", default: false, null: false
     t.boolean "invitado", default: false, null: false
+    t.string "celular"
+    t.boolean "debe_completar_datos", default: false, null: false
     t.index ["calendario_semilla"], name: "index_users_on_calendario_semilla", unique: true
+    t.index ["celular"], name: "index_users_on_celular", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitado"], name: "index_users_on_invitado", unique: true, where: "invitado"
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true

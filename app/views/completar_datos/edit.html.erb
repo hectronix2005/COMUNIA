@@ -1,0 +1,67 @@
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+<div class="login-wrapper" data-turbo-cache="false">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <div class="login-icon mb-3">
+        <span class="icono-grande"><%= display_logia&.icono_display || "🏛️" %></span>
+      </div>
+      <h2 class="fw-bold" style="color: <%= display_logia&.color_display || '#6c757d' %>;">
+        <%= display_logia&.nombre_display || "COMUNIA" %>
+      </h2>
+      <p class="mb-1">Hola, <strong><%= current_user.nombre %></strong>. Antes de empezar, completa tus datos y elige tu contraseña.</p>
+      <p class="text-muted small mb-0">Desde ahora entras con tu celular o tu correo y la contraseña que elijas aquí.</p>
+    </div>
+
+    <%= render "devise/shared/error_messages", resource: @user %>
+
+    <%= form_with model: @user, scope: :user, url: completar_datos_path, method: :patch do |f| %>
+      <input type="text" name="username" value="<%= current_user.celular %>" autocomplete="username" hidden>
+
+      <div class="form-floating mb-3">
+        <%= f.text_field :nombre, required: true, maxlength: 80, autocomplete: "given-name", class: "form-control", placeholder: "Nombres", id: "datos-nombre" %>
+        <label for="datos-nombre">Nombres</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.text_field :apellido, required: true, maxlength: 80, autocomplete: "family-name", class: "form-control", placeholder: "Apellidos", id: "datos-apellido" %>
+        <label for="datos-apellido">Apellidos completos</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.text_field :cedula, value: params.dig(:user, :cedula) || @miembro&.cedula, required: true, maxlength: 20,
+                                  inputmode: "numeric", class: "form-control", placeholder: "Cédula", id: "datos-cedula" %>
+        <label for="datos-cedula">Cédula</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.email_field :email, required: true, maxlength: 120, autocomplete: "email", class: "form-control", placeholder: "Correo", id: "datos-email" %>
+        <label for="datos-email">Correo electrónico</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.text_field :programa, value: params.dig(:user, :programa) || @miembro&.bio, required: true, maxlength: 120,
+                                    class: "form-control", placeholder: etiqueta_programa, id: "datos-programa" %>
+        <label for="datos-programa"><%= etiqueta_programa %></label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <%= f.password_field :password, required: true, autocomplete: "new-password", minlength: 10,
+                                        class: "form-control", placeholder: "Contraseña", id: "datos-password" %>
+        <label for="datos-password"><i class="bi bi-lock me-1"></i> Contraseña nueva (mínimo 10 caracteres)</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", minlength: 10,
+                                                     class: "form-control", placeholder: "Repítela", id: "datos-password2" %>
+        <label for="datos-password2"><i class="bi bi-lock me-1"></i> Repite la contraseña</label>
+      </div>
+
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+          <i class="bi bi-check2-circle me-2"></i>Guardar y entrar
+        </button>
+      </div>
+    <% end %>
+
+    <div class="text-center">
+      <%= button_to "Salir", destroy_user_session_path, method: :delete, class: "btn btn-link btn-sm text-muted" %>
+    </div>
+  </div>
+</div>

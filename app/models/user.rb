@@ -36,16 +36,23 @@ class User < ApplicationRecord
   has_many :red_membresias, class_name: "Red::Membresia", dependent: :destroy
   has_many :red_publicaciones, class_name: "Red::Publicacion", dependent: :destroy
 
-  validates :nombre, :apellido, presence: true
+  validates :nombre, presence: true
+  # Quien entró con el celular y aún no completa sus datos puede no tener apellido (CompletarDatosController).
+  validates :apellido, presence: true, unless: :debe_completar_datos?
+  validates :celular, uniqueness: true, format: { with: /\A3\d{9}\z/, message: "debe ser un celular de 10 dígitos" },
+                      allow_nil: true
   validates :logia, presence: true, unless: -> { super_admin? || solo_red? }
   # Las cuentas de la red se registran solas, y quien acepta una invitación elige la suya: contraseña más
   # larga que las que crea un admin.
-  validates :password, length: { minimum: 10 }, if: -> { (solo_red? || accepting_invitation?) && password.present? }
+  validates :password, length: { minimum: 10 }, if: -> { (solo_red? || accepting_invitation? || completando_datos) && password.present? }
   validates :username, presence: true, uniqueness: { case_sensitive: false },
                        format: { with: /\A[a-z0-9]+\z/, message: "solo letras minúsculas y números" },
                        if: -> { username.present? }
 
   before_validation :generate_username, on: :create, if: -> { username.blank? }
+  # Sin correo se guarda NULL, no "": así varias cuentas con solo celular no chocan en el índice único.
+  before_validation { self.email = email.presence }
+  before_validation { self.celular = User.normalizar_celular(celular) }
   before_validation -> { self.rol = ROL_POR_CODIGO.fetch(rol_ref.codigo, "miembro") }, if: :rol_ref
   after_save :guardar_pertenencia, if: -> { saved_change_to_logia_id? || saved_change_to_rol_ref_id? }
 
@@ -53,13 +60,30 @@ class User < ApplicationRecord
   def active_for_authentication? = super && !espera_aprobacion?
   def inactive_message = espera_aprobacion? ? :espera_aprobacion : super
 
+  attr_accessor :completando_datos
+
+  # Con celular no hace falta correo: lo pide la pantalla de completar datos.
+  def email_required? = celular.blank?
+
   def self.find_for_database_authentication(warden_conditions)
     login = warden_conditions[:email].to_s.strip
     return nil if login.blank?
-    # Se entra con el usuario o con el correo (único en la tabla); las cuentas de la red no tienen usuario.
+    # Se entra con el usuario, el correo o el celular (únicos en la tabla); las cuentas de la red no tienen usuario.
     return find_by(email: login.downcase) if login.include?("@")
-    find_by("LOWER(username) = ?", login.downcase)
+    por_celular = find_by(celular: normalizar_celular(login)) if login.match?(/\A[\d\s+().-]+\z/)
+    por_celular || find_by("LOWER(username) = ?", login.downcase)
   end
+
+  # «+57 350 691 0000», «350-691-0000» y «3506910000» son el mismo celular.
+  def self.normalizar_celular(texto)
+    digitos = texto.to_s.gsub(/\D/, "")
+    digitos = digitos.delete_prefix("57") if digitos.length == 12
+    digitos.presence
+  end
+
+  # Contraseña temporal para dictarla o mandarla por WhatsApp: sin letras ni cifras que se confundan (l, 1, o, 0).
+  ALFABETO_CLAVE_TEMPORAL = [*"a".."z", *"2".."9"].without("l", "o").freeze
+  def self.clave_temporal = Array.new(10) { ALFABETO_CLAVE_TEMPORAL[SecureRandom.random_number(ALFABETO_CLAVE_TEMPORAL.size)] }.join
 
   scope :admins, -> { where(rol: [:admin_logia, :super_admin]) }
   scope :por_logia, ->(logia_id) { where(logia_id: logia_id) }
@@ -264,7 +288,8 @@ class User < ApplicationRecord
   def build_username_base
     n = transliterate_username(nombre.to_s.strip)
     a = transliterate_username(apellido.to_s.strip.split.first.to_s)
-    "#{n[0]}#{a}".downcase.gsub(/[^a-z0-9]/, "").presence || "user"
+    # Sin apellido (entró con el celular y aún no lo da) se usa el nombre entero: «juancamilo», no «j».
+    (a.present? ? "#{n[0]}#{a}" : n).downcase.gsub(/[^a-z0-9]/, "").presence || "user"
   end
 
   def transliterate_username(str)

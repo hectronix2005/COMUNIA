@@ -29,6 +29,8 @@ Rails.application.routes.draw do
     put   "invitacion", to: "invitaciones#update"
   end
   get "bienvenida", to: "bienvenida#show", as: :bienvenida
+  get   "completa-tus-datos", to: "completar_datos#edit", as: :completar_datos
+  patch "completa-tus-datos", to: "completar_datos#update"
 
   get "dashboard", to: "dashboard#index", as: :dashboard
 

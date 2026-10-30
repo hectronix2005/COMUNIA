@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
   before_action :activar_comunidad_de_la_url
   before_action :confinar_cuenta_red
   before_action :confinar_invitado
+  before_action :exigir_datos_completos
   around_action :solo_lectura_para_invitado
   before_action :configure_permitted_parameters, if: :devise_controller?
   after_action  :track_last_seen
@@ -223,6 +224,14 @@ class ApplicationController < ActionController::Base
   def confinar_invitado
     return unless current_user&.invitado?
     redirect_to dashboard_path if controller_path.start_with?("red/", "denuncias/") || controller_path == "push_subscriptions"
+  end
+
+  # Quien entró con el celular y la contraseña temporal no usa la app hasta elegir su contraseña y dar sus datos
+  # reales (CompletarDatosController). Salir sí puede.
+  def exigir_datos_completos
+    return unless current_user&.debe_completar_datos?
+    return if devise_controller? || controller_path.in?(%w[completar_datos pwa])
+    redirect_to completar_datos_path
   end
 
   def user_not_authorized
