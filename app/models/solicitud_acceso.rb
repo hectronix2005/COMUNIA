@@ -22,10 +22,13 @@ class SolicitudAcceso < ApplicationRecord
   def nombre_completo = "#{nombre} #{apellido}"
 
   # Fichas a las que se puede dar esta cuenta: activas, de la misma logia, de miembros rasos que nunca han
-  # entrado. Quien ya entró perdería su contraseña; un admin no se entrega así.
+  # entrado. Quien ya entró perdería su contraseña; un admin no se entrega así, ni una cuenta que es también de
+  # otra comunidad (quien pidió acceso aquí entraría en esa).
   def fichas_enlazables
+    de_otras = Pertenencia.where.not(organizacion_id: logia.organizacion.id).select(:user_id)
     Miembro.activo.where(logia_id: logia_id).joins(:user)
            .where(users: { last_seen_at: nil, rol: User.rols[:miembro] })
+           .where.not(users: { id: de_otras })
            .includes(:user).order("users.apellido", "users.nombre")
   end
 

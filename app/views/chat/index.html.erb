@@ -180,7 +180,7 @@
   </style>
 <% end %>
 
-<%= turbo_stream_from @stream %>
+<%= turbo_stream_from @stream, channel: ChatStreamsChannel %>
 
 <div class="chat-layout <%= 'chat-layout--open' if @canal == 'dm' && @con_id || @canal != 'tenant' && params[:canal].present? %>">
 

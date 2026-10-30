@@ -16,11 +16,13 @@ class MiembroPolicy < ApplicationPolicy
   end
 
   # Generar un enlace de invitación es poder entrar en esa cuenta: solo para miembros rasos (un admin de
-  # logia no se apodera así de otro admin ni del superadmin), y nunca para la propia cuenta.
+  # logia no se apodera así de otro admin ni del superadmin), y nunca para la propia cuenta. Tampoco si la
+  # cuenta es además de otra comunidad: el enlace daría lo de esa otra a quien administra esta.
   def invitar?
     return false unless update? && record.user_id != user.id
+    return true if user.rol_ref&.es_super_admin?
     destino = record.user
-    user.rol_ref&.es_super_admin? || (destino.miembro? && destino.rol_ref&.codigo == "miembro")
+    destino.miembro? && destino.rol_ref&.codigo == "miembro" && !destino.de_otras_comunidades?(record.logia.organizacion)
   end
 
   # La página de invitar en bloque; a cada miembro de la lista se le aplica además invitar?.

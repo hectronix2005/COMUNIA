@@ -121,6 +121,11 @@ class User < ApplicationRecord
     Logia.where(id: pertenencias.select(:organizacion_id)).reales.ordenadas
   end
 
+  # Si también pertenece a alguna comunidad distinta de esta.
+  def de_otras_comunidades?(organizacion)
+    pertenencias.where.not(organizacion_id: organizacion.id).exists?
+  end
+
   def pertenece_a?(organizacion)
     logia&.organizacion == organizacion || pertenencias.exists?(organizacion_id: organizacion.id)
   end
@@ -236,8 +241,9 @@ class User < ApplicationRecord
     rol_ref&.nombre || rol.to_s.humanize
   end
 
+  # Todos menos el superadmin quedan dentro de su logia; también sin rol o sin logia (un rol vacío no abre todo).
   def scope_propia_logia?
-    rol_ref.present? && !rol_ref.es_super_admin? && logia_id.present?
+    !rol_ref&.es_super_admin?
   end
 
   # Returns the array of logia IDs this user can access.
@@ -247,7 +253,7 @@ class User < ApplicationRecord
   def logia_ids_accesibles
     return nil unless scope_propia_logia?
     logia = self.logia
-    return [logia_id] unless logia
+    return [] unless logia
     if logia.tenant_id.nil?
       # Assigned to a root tenant → access all its sub-logias too
       [logia.id] + logia.logias.pluck(:id)
