@@ -55,7 +55,7 @@ module Demo
     user.assign_attributes(nombre: nombre, apellido: apellido, username: "demo#{slug.delete('.')}", logia: comunidad,
                            rol_ref: Rol.find_by(codigo: "miembro"), last_seen_at: (numero * 7).hours.ago)
     user.save!
-    miembro = user.miembro || user.build_miembro
+    miembro = user.miembros.find_or_initialize_by(logia: comunidad)
     miembro.update!(logia: comunidad, numero_miembro: format("DEMO-%03d", numero), cedula: format("DEMO%07d", numero),
                     estado: :activo, profesion: profesion, fecha_ingreso: (numero * 5).months.ago.to_date)
     user
@@ -67,7 +67,7 @@ module Demo
     user.assign_attributes(email: "invitado@#{DOMINIO}", nombre: "Invitado", apellido: "Demostración", username: "demoinvitado",
                            logia: comunidad, rol_ref: Rol.find_by(codigo: "miembro"), last_seen_at: nil)
     user.save!
-    miembro = user.miembro || user.build_miembro
+    miembro = user.miembros.find_or_initialize_by(logia: comunidad)
     miembro.update!(logia: comunidad, numero_miembro: "DEMO-000", cedula: "DEMO0000000", estado: :activo)
   end
 

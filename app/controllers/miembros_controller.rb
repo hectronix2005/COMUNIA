@@ -45,9 +45,7 @@ class MiembrosController < ApplicationController
     else
       accesibles
     end
-    @admins = User.where(logia_id: logia_ids)
-                  .joins(:rol_ref)
-                  .where(roles: { codigo: "admin_logia" })
+    @admins = User.admins_de(logia_ids)
                   .includes(:logia)
                   .order(:apellido, :nombre)
   end
@@ -75,8 +73,14 @@ class MiembrosController < ApplicationController
                  miembro_params[:logia_id]
     end
 
+    # El superadmin vincula una cuenta que ya existe (la de alguien de otra comunidad) en vez de crear otra:
+    # la ficha nueva es de esa cuenta. Un admin de comunidad no puede, para que no meta en la suya la cuenta
+    # de cualquiera ni averigüe quién está registrado.
+    email = params[:miembro][:user_attributes][:email].to_s.strip.downcase
+    existente = current_user.rol_ref&.es_super_admin? && email.present? && User.find_by(email: email)
+
     ActiveRecord::Base.transaction do
-      user = User.new(
+      user = existente || User.new(
         nombre: params[:miembro][:user_attributes][:nombre],
         apellido: params[:miembro][:user_attributes][:apellido],
         email: params[:miembro][:user_attributes][:email],
@@ -98,7 +102,8 @@ class MiembrosController < ApplicationController
       if user.valid? && @miembro.valid?
         user.save!
         @miembro.save!
-        redirect_to @miembro, notice: "Miembro creado exitosamente."
+        user.unir_a_comunidad!(@miembro.logia) if existente
+        redirect_to @miembro, notice: existente ? "Cuenta existente vinculada a esta comunidad." : "Miembro creado exitosamente."
       else
         @miembro.errors.merge!(user.errors)
         @logias = logias_disponibles
@@ -224,7 +229,7 @@ class MiembrosController < ApplicationController
       return redirect_to @miembro, alert: "Rol no válido."
     end
 
-    @miembro.user.update!(rol_ref: rol)
+    @miembro.user.asignar_rol!(rol, en: @miembro.logia)
     redirect_to @miembro, notice: "Rol actualizado a «#{rol.nombre}»."
   end
 
@@ -280,7 +285,14 @@ class MiembrosController < ApplicationController
 
   def destroy
     authorize @miembro
-    @miembro.user.destroy
+    user = @miembro.user
+    organizacion = @miembro.logia.organizacion
+    # Quien también es de otra comunidad solo sale de esta; su cuenta y sus otras fichas siguen.
+    if user.pertenencias.where.not(organizacion_id: organizacion.id).exists?
+      user.salir_de_comunidad!(organizacion)
+    else
+      user.destroy
+    end
     redirect_to miembros_path, notice: "Miembro eliminado exitosamente."
   end
 

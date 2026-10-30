@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_29_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -457,11 +457,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_020000) do
     t.text "habilidades"
     t.date "fecha_iniciacion"
     t.text "bio"
-    t.index ["cedula"], name: "index_miembros_on_cedula", unique: true
+    t.index ["cedula"], name: "index_miembros_on_cedula"
     t.index ["estado"], name: "index_miembros_on_estado"
+    t.index ["logia_id", "cedula"], name: "index_miembros_on_logia_id_and_cedula", unique: true
+    t.index ["logia_id", "numero_miembro"], name: "index_miembros_on_logia_id_and_numero_miembro", unique: true
     t.index ["logia_id"], name: "index_miembros_on_logia_id"
-    t.index ["numero_miembro"], name: "index_miembros_on_numero_miembro", unique: true
-    t.index ["user_id"], name: "index_miembros_on_user_id", unique: true
+    t.index ["user_id", "logia_id"], name: "index_miembros_on_user_id_and_logia_id", unique: true
+    t.index ["user_id"], name: "index_miembros_on_user_id"
   end
 
   create_table "negocio_anuncios", force: :cascade do |t|
@@ -595,6 +597,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_020000) do
     t.string "descripcion"
     t.datetime "created_at", null: false
     t.index ["recurso", "accion"], name: "index_permisos_on_recurso_and_accion", unique: true
+  end
+
+  create_table "pertenencias", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organizacion_id", null: false
+    t.bigint "logia_id", null: false
+    t.bigint "rol_ref_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["logia_id"], name: "index_pertenencias_on_logia_id"
+    t.index ["organizacion_id"], name: "index_pertenencias_on_organizacion_id"
+    t.index ["rol_ref_id"], name: "index_pertenencias_on_rol_ref_id"
+    t.index ["user_id", "organizacion_id"], name: "index_pertenencias_on_user_id_and_organizacion_id", unique: true
+    t.index ["user_id"], name: "index_pertenencias_on_user_id"
   end
 
   create_table "publicacion_comentarios", force: :cascade do |t|
@@ -1068,6 +1084,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_020000) do
   add_foreign_key "pagos", "users", column: "validado_por_id"
   add_foreign_key "periodo_cobros", "logias", column: "tenant_id"
   add_foreign_key "periodo_cobros", "users", column: "creado_por_id"
+  add_foreign_key "pertenencias", "logias"
+  add_foreign_key "pertenencias", "logias", column: "organizacion_id"
+  add_foreign_key "pertenencias", "roles", column: "rol_ref_id"
+  add_foreign_key "pertenencias", "users"
   add_foreign_key "publicacion_comentarios", "publicaciones"
   add_foreign_key "publicacion_comentarios", "users"
   add_foreign_key "publicacion_likes", "publicaciones"

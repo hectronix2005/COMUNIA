@@ -8,6 +8,8 @@ class Logia < ApplicationRecord
   belongs_to :categoria, optional: true
 
   has_many :users, dependent: :nullify
+  has_many :pertenencias, dependent: :destroy
+  has_many :pertenencias_de_la_organizacion, class_name: "Pertenencia", foreign_key: :organizacion_id, dependent: :destroy
   has_many :miembros, dependent: :destroy
   has_many :conceptos_cobro, dependent: :destroy
   has_many :tarifas, dependent: :destroy
@@ -39,6 +41,8 @@ class Logia < ApplicationRecord
   scope :reales,         -> { where(demo: false) }
   # La organización a la que pertenece: ella misma si es raíz.
   def organizacion = tenant || self
+  # Ids de la organización y sus logias.
+  def ids_de_la_organizacion = [organizacion.id, *organizacion.logias.ids]
 
   scope :tenants_raiz,   -> { where(tenant_id: nil) }
   scope :por_subdominio, ->(sub) { find_by(slug: sub) }

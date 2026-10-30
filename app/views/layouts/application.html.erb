@@ -336,6 +336,20 @@
                       </span>
                     </span>
                   </li>
+                  <%# Quien es de varias comunidades cambia aquí: entrar por /t/<slug> la vuelve la activa. %>
+                  <% comunidades = current_user.comunidades.where.not(slug: [nil, ""]).to_a %>
+                  <% if comunidades.many? %>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Mis comunidades</h6></li>
+                    <% comunidades.each do |comunidad| %>
+                      <% activa = comunidad == current_logia.organizacion %>
+                      <li>
+                        <a href="/t/<%= comunidad.slug %>/dashboard" class="dropdown-item <%= 'active' if activa %>" <%= 'aria-current="true"'.html_safe if activa %> data-turbo="false">
+                          <span class="me-2"><%= comunidad.icono_display %></span><%= comunidad.nombre_display %>
+                        </a>
+                      </li>
+                    <% end %>
+                  <% end %>
                   <% if current_user.rol_ref&.es_super_admin? %>
                     <li>
                       <%= link_to denuncias_admin_path, class: "dropdown-item" do %>

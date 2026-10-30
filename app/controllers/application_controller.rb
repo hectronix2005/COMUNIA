@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   before_action :capture_tenant_slug_from_script_name
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
+  before_action :activar_comunidad_de_la_url
   before_action :confinar_cuenta_red
   before_action :confinar_invitado
   around_action :solo_lectura_para_invitado
@@ -66,12 +67,25 @@ class ApplicationController < ActionController::Base
     current_user&.logia || Logia.reales.ordenadas.first
   end
 
-  # El tenant de la URL o de la sesión solo cuenta si es el del usuario: sin esto, cambiar /t/<slug>
-  # bastaba para ver el directorio, el chat o el calendario de otra organización.
+  # El tenant de la URL o de la sesión solo cuenta si es una comunidad del usuario: sin esto, cambiar
+  # /t/<slug> bastaba para ver el directorio, el chat o el calendario de otra organización.
   def tenant_permitido?(logia)
     return true if current_user.nil? || current_user.rol_ref&.es_super_admin?
-    propia = current_user.logia or return false
-    (propia.tenant_id || propia.id) == (logia.tenant_id || logia.id)
+    current_user.pertenece_a?(logia.organizacion)
+  end
+
+  # Quien pertenece a varias comunidades entra en otra por su /t/<slug> (el selector del menú lleva ahí, y el
+  # login de cada comunidad también): esa pasa a ser la activa antes de nada, así el rol y la logia que leen
+  # los permisos son los de la comunidad que se mira, no los de la anterior. Después se fija Current, para
+  # que la ficha de cada persona sea la de esta comunidad.
+  def activar_comunidad_de_la_url
+    if current_user && !previewing_tenant? && (sub = tenant_subdomain) && (logia = Logia.find_by(slug: sub))
+      organizacion = logia.organizacion
+      if current_user.logia&.organizacion != organizacion && current_user.pertenece_a?(organizacion)
+        current_user.activar_comunidad!(organizacion)
+      end
+    end
+    Current.organizacion = current_logia&.organizacion if current_user && !platform_admin_context?
   end
 
   # Logias de la organización actual: la raíz y sus hijas. Lo que un miembro abre por id (una ficha, una

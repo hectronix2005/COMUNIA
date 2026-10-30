@@ -162,10 +162,10 @@ class ChatController < ApplicationController
 
   def tenant_members
     User
-      .joins(:miembro)
+      .joins(:miembros)
       .where(miembros: { logia_id: logia_ids_visibles })
       .where.not(id: current_user.id)
-      .includes(miembro: :logia)
+      .includes(miembros: :logia)
       .order(:apellido, :nombre)
   end
 
@@ -196,7 +196,7 @@ class ChatController < ApplicationController
     valid_ids = partner_ids & tenant_member_ids
 
     User.where(id: valid_ids)
-        .includes(miembro: :logia)
+        .includes(miembros: :logia)
         .order(:apellido, :nombre)
   end
 end

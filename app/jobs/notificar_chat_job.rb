@@ -39,12 +39,12 @@ class NotificarChatJob < ApplicationJob
 
   def users_del_canal(mensaje)
     if mensaje.canal == "logia"
-      User.joins(:miembro).where(miembros: { logia_id: mensaje.logia_id })
+      User.joins(:miembros).where(miembros: { logia_id: mensaje.logia_id })
     else
       # tenant canal — all members under the root tenant
       root_id = mensaje.logia.tenant_id || mensaje.logia_id
       logia_ids = [root_id] + Logia.where(tenant_id: root_id).pluck(:id)
-      User.joins(:miembro).where(miembros: { logia_id: logia_ids })
+      User.joins(:miembros).where(miembros: { logia_id: logia_ids })
     end
   end
 end

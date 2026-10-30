@@ -31,14 +31,29 @@ class Miembro < ApplicationRecord
   has_many :cargos, through: :miembro_cargos
   has_many :familiares,     class_name: "MiembroFamiliar", dependent: :destroy
 
-  validates :numero_miembro, presence: true, uniqueness: true
-  validates :cedula, presence: true, uniqueness: true
-  validates :user_id, uniqueness: true
+  validates :numero_miembro, :cedula, presence: true
+  validate :unica_en_su_comunidad
   validates :telefono, length: { maximum: 20 }, format: { with: /\A[\d\s+().-]*\z/, message: "solo admite números, espacios y + ( ) - ." },
                        allow_blank: true
   validates :estado_desde, presence: true, if: -> { !activo? }
   validates :estado_hasta, comparison: { greater_than_or_equal_to: :estado_desde },
                            if: -> { estado_desde.present? && estado_hasta.present? }
+
+  # Una persona puede tener fichas en varias comunidades: número y cédula son únicos dentro de cada una, una
+  # ficha por cuenta en cada comunidad, y la misma cédula en dos comunidades tiene que ser de la misma cuenta.
+  # Vincular una cuenta que ya existe a otra comunidad lo hace el superadmin (MiembrosController#create).
+  def unica_en_su_comunidad
+    return unless logia
+    otras = Miembro.where(logia_id: logia.ids_de_la_organizacion).where.not(id: id)
+    errors.add(:numero_miembro, :taken) if numero_miembro.present? && otras.exists?(numero_miembro: numero_miembro)
+    errors.add(:user_id, "ya tiene ficha en esta comunidad") if user_id && otras.exists?(user_id: user_id)
+    return if cedula.blank?
+    if otras.exists?(cedula: cedula)
+      errors.add(:cedula, :taken)
+    elsif Miembro.where(cedula: cedula).where.not(id: id).where.not(user_id: user_id).exists?
+      errors.add(:cedula, "es de alguien que ya tiene cuenta en COMUNIA: pide al superadmin que vincule esa cuenta")
+    end
+  end
 
   scope :activos,      -> { where(estado: :activo) }
   scope :por_logia,    ->(logia_id) { where(logia_id: logia_id) }

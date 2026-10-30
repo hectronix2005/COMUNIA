@@ -16,7 +16,10 @@ class User < ApplicationRecord
   belongs_to :logia, optional: true
   belongs_to :rol_ref, class_name: "Rol", optional: true
   has_one_attached :avatar
-  has_one :miembro, dependent: :destroy
+  # Una ficha por comunidad (organización) a la que pertenece; la que se usa es la de la comunidad que se mira
+  # (#miembro).
+  has_many :miembros, dependent: :destroy
+  has_many :pertenencias, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
   has_many :notificaciones, class_name: "Notificacion", dependent: :destroy
   has_many :evento_confirmaciones, dependent: :destroy
@@ -44,6 +47,7 @@ class User < ApplicationRecord
 
   before_validation :generate_username, on: :create, if: -> { username.blank? }
   before_validation -> { self.rol = ROL_POR_CODIGO.fetch(rol_ref.codigo, "miembro") }, if: :rol_ref
+  after_save :guardar_pertenencia, if: -> { saved_change_to_logia_id? || saved_change_to_rol_ref_id? }
 
   # Quien pidió acceso con el código de su comunidad no entra hasta que un administrador lo apruebe.
   def active_for_authentication? = super && !espera_aprobacion?
@@ -59,9 +63,77 @@ class User < ApplicationRecord
 
   scope :admins, -> { where(rol: [:admin_logia, :super_admin]) }
   scope :por_logia, ->(logia_id) { where(logia_id: logia_id) }
+  # Quienes administran esas logias, sea o no la comunidad que tienen activa.
+  scope :admins_de, ->(logia_ids) {
+    where(id: Pertenencia.where(logia_id: logia_ids).joins(:rol_ref).where(roles: { codigo: "admin_logia" }).select(:user_id))
+  }
 
   def nombre_completo
     "#{nombre} #{apellido}"
+  end
+
+  # ── Varias comunidades ───────────────────────────────────────
+  # La ficha de la comunidad que se está mirando (Current.organizacion, la pone ApplicationController) o, fuera
+  # de una petición, la de la comunidad activa de la cuenta. Así, en Uniandes se ve la ficha de Uniandes de
+  # cualquiera, aunque esa persona tenga activa otra comunidad.
+  def miembro
+    organizacion = Current.organizacion || logia&.organizacion
+    @fichas ||= {}
+    @fichas[organizacion&.id] ||= if organizacion.nil?
+      miembros.first
+    else
+      ids = organizacion.ids_de_la_organizacion
+      miembros.loaded? ? miembros.detect { ids.include?(_1.logia_id) } : miembros.find_by(logia_id: ids)
+    end
+  end
+
+  def reload(*)
+    @fichas = nil
+    super
+  end
+
+  # Comunidades (organizaciones raíz) de la cuenta, para el selector del menú.
+  def comunidades
+    Logia.where(id: pertenencias.select(:organizacion_id)).reales.ordenadas
+  end
+
+  def pertenece_a?(organizacion)
+    logia&.organizacion == organizacion || pertenencias.exists?(organizacion_id: organizacion.id)
+  end
+
+  # Pasa a la comunidad indicada: su logia y su rol allí son desde ahora los de la cuenta, que es lo que leen
+  # los permisos. El superadmin conserva su rol en todas. false si no pertenece a ella.
+  def activar_comunidad!(organizacion)
+    pertenencia = pertenencias.find_by(organizacion_id: organizacion.id) or return false
+    rol = rol_ref&.es_super_admin? ? rol_ref : pertenencia.rol_ref
+    return true if logia_id == pertenencia.logia_id && rol_ref_id == rol&.id
+    update_columns(logia_id: pertenencia.logia_id, rol_ref_id: rol&.id, rol: ROL_POR_CODIGO.fetch(rol&.codigo, "miembro"))
+    @fichas = nil
+    true
+  end
+
+  # Añade la cuenta a otra comunidad sin cambiar la activa (lo hace el superadmin al vincular una cuenta).
+  def unir_a_comunidad!(logia, rol: Rol.find_by!(codigo: "miembro"))
+    pertenencias.find_or_create_by!(organizacion_id: logia.organizacion.id) { _1.assign_attributes(logia: logia, rol_ref: rol) }
+  end
+
+  # El rol en una comunidad: si es la activa, también el de la cuenta.
+  def asignar_rol!(rol, en:)
+    if logia&.organizacion == en.organizacion
+      update!(rol_ref: rol)
+    else
+      pertenencias.find_by!(organizacion_id: en.organizacion.id).update!(rol_ref: rol)
+    end
+  end
+
+  # Deja una comunidad (sus fichas y su pertenencia) y, si era la activa, pasa a otra de las suyas.
+  def salir_de_comunidad!(organizacion)
+    transaction do
+      miembros.where(logia_id: organizacion.ids_de_la_organizacion).destroy_all
+      pertenencias.where(organizacion_id: organizacion.id).destroy_all
+      otra = pertenencias.reload.first
+      activar_comunidad!(otra.organizacion) if otra && logia&.organizacion == organizacion
+    end
   end
 
   def touch_last_seen!
@@ -165,6 +237,18 @@ class User < ApplicationRecord
   end
 
   private
+
+  # La pertenencia de la comunidad activa sigue a la cuenta: crearla, cambiarle el rol o moverla de logia (el
+  # superadmin) se guarda también ahí. Si la logia nueva es de otra comunidad, la cuenta se mudó y deja la
+  # anterior.
+  def guardar_pertenencia
+    return unless logia
+    if saved_change_to_logia_id? && (anterior = Logia.find_by(id: logia_id_before_last_save)) &&
+       anterior.organizacion != logia.organizacion
+      pertenencias.where(organizacion_id: anterior.organizacion.id).destroy_all
+    end
+    pertenencias.find_or_initialize_by(organizacion_id: logia.organizacion.id).update!(logia: logia, rol_ref: rol_ref)
+  end
 
   def generate_username
     base = build_username_base

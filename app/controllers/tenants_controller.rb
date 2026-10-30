@@ -97,8 +97,8 @@ class TenantsController < ApplicationController
     authorize @tenant, :update?, policy_class: LogiaPolicy
 
     user = User.find(params[:user_id])
-    if user.logia_id == @tenant.id
-      user.update!(rol: :miembro, rol_ref: Rol.find_by!(codigo: "miembro"))
+    if user.pertenencias.exists?(logia_id: @tenant.id)
+      user.asignar_rol!(Rol.find_by!(codigo: "miembro"), en: @tenant)
       redirect_to edit_tenant_path(@tenant), notice: "#{user.nombre_completo} ya no es administrador del tenant."
     else
       redirect_to edit_tenant_path(@tenant), alert: "El usuario no pertenece a este tenant."
@@ -134,9 +134,7 @@ class TenantsController < ApplicationController
   end
 
   def admins_del_tenant(tenant)
-    User.where(logia_id: tenant.id)
-        .joins(:rol_ref)
-        .where(roles: { codigo: "admin_logia" })
+    User.admins_de(tenant.id)
         .order(:apellido, :nombre)
   end
 

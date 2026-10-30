@@ -55,9 +55,11 @@ class PedirAccesoController < ApplicationController
   # A quienes pueden resolverla: los que editan fichas en esa logia o en su organización.
   def avisar_administradores(solicitud)
     logia = solicitud.logia
-    User.where(logia_id: [logia.id, logia.tenant_id].compact).includes(:rol_ref).find_each do |admin|
-      next unless admin.tiene_permiso?("miembros", "update")
-      NotificacionService.crear!(user: admin, tipo: "solicitud_acceso", logia: logia, url: "/solicitudes/#{solicitud.id}",
+    # Por pertenencia y con el rol de esa comunidad: un admin de aquí puede tener activa otra.
+    Pertenencia.where(logia_id: [logia.id, logia.tenant_id].compact).includes(:user, :rol_ref).find_each do |pertenencia|
+      rol = pertenencia.rol_ref
+      next unless rol && (rol.es_super_admin? || rol.tiene_permiso?("miembros", "update"))
+      NotificacionService.crear!(user: pertenencia.user, tipo: "solicitud_acceso", logia: logia, url: "/solicitudes/#{solicitud.id}",
                                  titulo: "#{solicitud.nombre_completo} pide entrar a #{logia.nombre_display}",
                                  cuerpo: "Revisa su prueba y apruébala o recházala.")
     end

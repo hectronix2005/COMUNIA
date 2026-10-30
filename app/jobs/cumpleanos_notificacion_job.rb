@@ -20,7 +20,7 @@ class CumpleanosNotificacionJob < ApplicationJob
       next if cumpleaneros.empty?
 
       # Notificar a todos los miembros del tenant
-      users = User.joins(:miembro).where(miembros: { logia_id: logia_ids })
+      users = User.joins(:miembros).where(miembros: { logia_id: logia_ids })
 
       cumpleaneros.each do |c|
         nombre = c[:familiar].nombre_completo
