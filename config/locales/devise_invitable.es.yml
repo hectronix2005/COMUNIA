@@ -4,7 +4,7 @@ es:
       # Igual que un usuario o contraseña incorrectos: no se delata que la cuenta tiene una invitación.
       invited: "%{authentication_keys} o contraseña inválidos."
     invitations:
-      invitation_token_invalid: El enlace de invitación no es válido o ya caducó. Pide uno nuevo a tu logia.
+      invitation_token_invalid: Este enlace ya se usó o caducó. Si ya elegiste tu contraseña, entra con tu usuario y esa contraseña; si no, pide un enlace nuevo a quien te invitó.
       updated: Listo, ya tienes contraseña y entraste.
       updated_not_active: Tu contraseña quedó guardada.
       no_invitations_remaining: No te quedan invitaciones.

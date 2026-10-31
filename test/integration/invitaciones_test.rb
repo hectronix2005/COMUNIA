@@ -42,6 +42,21 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "si la respuesta del primer envío no llegó, reenviar el formulario lleva a entrar con la contraseña ya elegida" do
+    token = invitar(@miembro)[/invitation_token=([^&]+)/, 1]
+    sign_out :user
+    patch "/invitacion", params: { user: { invitation_token: token, password: "una clave larga", password_confirmation: "una clave larga" } }
+    assert_redirected_to "/bienvenida"
+    sign_out :user
+
+    patch "/invitacion", params: { user: { invitation_token: token, password: "otra clave larga", password_confirmation: "otra clave larga" } }
+    assert_response :see_other
+    follow_redirect!
+    follow_redirect! while response.redirect?
+    assert_includes response.body, "Este enlace ya se usó o caducó. Si ya elegiste tu contraseña, entra con tu usuario y esa contraseña"
+    assert @user.reload.valid_password?("una clave larga"), "el reenvío no cambia la contraseña ya elegida"
+  end
+
   test "la bienvenida lleva al próximo encuentro con su respuesta y al calendario del teléfono" do
     inicio = 3.days.from_now.change(hour: 19)
     evento = CalendarioEvento.create!(logia: @logia, user: @admin, titulo: "Encuentro de octubre", inicio: inicio, fin: inicio + 2.hours)
