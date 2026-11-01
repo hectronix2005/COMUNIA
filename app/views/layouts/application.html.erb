@@ -14,6 +14,9 @@
     <meta name="vapid-public-key" content="<%= Rails.application.config.x.vapid[:public_key] %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= render "layouts/vista_previa",
+               titulo: content_for(:title) || (_logia ? _logia.nombre_display : "COMUNIA, tu comunidad en un solo lugar"),
+               descripcion: "Reuniones, avisos, cobros y conversaciones de tu comunidad, en un solo lugar." %>
 
     <%= yield :head %>
 

@@ -8,6 +8,9 @@
     <meta name="referrer" content="same-origin">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= render "layouts/vista_previa",
+               titulo: content_for?(:title) ? "#{yield(:title)} · Red COMUNIA" : "Red COMUNIA · comunidades certificadas",
+               descripcion: "Encuentra trabajo, servicios y productos de personas avaladas por comunidades certificadas." %>
     <%= yield :head %>
     <link rel="icon" href="/favicon.ico?v=2" sizes="48x48">
     <link rel="icon" href="/icon.png?v=2" type="image/png">

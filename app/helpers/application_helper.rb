@@ -1,4 +1,11 @@
 module ApplicationHelper
+  # URL absoluta con el dominio configurado (APP_HOST), no con el Host que mande la petición.
+  def url_publica(ruta)
+    opciones = Rails.application.config.action_mailer.default_url_options || {}
+    puerto = opciones[:port] ? ":#{opciones[:port]}" : ""
+    "#{Rails.env.production? ? "https" : "http"}://#{opciones[:host] || request.host}#{puerto}#{ruta}"
+  end
+
   def pesos(amount)
     number_to_currency(amount, unit: "$", delimiter: ".", separator: ",", precision: 0)
   end
