@@ -1,13 +1,13 @@
 // COMUNIA service worker — cache-first para assets estáticos,
 // network-first para navegación HTML, con fallback offline básico.
 
-const VERSION = "comunia-v3"; // v3: logo nuevo; al activarse borra la caché con el icono anterior
+const VERSION = "comunia-v4"; // v4: iconos con ?v=2 (1-nov-2026); al activarse borra la caché con el icono anterior
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const OFFLINE_FALLBACK = "/offline.html";
 
 const PRECACHE_URLS = [
-  "/icon.png",
+  "/icon.png?v=2",
   OFFLINE_FALLBACK,
 ];
 
@@ -87,8 +87,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "COMUNIA";
   const options = {
     body: data.body || "",
-    icon: "/icon.png",
-    badge: "/icon.png",
+    icon: "/icon.png?v=2",
+    badge: "/icon.png?v=2",
     data: { url: data.url || "/dashboard" },
     tag: data.tag || "comunia-default",
     renotify: true,
