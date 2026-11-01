@@ -2,6 +2,7 @@
   <meta name="turbo-cache-control" content="no-cache">
 <% end %>
 <div class="login-wrapper" data-turbo-cache="false">
+  <%= render "shared/volver_a_comunia" %>
   <div class="ingreso">
 
     <%# ── Lado izquierdo: quién es. Dentro de una comunidad, su logo sobre su color; fuera, COMUNIA. ── %>
@@ -31,11 +32,6 @@
         <li><i class="bi bi-bell"></i>Recibe los avisos en tu teléfono</li>
         <li><i class="bi bi-chat-heart"></i>Conversa con toda la comunidad</li>
       </ul>
-      <% unless request.script_name.present? %>
-        <%= link_to root_path, class: "ingreso-volver" do %>
-          <i class="bi bi-arrow-left me-1"></i>Qué es COMUNIA
-        <% end %>
-      <% end %>
     </div>
 
     <div class="login-card">

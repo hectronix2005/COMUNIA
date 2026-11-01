@@ -1,0 +1,6 @@
+<%# Desde cualquier página de entrada, también la de una comunidad (/t/<slug>/login), se vuelve a la portada de
+    COMUNIA (pedido de Héctor, 1-nov-2026). Va a "/" literal: root_path dentro de /t/<slug> sería el de la comunidad. %>
+<a href="/" class="volver-comunia <%= local_assigns[:clase] %>">
+  <%= image_tag "comunia-simbolo.png", alt: "" %>
+  <span><i class="bi bi-arrow-left"></i> Inicio de COMUNIA</span>
+</a>

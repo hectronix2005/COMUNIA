@@ -23,4 +23,13 @@ class LoginPublicoTest < ActionDispatch::IntegrationTest
       assert_redirected_to "/", ruta
     end
   end
+
+  test "desde las páginas de entrada, también las de una comunidad, se vuelve a la portada de COMUNIA" do
+    logia = Logia.create!(nombre: "Logia Vuelta", slug: "vuelta-#{SecureRandom.hex(3)}", codigo: "VU#{rand(10_000)}")
+    ["/login", "/t/#{logia.slug}/login", "/password/new", "/t/#{logia.slug}/password/new"].each do |ruta|
+      get ruta
+      assert_response :ok, ruta
+      assert_select "a.volver-comunia[href='/']", { count: 1, text: /Inicio de COMUNIA/ }, ruta
+    end
+  end
 end

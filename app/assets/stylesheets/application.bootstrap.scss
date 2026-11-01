@@ -1098,16 +1098,29 @@ body.denuncias .alert { display: block; }
     li { display: flex; gap: .6rem; align-items: center; color: rgba(255,255,255,.85); font-size: .92rem; }
     .bi { color: $ambar-claro; } }
   .login-card { max-width: none; }
-  .ingreso-volver { color: rgba(255,255,255,.7); text-decoration: none; font-size: .85rem; display: inline-block; margin-top: 1.5rem;
-    &:hover { color: #fff; } }
   @media (max-width: 767.98px) {
     grid-template-columns: 1fr; gap: 1.25rem;
     .ingreso-lado { text-align: center; }
     .ingreso-logo { margin-bottom: .75rem; }
     .ingreso-lema, .ingreso-puntos { display: none; }
-    .ingreso-volver { display: none; }
   }
 }
+
+// Botón para volver a la portada de COMUNIA desde las páginas de entrada (1-nov-2026): arriba a la izquierda,
+// también en el móvil, con el símbolo del logo.
+.volver-comunia {
+  display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .85rem .3rem .3rem;
+  border-radius: 999px; background: #fff; color: $petroleo; font-weight: 600; font-size: .85rem; text-decoration: none;
+  box-shadow: 0 2px 12px rgba($petroleo-oscuro, .25);
+  img { width: 26px; height: 26px; }
+  .bi { font-size: .8rem; }
+  &:hover, &:focus-visible { color: $petroleo-oscuro; background: $petroleo-suave; }
+}
+.login-wrapper {
+  padding-top: 4.25rem;
+  > .volver-comunia { position: absolute; top: 1rem; left: 1rem; z-index: 2; }
+}
+.volver-comunia-en-linea { margin-bottom: 1rem; border: 1px solid $borde; box-shadow: none; }
 
 // ── Guía ──
 .guia-cabecera {
