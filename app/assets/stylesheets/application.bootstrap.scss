@@ -925,17 +925,25 @@ body.denuncias .alert { display: block; }
 .denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
 .denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #DDF5E3; color: #0A5C22; }
 
-// Escritorio: con todos los menús del administrador la barra no cabía, la marca desaparecía y el menú
-// del usuario quedaba fuera de la pantalla. Cada enlace en una línea y, si aun así no caben, pasan a otra fila.
+// Escritorio: la barra va siempre en UNA fila. Con todos los menús del administrador se partía en dos
+// (Héctor, 1-nov-2026); ahora Red y Denuncias comparten menú, el rol va en el desplegable del usuario y, según el
+// ancho, los enlaces pierden el icono, el nombre del usuario y, al final, el nombre de la comunidad junto a su logo.
+// Si aun así no cupieran (más módulos, zoom del navegador), los enlaces bajan a otra fila: mejor que taparse.
 @media (min-width: 992px) {
   .navbar-main .navbar-brand { flex-shrink: 0; max-width: 14rem; }
   .navbar-main .nav-link { white-space: nowrap; }
   .navbar-main .navbar-nav.me-auto { flex-wrap: wrap; }
 }
-// Hasta 1399 px: enlaces más juntos y sin icono; el rol y el nombre del usuario van a su desplegable.
+@media (min-width: 992px) and (max-width: 1599.98px) {
+  .navbar-main .menu-usuario-nombre { display: none; }
+}
 @media (min-width: 992px) and (max-width: 1399.98px) {
   .navbar-main .nav-link { padding: .5rem .55rem !important; }
   .navbar-main .navbar-nav.me-auto .nav-link > .bi { display: none; }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .navbar-main .navbar-brand .text-truncate { display: none; }
+  .navbar-main .nav-link { padding: .5rem .45rem !important; font-size: .84rem; }
 }
 
 // =============================================================================

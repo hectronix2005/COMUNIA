@@ -66,7 +66,7 @@ class Red::ConfinamientoTest < ActionDispatch::IntegrationTest
     get "/dashboard"
     follow_redirect! if response.redirect? # al de su logia: /t/<slug>/dashboard
     assert_response :ok
-    assert_select "a.nav-link[href='/red']" # sin /t/<slug>: un enlace copiado no delata la organización
+    assert_select ".navbar-main a[href='/red']" # sin /t/<slug>: un enlace copiado no delata la organización
     get "/red/bienvenida"
     assert_response :ok
     assert_select "a[href='/']", "Volver a COMUNIA"

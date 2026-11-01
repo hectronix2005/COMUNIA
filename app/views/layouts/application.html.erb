@@ -284,18 +284,24 @@
                 <% end %>
               <% end %>
 
-              <%# ── Red de comunidades certificadas ── %>
-              <li class="nav-item">
-                <%= link_to "/red", class: "nav-link", data: { turbo: false } do %>
+              <%# ── Red de comunidades certificadas y Denuncias (DENUNCIAPP), en un solo menú para que la barra quepa en una
+                   fila (Héctor, 1-nov-2026). El muro de denuncias es público; denuncian los miembros activos. ── %>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-patch-check"></i> Red
-                <% end %>
-              </li>
-
-              <%# ── Denuncias (DENUNCIAPP): el muro es público; denuncian los miembros activos. ── %>
-              <li class="nav-item">
-                <%= link_to "/denuncias", class: "nav-link", data: { turbo: false } do %>
-                  <i class="bi bi-shield-exclamation"></i> Denuncias
-                <% end %>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <%= link_to "/red", class: "dropdown-item", data: { turbo: false } do %>
+                      <i class="bi bi-patch-check me-2"></i>Red de comunidades
+                    <% end %>
+                  </li>
+                  <li>
+                    <%= link_to "/denuncias", class: "dropdown-item", data: { turbo: false } do %>
+                      <i class="bi bi-shield-exclamation me-2"></i>Denuncias
+                    <% end %>
+                  </li>
+                </ul>
               </li>
             </ul>
 
@@ -327,20 +333,15 @@
                 </div>
               </li>
 
-              <li class="nav-item me-2 d-none d-xxl-block">
-                <span class="badge rounded-pill <%= current_user.rol_ref&.es_super_admin? ? 'bg-warning text-dark' : (current_user.tiene_permiso?('miembros', 'index') ? 'bg-info' : 'bg-light text-dark') %>">
-                  <%= current_user.nombre_rol %>
-                </span>
-              </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-person-circle"></i> <span class="d-lg-none d-xxl-inline"><%= current_user.nombre_corto %></span>
+                  <i class="bi bi-person-circle"></i> <span class="menu-usuario-nombre"><%= current_user.nombre_corto %></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <li><span class="dropdown-item-text fw-semibold d-none d-lg-block d-xxl-none"><%= current_user.nombre_corto %></span></li>
+                  <li><span class="dropdown-item-text fw-semibold"><%= current_user.nombre_corto %></span></li>
                   <li><span class="dropdown-item-text text-muted small"><%= current_user.email %></span></li>
                   <li>
-                    <span class="dropdown-item-text d-xxl-none">
+                    <span class="dropdown-item-text">
                       <span class="badge rounded-pill <%= current_user.rol_ref&.es_super_admin? ? 'bg-warning text-dark' : (current_user.tiene_permiso?('miembros', 'index') ? 'bg-info' : 'bg-light text-dark') %>">
                         <%= current_user.nombre_rol %>
                       </span>
