@@ -15,4 +15,12 @@ class VistaPreviaTest < ActionDispatch::IntegrationTest
     end
     assert Rails.public_path.join("og-image.jpg").exist?
   end
+
+  test "el muro de denuncias también lleva el logo, sin datos de ninguna denuncia" do
+    get "/denuncias", headers: { "Host" => "otro-host.example" }
+    assert_response :success
+    assert_select "meta[property='og:image'][content=?]", "http://example.com/og-image.jpg?v=1", 1
+    assert_select "meta[property='og:title'][content='Muro · Denuncias']", 1
+    assert_select "meta[property='og:description'][content*='Piloto en Bogotá']", 1
+  end
 end
