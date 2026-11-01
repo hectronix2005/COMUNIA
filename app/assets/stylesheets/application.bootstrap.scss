@@ -195,6 +195,8 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
       background: var(--color-comunidad, #{$ambar}); color: #fff; font-size: 1rem;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
       img { height: 22px; max-width: 26px; border-radius: 4px; }
+      // Fuera de una comunidad, el símbolo de COMUNIA (C de puzle) sobre blanco, como en el logo.
+      &.marca-chip-comunia { background: #fff; padding: 2px; img { height: 26px; max-width: 26px; } }
     }
   }
 
@@ -878,6 +880,8 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
   border-bottom: 1px solid rgba(255,255,255,.06);
 
   .navbar-brand, .nav-link { color: #fff; white-space: nowrap; }
+  .navbar-brand { display: inline-flex; align-items: center; gap: .45rem; }
+  .marca-simbolo { width: 30px; height: 30px; border-radius: 8px; background: #fff; padding: 2px; }
   .nav-link:hover, .nav-link:focus { color: $ambar-claro; }
 }
 .red-saltar { position: absolute; left: -999px; top: 0; z-index: 2000; }
@@ -972,8 +976,7 @@ body.denuncias .alert { display: block; }
   .portada-marca {
     display: inline-flex; align-items: center; gap: .55rem; color: #fff; text-decoration: none;
     font-weight: 800; letter-spacing: -.01em; font-size: 1.1rem;
-    i { width: 30px; height: 30px; border-radius: 9px; background: $ambar; color: #1E1405;
-        display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .marca-simbolo { width: 34px; height: 34px; border-radius: 9px; background: #fff; padding: 2px; }
   }
   .portada-hero {
     @extend %bloque-petroleo;
@@ -1065,6 +1068,7 @@ body.denuncias .alert { display: block; }
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
     img { max-height: 72px; max-width: 220px; object-fit: contain; }
     &.ingreso-logo-imagen { height: auto; padding: .75rem 1rem; }
+    &.ingreso-logo-comunia { background: #fff; width: 88px; height: 88px; padding: .4rem; img { width: 100%; height: 100%; } }
   }
   .ingreso-nombre { font-size: clamp(1.7rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.1; color: #fff; margin-bottom: .5rem;
     em { font-style: normal; color: $ambar-claro; } }
@@ -1144,3 +1148,6 @@ body.denuncias .alert { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .recorrido-foco, .recorrido-globo { transition: none; animation: none; }
 }
+
+// Logo completo de COMUNIA (símbolo, nombre y lema) en las tarjetas claras sin comunidad.
+.marca-completa { display: block; width: min(220px, 60%); height: auto; margin-inline: auto; }

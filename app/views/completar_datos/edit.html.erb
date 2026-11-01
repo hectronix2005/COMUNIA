@@ -4,12 +4,14 @@
 <div class="login-wrapper" data-turbo-cache="false">
   <div class="login-card">
     <div class="text-center mb-4">
-      <div class="login-icon mb-3">
-        <span class="icono-grande"><%= display_logia&.icono_display || "🏛️" %></span>
-      </div>
-      <h2 class="fw-bold" style="color: <%= display_logia&.color_display || '#6c757d' %>;">
-        <%= display_logia&.nombre_display || "COMUNIA" %>
-      </h2>
+      <% if display_logia %>
+        <div class="login-icon mb-3">
+          <span class="icono-grande"><%= display_logia.icono_display %></span>
+        </div>
+        <h2 class="fw-bold" style="color: <%= display_logia.color_display %>;"><%= display_logia.nombre_display %></h2>
+      <% else %>
+        <h2 class="mb-3"><%= image_tag "comunia-marca.png", alt: "COMUNIA, tu comunidad en un solo lugar", class: "marca-completa" %></h2>
+      <% end %>
       <p class="mb-1">Hola, <strong><%= current_user.nombre %></strong>. Antes de empezar, completa tus datos y elige tu contraseña.</p>
       <p class="text-muted small mb-0">Desde ahora entras con tu celular o tu correo y la contraseña que elijas aquí.</p>
     </div>

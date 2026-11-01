@@ -4,7 +4,7 @@
   <header class="portada-cabecera">
     <div class="portada-ancho">
       <%= link_to root_path, class: "portada-marca" do %>
-        <i class="bi bi-people-fill" aria-hidden="true"></i>COMUNIA
+        <%= image_tag "comunia-simbolo.png", alt: "", class: "marca-simbolo" %>COMUNIA
       <% end %>
       <%= link_to "Ingresar", new_user_session_path, class: "btn btn-sm btn-acento" %>
     </div>

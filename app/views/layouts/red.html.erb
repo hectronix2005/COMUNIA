@@ -22,7 +22,7 @@
     <nav class="navbar navbar-expand-lg red-barra" aria-label="Principal">
       <div class="container ancho-amplio">
         <%= link_to red_inicio_path, class: "navbar-brand fw-bold flex-shrink-0" do %>
-          <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Red COMUNIA
+          <%= image_tag "comunia-simbolo.png", alt: "", class: "marca-simbolo" %>Red COMUNIA
         <% end %>
         <div class="d-none d-lg-flex align-items-center gap-2 text-nowrap">
           <%= link_to "Buscar", red_buscar_path, class: "nav-link" %>
