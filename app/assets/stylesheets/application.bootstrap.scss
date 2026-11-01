@@ -1007,10 +1007,15 @@ body.denuncias .alert { display: block; }
     border-bottom: 3px solid transparent; border-image: $franja-logo 1;
     .portada-ancho { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   }
+  // Logo grande en la portada (1-nov-2026, pedido de Héctor): símbolo de 60 px y nombre a juego; 46 px en el móvil.
   .portada-marca {
-    display: inline-flex; align-items: center; gap: .55rem; color: #fff; text-decoration: none;
-    font-weight: 800; letter-spacing: -.01em; font-size: 1.1rem;
-    .marca-simbolo { width: 34px; height: 34px; border-radius: 9px; background: #fff; padding: 2px; }
+    display: inline-flex; align-items: center; gap: .8rem; color: #fff; text-decoration: none;
+    font-weight: 800; letter-spacing: .01em; font-size: 2rem; line-height: 1;
+    .marca-simbolo { width: 60px; height: 60px; border-radius: 15px; background: #fff; padding: 3px; }
+    @media (max-width: 575.98px) {
+      font-size: 1.5rem; gap: .6rem;
+      .marca-simbolo { width: 46px; height: 46px; border-radius: 12px; }
+    }
   }
   .portada-hero {
     @extend %bloque-petroleo;
