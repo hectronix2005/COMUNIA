@@ -129,38 +129,6 @@
                   _tiene_tesoreria = current_logia.modulo?(:tesoreria) && (_puede_cobros || _puede_periodos || _puede_conceptos || _puede_cartera || _puede_recaud || _puede_morosos)
                   _tesoreria_activa = ["/cobros", "/periodos", "/conceptos", "/reportes"].any? { |p| request.path.start_with?(p) }
                 %>
-                <% if _tiene_tesoreria %>
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle <%= 'active' if _tesoreria_activa %>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-bank2"></i> Tesorer&iacute;a
-                    </a>
-                    <ul class="dropdown-menu">
-                      <% if _puede_cobros %>
-                        <li><%= link_to (current_user.tiene_cargo?("Tesorero") ? cobros_path : dashboard_path(anchor: "mis-cobros")), class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? Logia.plural(current_logia.t_cobro) : "Mis #{Logia.plural(current_logia.t_cobro)}" %><% end %></li>
-                      <% end %>
-                      <% if _puede_periodos %>
-                        <li><%= link_to periodo_cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/periodos')}" do %><i class="bi bi-calendar-check me-2"></i>Periodos<% end %></li>
-                      <% end %>
-                      <% if _puede_conceptos %>
-                        <li><%= link_to logia_conceptos_cobro_path(current_user.logia), class: "dropdown-item #{'active' if request.path.include?('/conceptos')}" do %><i class="bi bi-list-columns-reverse me-2"></i>Cuota Mensual<% end %></li>
-                      <% end %>
-                      <% if (_puede_cartera || _puede_recaud || _puede_morosos) %>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><h6 class="dropdown-header"><i class="bi bi-graph-up me-1"></i>Reportes</h6></li>
-                        <% if _puede_cartera %>
-                          <li><%= link_to cartera_reportes_path, class: "dropdown-item #{'active' if request.path == cartera_reportes_path}" do %><i class="bi bi-wallet2 me-2"></i>Cartera<% end %></li>
-                        <% end %>
-                        <% if _puede_recaud %>
-                          <li><%= link_to recaudacion_reportes_path, class: "dropdown-item #{'active' if request.path == recaudacion_reportes_path}" do %><i class="bi bi-cash-stack me-2"></i>Recaudaci&oacute;n<% end %></li>
-                        <% end %>
-                        <% if _puede_morosos %>
-                          <li><%= link_to morosos_reportes_path, class: "dropdown-item #{'active' if request.path == morosos_reportes_path}" do %><i class="bi bi-exclamation-triangle me-2"></i>Morosos<% end %></li>
-                        <% end %>
-                      <% end %>
-                    </ul>
-                  </li>
-                <% end %>
-
                 <%# ── Comunidad ── %>
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
@@ -213,14 +181,43 @@
                   </ul>
                 </li>
 
-                <%# ── Biblioteca ── %>
-                <% if current_logia.modulo?(:documentos) || current_logia.modulo?(:biblioteca) %>
+                <%# ── Herramientas: Tesorería y Biblioteca en un solo menú (1-nov-2026, pedido de Héctor) ── %>
+                <% _tiene_biblioteca = current_logia.modulo?(:documentos) || current_logia.modulo?(:biblioteca) %>
+                <% if _tiene_tesoreria || _tiene_biblioteca %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/biblioteca') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if _tesoreria_activa || request.path.start_with?('/biblioteca') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-book-half"></i> Biblioteca
+                    <i class="bi bi-tools"></i> Herramientas
                   </a>
                   <ul class="dropdown-menu">
+                    <% if _tiene_tesoreria %>
+                      <li><h6 class="dropdown-header menu-grupo">TESORER&Iacute;A</h6></li>
+                      <% if _puede_cobros %>
+                        <li><%= link_to (current_user.tiene_cargo?("Tesorero") ? cobros_path : dashboard_path(anchor: "mis-cobros")), class: "dropdown-item #{'active' if request.path.start_with?('/cobros')}" do %><i class="bi bi-receipt me-2"></i><%= current_user.tiene_permiso?("cobros", "index") ? Logia.plural(current_logia.t_cobro) : "Mis #{Logia.plural(current_logia.t_cobro)}" %><% end %></li>
+                      <% end %>
+                      <% if _puede_periodos %>
+                        <li><%= link_to periodo_cobros_path, class: "dropdown-item #{'active' if request.path.start_with?('/periodos')}" do %><i class="bi bi-calendar-check me-2"></i>Periodos<% end %></li>
+                      <% end %>
+                      <% if _puede_conceptos %>
+                        <li><%= link_to logia_conceptos_cobro_path(current_user.logia), class: "dropdown-item #{'active' if request.path.include?('/conceptos')}" do %><i class="bi bi-list-columns-reverse me-2"></i>Cuota Mensual<% end %></li>
+                      <% end %>
+                      <% if (_puede_cartera || _puede_recaud || _puede_morosos) %>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><h6 class="dropdown-header menu-grupo">REPORTES</h6></li>
+                        <% if _puede_cartera %>
+                          <li><%= link_to cartera_reportes_path, class: "dropdown-item #{'active' if request.path == cartera_reportes_path}" do %><i class="bi bi-wallet2 me-2"></i>Cartera<% end %></li>
+                        <% end %>
+                        <% if _puede_recaud %>
+                          <li><%= link_to recaudacion_reportes_path, class: "dropdown-item #{'active' if request.path == recaudacion_reportes_path}" do %><i class="bi bi-cash-stack me-2"></i>Recaudaci&oacute;n<% end %></li>
+                        <% end %>
+                        <% if _puede_morosos %>
+                          <li><%= link_to morosos_reportes_path, class: "dropdown-item #{'active' if request.path == morosos_reportes_path}" do %><i class="bi bi-exclamation-triangle me-2"></i>Morosos<% end %></li>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                    <% if _tiene_biblioteca %>
+                      <% if _tiene_tesoreria %><li><hr class="dropdown-divider my-1"></li><% end %>
+                      <li><h6 class="dropdown-header menu-grupo">BIBLIOTECA</h6></li>
                     <% if current_logia.modulo?(:documentos) %>
                     <li>
                       <%= link_to biblioteca_planchas_path, class: "dropdown-item #{'active' if request.path.start_with?('/biblioteca/planchas')}" do %>
@@ -234,6 +231,7 @@
                         <i class="bi bi-book me-2"></i>Libros
                       <% end %>
                     </li>
+                    <% end %>
                     <% end %>
                   </ul>
                 </li>
