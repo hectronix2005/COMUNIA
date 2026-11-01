@@ -12,7 +12,10 @@
 #  4. Si la subida va bien, no queda nada en asus. Si falla, la copia se queda en
 #     ~/backups/comunia para no perderla.
 #  5. Los adjuntos guardados en disco (~/services/comunia-storage: servicio «local» de ActiveStorage)
-#     van en otro tar cifrado. Los de R2 no se copian aquí.
+#     van en otro tar cifrado.
+#  5b. Los de Cloudflare R2 (servicio «cloudflare», donde van los que se suben desde el 18-oct) se bajan
+#     con las credenciales de la app (app.env; no se guardan en rclone.conf) y van en otro tar cifrado
+#     (1-nov-2026: hasta entonces no tenían copia).
 #  6. Las evidencias de DENUNCIAPP (~/services/denuncias-evidencia) van en un tar aparte, cifrado
 #     con la misma clave gpg. Sus tablas ya están en el dump. Los originales de las fotos, además,
 #     llevan AES-GCM con DENUNCIAS_CLAVE (app.env y Llavero del Air, nunca en Drive): con solo
@@ -22,6 +25,7 @@
 #   docker exec -i comunia-db-1 pg_restore --clean --if-exists --no-owner --no-acl \
 #     -U comunia -d comunia_production < comunia-AAAAMMDD-HHMM.dump
 #   gpg -d archivos-AAAAMMDD-HHMM.tar.gpg | tar -C ~/services/comunia-storage -xf -
+#   gpg -d r2-AAAAMMDD-HHMM.tar.gpg | tar -C /tmp/r2 -xf -   y luego: rclone copy /tmp/r2 r2:<bucket> (mismas variables que r2_bajar)
 #   gpg -d denuncias-AAAAMMDD-HHMM.tar.gpg | tar -C ~/services/denuncias-evidencia -xf -
 set -euo pipefail
 export PATH="$HOME/.local/bin:/usr/bin:/bin"
@@ -30,6 +34,7 @@ DIR="$HOME/backups/comunia"
 EVIDENCIA="$HOME/services/denuncias-evidencia"
 ARCHIVOS="$HOME/services/comunia-storage"
 PASS="$HOME/.config/comunia-backup/passphrase"
+APPENV="$HOME/services/comunia-secrets/app.env"
 REMOTE="gdrive-personal:COMUNIA-backups"  # Drive de hectorn.personal@gmail.com (antes gdrive = Drive de Picap)
 LOG="$HOME/services/comunia-backup.log"
 # «<epoch> OK|ERROR …» de la última pasada; lo lee vigila-flota (Tmux, en el Air).
@@ -73,6 +78,29 @@ if [ -n "$(ls -A "$ARCHIVOS" 2>/dev/null)" ]; then
   rm -f "$A"
   log "subida a Drive: $REMOTE/$(basename "$A")"
 fi
+
+# En un subshell: las variables de app.env no salen de aquí.
+r2_bajar() (
+  set -a; . "$APPENV"; set +a
+  export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true \
+    RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+    RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT"
+  rclone copy "r2:$R2_BUCKET" "$1" --quiet
+)
+R2DIR="$DIR/r2-$SELLO"
+mkdir -p "$R2DIR"
+r2_bajar "$R2DIR" || { log "ERROR: no se pudieron bajar los archivos de R2"; rm -rf "$R2DIR"; exit 1; }
+if [ -n "$(ls -A "$R2DIR")" ]; then
+  R="$DIR/r2-$SELLO.tar.gpg"
+  N=$(find "$R2DIR" -type f | wc -l)
+  tar -C "$R2DIR" -cf - . | cifrar "$R"
+  rm -rf "$R2DIR"
+  rclone copy "$R" "$REMOTE" --quiet \
+    || { log "ERROR: no se pudieron subir los archivos de R2; quedan en $R"; exit 1; }
+  rm -f "$R"
+  log "subida a Drive: $REMOTE/$(basename "$R") archivos=$N"
+fi
+rm -rf "$R2DIR"
 
 if [ -n "$(ls -A "$EVIDENCIA" 2>/dev/null)" ]; then
   E="$DIR/denuncias-$SELLO.tar.gpg"
