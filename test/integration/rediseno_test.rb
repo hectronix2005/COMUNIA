@@ -16,6 +16,7 @@ class RedisenoTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_includes response.body, "Tu comunidad, <em>en un solo lugar.</em>"
     assert_includes response.body, 'href="/login"'
+    assert_select ".portada-hero img.portada-logo[src*='comunia-marca'][alt*='COMUNIA']", 1
   end
 
   test "con sesión la portada lleva al inicio y dentro de una comunidad al ingreso" do
