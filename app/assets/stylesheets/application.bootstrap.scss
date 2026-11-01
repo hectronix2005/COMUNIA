@@ -941,6 +941,11 @@ body.denuncias .alert { display: block; }
   .navbar-main .nav-link { padding: .5rem .55rem !important; }
   .navbar-main .navbar-nav.me-auto .nav-link > .bi { display: none; }
 }
+// El panel de la campana lo abre su controlador (no Bootstrap), así que .dropdown-menu-end no lo alineaba: se abría
+// hacia la derecha y, con la campana junto al borde, quedaba cortado (Héctor, 1-nov-2026). Se alinea por la derecha.
+@media (min-width: 992px) {
+  .navbar-main [data-notifications-target="panel"] { right: 0; left: auto; max-width: calc(100vw - 2rem); }
+}
 @media (min-width: 992px) and (max-width: 1199.98px) {
   .navbar-main .navbar-brand .text-truncate { display: none; }
   .navbar-main .nav-link { padding: .5rem .45rem !important; font-size: .84rem; }
