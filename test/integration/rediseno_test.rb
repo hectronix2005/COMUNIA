@@ -74,13 +74,13 @@ class RedisenoTest < ActionDispatch::IntegrationTest
   test "el color de la comunidad solo admite un hexadecimal" do
     @logia.color_primario = "red;}</style><script>alert(1)</script>"
     assert_not @logia.valid?
-    assert_includes @logia.errors[:color_primario], "debe ser un color como #0D3436"
+    assert_includes @logia.errors[:color_primario], "debe ser un color como #1C385B"
 
-    @logia.color_primario = "#0d3436"
+    @logia.color_primario = "#1c385b"
     assert @logia.valid?
-    assert_equal "#0d3436", @logia.color_display
+    assert_equal "#1c385b", @logia.color_display
 
     @logia.color_primario = "nada"
-    assert_equal "#0D3436", @logia.color_display
+    assert_equal "#1C385B", @logia.color_display
   end
 end

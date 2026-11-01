@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="<%= (_logia&.nombre_display || 'COMUNIA').to_s[0,14] %>">
-    <meta name="theme-color" content="#0D3436">
+    <meta name="theme-color" content="#1C385B">
     <meta name="format-detection" content="telephone=no">
     <meta name="vapid-public-key" content="<%= Rails.application.config.x.vapid[:public_key] %>">
     <%= csrf_meta_tags %>
@@ -388,7 +388,7 @@
       <%# ── Banner de vista previa ──────────────────────────── %>
       <% if previewing_tenant? %>
         <div class="d-flex align-items-center justify-content-between px-4 py-2 texto-reducido"
-             style="background: var(--c-ambar); color: #1E1405;">
+             style="background: var(--c-ambar); color: #122842;">
           <span>
             <i class="bi bi-eye-fill me-2"></i>
             <strong>Vista previa:</strong> estás viendo la comunidad

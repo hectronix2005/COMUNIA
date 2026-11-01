@@ -11,7 +11,7 @@ export default class extends Controller {
     const message = this.messageValue || "¿Esta seguro?"
 
     const iconMap = { warning: "bi-exclamation-triangle", danger: "bi-x-circle", success: "bi-check-circle" }
-    const colorMap = { warning: "#D4A017", danger: "#C0392B", success: "#1B7A4A" }
+    const colorMap = { warning: "#B4500C", danger: "#C40A55", success: "#0A7F2E" }
     const icon = iconMap[this.typeValue] || iconMap.warning
     const color = colorMap[this.typeValue] || colorMap.warning
 

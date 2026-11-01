@@ -1,6 +1,8 @@
 // =============================================================================
-// COMUNIA — Sistema de diseño v3 (29-oct-2026, decisión de Héctor: «petróleo y ámbar»)
-// Neutros sobrios en petróleo y gris verdoso; un solo acento ámbar para lo que debe verse.
+// COMUNIA — Sistema de diseño v4 (1-nov-2026, decisión de Héctor: los colores del logo)
+// El marino del nombre COMUNIA como base, el naranja del puzle como acento de lo que debe verse, y el azul,
+// turquesa, verde y magenta del logo para estados y detalles. Sustituye al v3 «petróleo y ámbar» (29-oct).
+// Las variables conservan sus nombres de antes ($petroleo, $ambar) para no tocar cada regla.
 // El color propio de cada comunidad queda en su logo y su cabecera, no en los botones.
 // =============================================================================
 
@@ -8,20 +10,37 @@
 // 1. Paleta y variables de Bootstrap
 // -----------------------------------------------------------------------------
 
-$petroleo:        #0D3436;
-$petroleo-oscuro: #072325;
-$petroleo-claro:  #1C5355;
-$petroleo-suave:  #E3EEED;
-$ambar:           #F2A33A;
-$ambar-claro:     #FFC46B;
-$ambar-oscuro:    #9A5B08; // ámbar legible sobre blanco
-$ambar-suave:     #FDF0DC;
-$fondo:           #F2F5F4;
-$borde:           #DFE6E4;
-$borde-suave:     #EBF0EF;
-$gris:            #5E6E6D;
-$gris-claro:      #8A9897;
-$texto:           #24302F;
+// Colores del logo (medidos en el original): la base de todo lo demás.
+$logo-marino:   #1C385B; // el nombre COMUNIA
+$logo-azul:     #0440C3;
+$logo-turquesa: #23C6D0;
+$logo-verde:    #0AA034;
+$logo-naranja:  #FE8530;
+$logo-ambar:    #FCAC14;
+$logo-magenta:  #E20B61;
+
+// «petróleo» es ahora el marino del logo y «ámbar», su naranja (contraste AA comprobado en cada pareja de uso).
+$petroleo:        $logo-marino;   // blanco encima: 11,9:1
+$petroleo-oscuro: #122842;
+$petroleo-claro:  #2D5585;
+$petroleo-suave:  #E5ECF5;
+$ambar:           $logo-naranja;  // fondo de botones con texto marino oscuro: 6,1:1 (con blanco no llega)
+$ambar-claro:     #FFA25E;        // sobre marino: 6,0:1
+$ambar-oscuro:    #A84A0A;        // naranja legible sobre blanco: 5,8:1
+$ambar-suave:     #FFEBDC;
+$turquesa-oscuro: #0B7880;        // turquesa legible sobre blanco: 5,2:1
+$turquesa-suave:  #DDF6F8;
+$fondo:           #F3F6FA;
+$borde:           #DDE4EE;
+$borde-suave:     #EAEFF5;
+$gris:            #5B6B80;        // sobre el fondo: 5,0:1
+$gris-claro:      #8C99AB;
+$gris-medio:      #CBD5E1;
+$texto:           #1D2838;
+$texto-suave:     #3E4B5E;
+$sobre-acento:    $petroleo-oscuro; // texto sobre el naranja
+// Las cuatro piezas del puzle, en el orden del logo: franja bajo las barras superiores.
+$franja-logo: linear-gradient(90deg, $logo-azul 0 25%, $logo-turquesa 25% 50%, $logo-verde 50% 75%, $logo-naranja 75% 100%);
 
 // Nombres de antes, para no tocar cada regla: el «marino» es ahora el petróleo y el «oro», el ámbar.
 $navy:      $petroleo;
@@ -30,12 +49,12 @@ $gold:      $ambar;
 
 $primary:   $petroleo;
 $secondary: $gris;
-$success:   #13795B;
-$info:      #1F6F8B;
-$warning:   #C77D12;
-$danger:    #C2412D;
-$light:     #F7F9F8;
-$dark:      #102A2B;
+$success:   #0A7F2E; // verde del logo, oscurecido: 5,1:1 con blanco
+$info:      $logo-azul;
+$warning:   #B4500C; // naranja oscuro: 5,1:1
+$danger:    #C40A55; // magenta del logo, oscurecido: 6,0:1
+$light:     #F6F8FB;
+$dark:      $petroleo-oscuro;
 
 // Typography — system stack prioritizing readability
 $font-family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -166,7 +185,8 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
 .navbar,
 .navbar-main {
   background: $petroleo !important;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 3px solid transparent;
+  border-image: $franja-logo 1;
   box-shadow: 0 4px 24px rgba($petroleo-oscuro, 0.18);
 
   .navbar-brand {
@@ -252,7 +272,7 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
       padding: 0.45rem 0.85rem;
       font-weight: 500;
       font-size: 0.875rem;
-      color: #3F4C4B;
+      color: $texto-suave;
       transition: all 0.12s ease;
 
       .bi { color: $gris-claro; margin-right: 0.35rem; transition: color 0.12s; }
@@ -343,10 +363,10 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   .stat-footer { font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem; }
 
   &.stat-card-primary, &.stat-primary  { background: linear-gradient(145deg, $petroleo-claro 0%, $petroleo 100%); }
-  &.stat-card-warning, &.stat-gold     { background: linear-gradient(145deg, $ambar-oscuro 0%, #C77D12 100%); }
-  &.stat-card-info, &.stat-info        { background: linear-gradient(145deg, #0369a1 0%, #0284c7 100%); }
-  &.stat-card-success, &.stat-success  { background: linear-gradient(145deg, #047857 0%, #059669 100%); }
-  &.stat-card-danger, &.stat-danger    { background: linear-gradient(145deg, #b91c1c 0%, #dc2626 100%); }
+  &.stat-card-warning, &.stat-gold     { background: linear-gradient(145deg, $ambar-oscuro 0%, #C9600E 100%); }
+  &.stat-card-info, &.stat-info        { background: linear-gradient(145deg, $logo-azul 0%, #0360E0 100%); }
+  &.stat-card-success, &.stat-success  { background: linear-gradient(145deg, #087A2C 0%, #0A8F30 100%); }
+  &.stat-card-danger, &.stat-danger    { background: linear-gradient(145deg, #A80848 0%, $danger 100%); }
   &.stat-dark                          { background: linear-gradient(145deg, $petroleo-oscuro 0%, $dark 100%); }
 
   // Inline icon layout
@@ -413,12 +433,12 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   letter-spacing: 0.02em;
 }
 .badge-pendiente { background: $ambar-suave; color: $ambar-oscuro; }
-.badge-soporte   { background: #DCEEF4; color: #164E63; }
-.badge-pagado    { background: #D8F0E6; color: #0B5A43; }
-.badge-vencido   { background: #FBE3DE; color: #8F2A1B; }
-.badge-parcial   { background: #FCE9C8; color: #7A4706; }
-.badge-activo    { background: #D8F0E6; color: #0B5A43; }
-.badge-inactivo  { background: #C9D3D1; color: #3F4C4B; }
+.badge-soporte   { background: $turquesa-suave; color: #0B5F66; }
+.badge-pagado    { background: #DDF5E3; color: #0A5C22; }
+.badge-vencido   { background: #FCE1EC; color: #8E0A3D; }
+.badge-parcial   { background: $ambar-suave; color: #8A3D06; }
+.badge-activo    { background: #DDF5E3; color: #0A5C22; }
+.badge-inactivo  { background: $gris-medio; color: $texto-suave; }
 
 // ── Buttons — modern, clean ──
 .btn {
@@ -439,17 +459,17 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
 }
 // El acento: la acción que más importa de cada pantalla. Texto oscuro, porque blanco sobre ámbar no se lee.
 .btn-acento, .btn-secondary {
-  background: $ambar; border-color: $ambar; color: #1E1405;
-  &:hover, &:focus { background: $ambar-claro; border-color: $ambar-claro; color: #1E1405; }
+  background: $ambar; border-color: $ambar; color: $sobre-acento;
+  &:hover, &:focus { background: $ambar-claro; border-color: $ambar-claro; color: $sobre-acento; }
 }
 .btn-outline-primary {
-  color: $petroleo; border-color: #C9D3D1;
+  color: $petroleo; border-color: $gris-medio;
   &:hover { background: $petroleo; border-color: $petroleo; color: #fff; }
 }
 // Botón neutro de toda la app (más de cien usos): gris sobre blanco, se oscurece al pasar.
 .btn-outline-secondary {
-  color: #3F4C4B; border-color: $borde; background: #fff;
-  &:hover, &:focus { background: $borde-suave; border-color: #C9D3D1; color: $petroleo; }
+  color: $texto-suave; border-color: $borde; background: #fff;
+  &:hover, &:focus { background: $borde-suave; border-color: $gris-medio; color: $petroleo; }
 }
 .btn-dark {
   background: $petroleo-oscuro; border-color: $petroleo-oscuro;
@@ -523,7 +543,7 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   &::placeholder { color: $gris-claro; }
 }
 .form-label {
-  font-weight: 600; font-size: 0.85rem; color: #3F4C4B; margin-bottom: 0.35rem;
+  font-weight: 600; font-size: 0.85rem; color: $texto-suave; margin-bottom: 0.35rem;
 }
 .form-control[type="file"] {
   padding: 0.5rem 0.9rem; line-height: 1.6;
@@ -567,9 +587,9 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   // el texto se metía debajo: la X pasa al flujo flex.
   &.alert-dismissible .btn-close { position: static; flex-shrink: 0; padding: 0.35rem; }
 
-  &.alert-success { background: #E9F6F0; border-left-color: $success; color: #0B5A43; }
-  &.alert-danger  { background: #FCEDEA; border-left-color: $danger;  color: #8F2A1B; }
-  &.alert-warning { background: $ambar-suave; border-left-color: $ambar; color: #6E4106; }
+  &.alert-success { background: #E8F7EC; border-left-color: $success; color: #0A5C22; }
+  &.alert-danger  { background: #FCEAF1; border-left-color: $danger;  color: #8E0A3D; }
+  &.alert-warning { background: $ambar-suave; border-left-color: $ambar; color: #8A3D06; }
   &.alert-info    { background: $petroleo-suave; border-left-color: $petroleo-claro; color: $petroleo; }
 }
 
@@ -598,9 +618,9 @@ main, .main-content { animation: fadeInUp 0.3s ease-out; }
   gap: 4px;
   .page-link {
     border-radius: 10px; font-weight: 500; font-size: 0.88rem;
-    border: 1px solid $borde; color: #3F4C4B; padding: 0.4rem 0.75rem;
+    border: 1px solid $borde; color: $texto-suave; padding: 0.4rem 0.75rem;
     transition: all 0.12s ease;
-    &:hover { background: $borde-suave; border-color: #C9D3D1; color: $navy; }
+    &:hover { background: $borde-suave; border-color: $gris-medio; color: $navy; }
   }
   .page-item.active .page-link { background: $navy; border-color: $navy; color: #fff; }
   .page-item.disabled .page-link { opacity: 0.4; }
@@ -877,7 +897,6 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
 // ── Red y Denuncias: misma identidad que la app (petróleo, acento ámbar, grises) ──
 .red-barra, .denuncias-barra {
   background: $petroleo;
-  border-bottom: 1px solid rgba(255,255,255,.06);
 
   .navbar-brand, .nav-link { color: #fff; white-space: nowrap; }
   .navbar-brand { display: inline-flex; align-items: center; gap: .45rem; }
@@ -889,14 +908,14 @@ body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-ins
 .red-nivel {
   display: inline-flex; align-items: center; gap: .25rem; font-size: .8rem; border-radius: 1rem;
   padding: .1rem .55rem; background: $borde; color: $dark;
-  &[data-nivel="2"] { background: #d1fae5; color: #064e3b; }
-  &[data-nivel="3"] { background: #a7f3d0; color: #064e3b; }
+  &[data-nivel="2"] { background: #DDF5E3; color: #0A5C22; }
+  &[data-nivel="3"] { background: #BFEBCB; color: #0A5C22; }
   &[data-nivel="4"] { background: $success; color: #fff; }
 }
 .red-tarjeta { border: 1px solid $borde; border-radius: 1rem; box-shadow: none; }
 .red-chip {
   font-size: .75rem; border-radius: 1rem; padding: .1rem .55rem; background: rgba($navy, .07); color: $navy;
-  &.ofrezco { background: rgba($success, .1); color: #065f46; }
+  &.ofrezco { background: rgba($success, .1); color: #0A5C22; }
 }
 a.red-tarjeta-enlace { color: inherit; text-decoration: none; }
 a.red-tarjeta-enlace:hover .red-tarjeta { border-color: rgba($navy, .35); }
@@ -904,7 +923,7 @@ a.red-tarjeta-enlace:focus-visible { outline: 3px solid $gold; outline-offset: 2
 // Los avisos de la app son flex (icono + texto); en Denuncias llevan texto con negritas y enlaces
 body.denuncias .alert { display: block; }
 .denuncia-fotos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
-.denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #d1fae5; color: #064e3b; }
+.denuncia-sello { font-size: .8rem; border-radius: 1rem; padding: .1rem .55rem; background: #DDF5E3; color: #0A5C22; }
 
 // Escritorio: con todos los menús del administrador la barra no cabía, la marca desaparecía y el menú
 // del usuario quedaba fuera de la pantalla. Cada enlace en una línea y, si aun así no caben, pasan a otra fila.
@@ -937,14 +956,15 @@ body.denuncias .alert { display: block; }
   --c-borde: #{$borde};
   --c-gris: #{$gris};
   --c-texto: #{$texto};
+  --c-turquesa: #{$turquesa-oscuro};
 }
 
-// Bloque oscuro con el círculo ámbar: saludo del inicio, cabecera de la guía y portada.
+// Bloque oscuro con el círculo turquesa: saludo del inicio, cabecera de la guía y portada.
 %bloque-petroleo {
   position: relative; overflow: hidden; isolation: isolate;
   background: $petroleo; color: #fff;
   &::after {
-    content: ""; position: absolute; z-index: -1; border-radius: 50%; background: $ambar; opacity: .2;
+    content: ""; position: absolute; z-index: -1; border-radius: 50%; background: $logo-turquesa; opacity: .18;
     width: 220px; height: 220px; right: -70px; top: -90px;
   }
   h1, h2, h3 { color: #fff; }
@@ -971,6 +991,7 @@ body.denuncias .alert { display: block; }
   .portada-ancho { max-width: 1120px; margin-inline: auto; padding-inline: 1.25rem; }
   .portada-cabecera {
     background: $petroleo; color: #fff; padding: .9rem 0;
+    border-bottom: 3px solid transparent; border-image: $franja-logo 1;
     .portada-ancho { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   }
   .portada-marca {
@@ -1011,7 +1032,7 @@ body.denuncias .alert { display: block; }
     .muestra-ok { background: $petroleo; color: #fff; font-size: .72rem; font-weight: 700; padding: .4rem .7rem; border-radius: .6rem; }
     .muestra-cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: .6rem;
       div { background: #fff; border: 1px solid $borde; border-radius: .85rem; padding: .6rem; font-size: 1.25rem; font-weight: 800; color: $petroleo; line-height: 1.1; }
-      div:first-child { background: $ambar; border-color: transparent; color: #1E1405; small { color: #1E1405; opacity: .75; } }
+      div:first-child { background: $ambar; border-color: transparent; color: $sobre-acento; small { color: $sobre-acento; opacity: .75; } }
       small { display: block; font-size: .64rem; color: $gris; font-weight: 600; } }
     .muestra-globo { background: $petroleo; color: #fff; border-radius: 1rem; padding: .75rem .9rem; font-size: .78rem; line-height: 1.4;
       b { display: block; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: $ambar-claro; margin-bottom: .2rem; }
@@ -1036,7 +1057,7 @@ body.denuncias .alert { display: block; }
     position: relative; background: #fff; border: 1px solid $borde; border-radius: 1.1rem; padding: 1.35rem 1.35rem 1.35rem 4.1rem;
     &::before {
       counter-increment: paso; content: counter(paso); position: absolute; left: 1.2rem; top: 1.2rem;
-      width: 2.1rem; height: 2.1rem; border-radius: 50%; background: $ambar; color: #1E1405; font-weight: 800;
+      width: 2.1rem; height: 2.1rem; border-radius: 50%; background: $ambar; color: $sobre-acento; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
     }
     h3 { font-size: 1rem; font-weight: 700; color: $petroleo; margin-bottom: .3rem; }
@@ -1099,7 +1120,7 @@ body.denuncias .alert { display: block; }
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   li { position: relative; background: #fff; border: 1px solid $borde; border-radius: 1rem; padding: 1rem 1rem 1rem 3.4rem;
     &::before { counter-increment: paso; content: counter(paso); position: absolute; left: .9rem; top: .95rem;
-      width: 1.8rem; height: 1.8rem; border-radius: 50%; background: $ambar; color: #1E1405; font-weight: 800; font-size: .9rem;
+      width: 1.8rem; height: 1.8rem; border-radius: 50%; background: $ambar; color: $sobre-acento; font-weight: 800; font-size: .9rem;
       display: flex; align-items: center; justify-content: center; }
     strong { display: block; color: $petroleo; }
     span { color: $gris; font-size: .875rem; }
