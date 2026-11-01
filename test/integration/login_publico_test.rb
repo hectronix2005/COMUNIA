@@ -16,4 +16,11 @@ class LoginPublicoTest < ActionDispatch::IntegrationTest
       assert_not_includes response.body, "password123", ruta
     end
   end
+
+  test "un enlace cortado en /t/ lleva a la portada, no a un 404" do
+    ["/t", "/t/"].each do |ruta|
+      get ruta
+      assert_redirected_to "/", ruta
+    end
+  end
 end

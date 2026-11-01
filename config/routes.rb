@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   # que todas las rutas siguen siendo no-prefijadas aquí y Rails inyecta
   # automáticamente el prefijo al generar URLs.
   get    "t/:slug", to: "tenant_access#enter",       as: :enter_tenant
+  # Un enlace cortado justo tras /t/ (pasó con la invitación de Ingrid, 31-oct-2026) lleva a la portada, no a un 404.
+  get    "t",       to: redirect("/", status: 302)
   delete "t",       to: "tenant_access#exit_tenant", as: :exit_tenant
 
   # Las rutas de invitación de la gema se omiten: su «new/create» deja invitar a cualquier usuario con
