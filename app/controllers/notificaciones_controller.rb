@@ -1,6 +1,9 @@
 class NotificacionesController < ApplicationController
   # Solo los avisos de la comunidad que se mira y los personales; de sus otras comunidades, cuántos hay sin leer.
   def index
+    # La lista es solo el contenido del panel de la campana; abierta como página sale sin estilos.
+    return redirect_to dashboard_path unless turbo_frame_request?
+
     @notificaciones = notificaciones_visibles.recientes.includes(logia: :tenant)
     @otras_comunidades = otras_comunidades_con_avisos
     render layout: false

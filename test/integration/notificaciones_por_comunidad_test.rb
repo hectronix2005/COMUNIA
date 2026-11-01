@@ -4,6 +4,8 @@ require "test_helper"
 # (la red); de la otra, cuántos tiene sin leer. El enlace de cada aviso abre su comunidad, y los de una comunidad
 # que la persona dejó ya no salen.
 class NotificacionesPorComunidadTest < ActionDispatch::IntegrationTest
+  PANEL = { "Turbo-Frame" => "notificaciones-lista" }.freeze
+
   setup do
     @rol_miembro = Rol.find_or_create_by!(codigo: "miembro") { _1.nombre = "Miembro" }
     @luz = Logia.create!(nombre: "Logia Luz", slug: "luz-#{SecureRandom.hex(2)}", codigo: "L#{SecureRandom.hex(3).upcase}")
@@ -21,7 +23,7 @@ class NotificacionesPorComunidadTest < ActionDispatch::IntegrationTest
 
   test "en cada comunidad solo salen sus avisos y los personales" do
     sign_in @ana
-    get "/t/#{@luz.slug}/notificaciones"
+    get "/t/#{@luz.slug}/notificaciones", headers: PANEL
     assert_response :success
     assert_includes response.body, "Tenida del jueves"
     assert_includes response.body, "Tu comunidad fue certificada"
@@ -29,7 +31,7 @@ class NotificacionesPorComunidadTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/t/#{@andes.slug}/dashboard']", text: /Egresados Andes/
     assert_select "a[href='/t/#{@luz.slug}/reuniones/1']"
 
-    get "/t/#{@andes.slug}/notificaciones"
+    get "/t/#{@andes.slug}/notificaciones", headers: PANEL
     assert_includes response.body, "Asado de la cohorte"
     assert_not_includes response.body, "Tenida del jueves"
     assert_select "a[href='/t/#{@andes.slug}/calendario/2']"
@@ -49,11 +51,11 @@ class NotificacionesPorComunidadTest < ActionDispatch::IntegrationTest
   test "los avisos de una comunidad que dejó ya no salen en ninguna parte" do
     @ana.salir_de_comunidad!(@andes)
     sign_in @ana
-    get "/t/#{@luz.slug}/notificaciones"
+    get "/t/#{@luz.slug}/notificaciones", headers: PANEL
     assert_not_includes response.body, "Asado de la cohorte"
     assert_not_includes response.body, "En tus otras comunidades"
 
-    get "/t/#{@andes.slug}/notificaciones"
+    get "/t/#{@andes.slug}/notificaciones", headers: PANEL
     assert_redirected_to "/dashboard"
   end
 
@@ -69,5 +71,18 @@ class NotificacionesPorComunidadTest < ActionDispatch::IntegrationTest
 
   def aviso(logia, titulo, url)
     NotificacionService.crear!(user: @ana, tipo: "evento_recordatorio", titulo: titulo, url: url, logia: logia)
+  end
+
+  test "con la sesión caducada, el panel de avisos no se queda como destino tras entrar" do
+    get "/t/#{@luz.slug}/notificaciones", headers: PANEL
+    assert_response :redirect
+    post "/t/#{@luz.slug}/login", params: { user: { email: @ana.username, password: "password123" } }
+    assert_redirected_to "/t/#{@luz.slug}/dashboard"
+  end
+
+  test "la lista de avisos abierta como página lleva al inicio" do
+    sign_in @ana
+    get "/t/#{@luz.slug}/notificaciones"
+    assert_redirected_to "/t/#{@luz.slug}/dashboard"
   end
 end
