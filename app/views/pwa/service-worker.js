@@ -1,14 +1,13 @@
 // COMUNIA service worker — cache-first para assets estáticos,
 // network-first para navegación HTML, con fallback offline básico.
 
-const VERSION = "comunia-v2";
+const VERSION = "comunia-v3"; // v3: logo nuevo; al activarse borra la caché con el icono anterior
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const OFFLINE_FALLBACK = "/offline.html";
 
 const PRECACHE_URLS = [
   "/icon.png",
-  "/icon.svg",
   OFFLINE_FALLBACK,
 ];
 
