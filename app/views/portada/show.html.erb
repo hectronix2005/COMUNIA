@@ -32,8 +32,8 @@
             <% end %>
           </div>
           <% if Red::Captcha.disponible? %>
-            <p class="small mt-3 mb-0" style="color: rgba(255,255,255,.7);">
-              ¿Tu comunidad te dio un código? <%= link_to "Pide acceso", pedir_acceso_path, class: "text-white fw-semibold" %>
+            <p class="small mt-3 mb-0 portada-pide-acceso">
+              ¿Tu comunidad te dio un código? <%= link_to "Pide acceso", pedir_acceso_path %>
             </p>
           <% end %>
         </div>

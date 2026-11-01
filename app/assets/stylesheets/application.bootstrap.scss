@@ -1000,7 +1000,7 @@ body.denuncias .alert { display: block; }
 
 // ── Portada pública ──
 .portada {
-  background: $fondo; min-height: 100vh;
+  background: #fff; min-height: 100vh; // todo blanco, como el fondo del logo (1-nov-2026, pedido de Héctor)
   .portada-ancho { max-width: 1120px; margin-inline: auto; padding-inline: 1.25rem; }
   .portada-cabecera {
     background: $petroleo; color: #fff; padding: .9rem 0;
@@ -1017,32 +1017,28 @@ body.denuncias .alert { display: block; }
       .marca-simbolo { width: 46px; height: 46px; border-radius: 12px; }
     }
   }
+  // Bloque principal en blanco (1-nov-2026, pedido de Héctor): el logo, que trae fondo blanco, queda natural,
+  // sin tarjeta encima de un fondo oscuro. Los textos pasan a marino y gris.
   .portada-hero {
-    @extend %bloque-petroleo;
+    position: relative; background: #fff; color: $texto;
     padding: 3.5rem 0 4.5rem;
-    &::after { width: 520px; height: 520px; right: -160px; top: -200px; opacity: .16; }
-    &::before {
-      content: ""; position: absolute; z-index: -1; border-radius: 50%; background: $ambar; opacity: .07;
-      width: 300px; height: 300px; left: -120px; bottom: -160px;
-    }
-    // Logo completo (puzle, nombre y lema) en una tarjeta blanca: la imagen tiene fondo blanco (1-nov-2026).
-    .portada-logo {
-      display: block; width: 260px; max-width: 70%; height: auto; margin-bottom: 1.75rem;
-      background: #fff; border-radius: 1.5rem; padding: 1rem 1.25rem; box-shadow: 0 18px 40px rgba(0,0,0,.28);
-    }
-    h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin-bottom: 1rem; }
-    .portada-lema { font-size: 1.12rem; color: rgba(255,255,255,.78); max-width: 34rem; line-height: 1.5; }
+    // multiply: el fondo casi blanco de la imagen (254) y su ruido de compresión desaparecen sobre el blanco.
+    .portada-logo { display: block; width: 300px; max-width: 75%; height: auto; margin: 0 0 1.5rem -.5rem; mix-blend-mode: multiply; }
+    h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin-bottom: 1rem; color: $petroleo; }
+    em { font-style: normal; color: $ambar-oscuro; }
+    .portada-lema { font-size: 1.12rem; color: $gris; max-width: 34rem; line-height: 1.5; }
     .portada-botones { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: 1.75rem; }
     .btn-lg { padding: .75rem 1.4rem; font-size: 1rem; }
     .btn-claro {
-      border: 1.5px solid rgba(255,255,255,.35); color: #fff; background: transparent;
-      &:hover, &:focus { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); color: #fff; }
+      border: 1.5px solid $petroleo; color: $petroleo; background: transparent;
+      &:hover, &:focus { background: $petroleo-suave; border-color: $petroleo; color: $petroleo; }
     }
+    .portada-pide-acceso { color: $gris; a { color: $petroleo; font-weight: 600; } }
   }
   // Muestra del inicio dentro de la portada: una tarjeta de encuentro, cifras y el globo del recorrido.
   .portada-muestra {
     background: $fondo; border-radius: 1.5rem; padding: 1rem; color: $texto;
-    box-shadow: 0 30px 60px rgba(0,0,0,.35); max-width: 380px; margin-left: auto;
+    box-shadow: 0 24px 50px rgba($petroleo, .18); border: 1px solid $borde; max-width: 380px; margin-left: auto;
     transform: rotate(1.5deg);
     .muestra-tarjeta { background: #fff; border: 1px solid $borde; border-radius: 1rem; padding: .9rem; margin-bottom: .6rem; }
     .muestra-titulo { font-size: .8rem; font-weight: 700; color: $petroleo; display: flex; justify-content: space-between; margin-bottom: .6rem;
@@ -1094,7 +1090,7 @@ body.denuncias .alert { display: block; }
   .portada-pie { padding: 2rem 0 2.5rem; color: $gris; font-size: .85rem;
     a { color: $petroleo; font-weight: 600; text-decoration: none; &:hover { text-decoration: underline; } } }
   @media (max-width: 991.98px) {
-    .portada-hero { padding: 2.5rem 0 3rem; &::after { width: 260px; height: 260px; right: -130px; top: -120px; } }
+    .portada-hero { padding: 2.5rem 0 3rem; }
     .portada-muestra { margin: 2.5rem auto 0; transform: none; }
     .portada-seccion { padding: 2.75rem 0; }
   }
