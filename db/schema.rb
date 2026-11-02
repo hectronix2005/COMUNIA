@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -431,10 +431,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
     t.string "modulos", array: true
     t.boolean "noticias_activas", default: false, null: false
     t.string "noticias_busquedas", default: [], null: false, array: true
+    t.bigint "sombrilla_id"
     t.index ["categoria_id"], name: "index_logias_on_categoria_id"
     t.index ["codigo_acceso"], name: "index_logias_on_codigo_acceso", unique: true
     t.index ["demo"], name: "index_logias_on_demo", unique: true, where: "demo"
     t.index ["slug"], name: "index_logias_on_slug", unique: true
+    t.index ["sombrilla_id"], name: "index_logias_on_sombrilla_id"
     t.index ["tenant_id", "codigo"], name: "index_logias_on_tenant_id_and_codigo", unique: true
     t.index ["tenant_id"], name: "index_logias_on_tenant_id"
   end
@@ -579,7 +581,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   end
 
   create_table "noticias", force: :cascade do |t|
-    t.bigint "logia_id", null: false
+    t.bigint "logia_id"
     t.string "titulo", null: false
     t.string "medio"
     t.string "url", limit: 2000, null: false
@@ -588,9 +590,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
     t.boolean "oculta", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "sombrilla_id"
     t.index ["logia_id", "publicada_en"], name: "index_noticias_on_logia_id_and_publicada_en"
     t.index ["logia_id", "url"], name: "index_noticias_on_logia_id_and_url", unique: true
     t.index ["logia_id"], name: "index_noticias_on_logia_id"
+    t.index ["sombrilla_id", "publicada_en"], name: "index_noticias_on_sombrilla_id_and_publicada_en"
+    t.index ["sombrilla_id", "url"], name: "index_noticias_on_sombrilla_id_and_url", unique: true
+    t.index ["sombrilla_id"], name: "index_noticias_on_sombrilla_id"
+    t.check_constraint "num_nonnulls(logia_id, sombrilla_id) = 1", name: "noticias_de_una_sola"
   end
 
   create_table "notificaciones", force: :cascade do |t|
@@ -1033,6 +1040,76 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
     t.index ["user_id"], name: "index_solicitudes_acceso_on_user_id"
   end
 
+  create_table "sombrilla_comentarios", force: :cascade do |t|
+    t.bigint "publicacion_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "comunidad_id", null: false
+    t.text "contenido", null: false
+    t.boolean "oculta", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comunidad_id"], name: "index_sombrilla_comentarios_on_comunidad_id"
+    t.index ["publicacion_id"], name: "index_sombrilla_comentarios_on_publicacion_id"
+    t.index ["user_id"], name: "index_sombrilla_comentarios_on_user_id"
+  end
+
+  create_table "sombrilla_eventos", force: :cascade do |t|
+    t.bigint "sombrilla_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "comunidad_id", null: false
+    t.string "titulo", null: false
+    t.text "descripcion"
+    t.string "lugar"
+    t.datetime "inicio", null: false
+    t.boolean "oculta", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comunidad_id"], name: "index_sombrilla_eventos_on_comunidad_id"
+    t.index ["sombrilla_id", "inicio"], name: "index_sombrilla_eventos_on_sombrilla_id_and_inicio"
+    t.index ["sombrilla_id"], name: "index_sombrilla_eventos_on_sombrilla_id"
+    t.index ["user_id"], name: "index_sombrilla_eventos_on_user_id"
+  end
+
+  create_table "sombrilla_publicaciones", force: :cascade do |t|
+    t.bigint "sombrilla_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "comunidad_id", null: false
+    t.text "contenido", null: false
+    t.boolean "oculta", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comunidad_id"], name: "index_sombrilla_publicaciones_on_comunidad_id"
+    t.index ["sombrilla_id", "created_at"], name: "index_sombrilla_publicaciones_on_sombrilla_id_and_created_at"
+    t.index ["sombrilla_id"], name: "index_sombrilla_publicaciones_on_sombrilla_id"
+    t.index ["user_id"], name: "index_sombrilla_publicaciones_on_user_id"
+  end
+
+  create_table "sombrilla_reportes", force: :cascade do |t|
+    t.string "reportable_type", null: false
+    t.bigint "reportable_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "comunidad_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comunidad_id"], name: "index_sombrilla_reportes_on_comunidad_id"
+    t.index ["reportable_type", "reportable_id", "user_id"], name: "index_sombrilla_reportes_unicos", unique: true
+    t.index ["reportable_type", "reportable_id"], name: "index_sombrilla_reportes_on_reportable"
+    t.index ["user_id"], name: "index_sombrilla_reportes_on_user_id"
+  end
+
+  create_table "sombrillas", force: :cascade do |t|
+    t.string "nombre", null: false
+    t.string "nivel", null: false
+    t.bigint "padre_id"
+    t.string "slug", null: false
+    t.string "noticias_busquedas", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["padre_id"], name: "index_sombrillas_on_padre_id"
+    t.index ["slug"], name: "index_sombrillas_on_slug", unique: true
+    t.check_constraint "nivel::text = ANY (ARRAY['barrio'::character varying, 'localidad'::character varying, 'ciudad'::character varying]::text[])", name: "sombrillas_nivel"
+  end
+
   create_table "tarifas", force: :cascade do |t|
     t.bigint "logia_id", null: false
     t.decimal "monto", precision: 10, scale: 2, null: false
@@ -1081,6 +1158,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
     t.string "celular"
     t.boolean "debe_completar_datos", default: false, null: false
     t.datetime "recorrido_visto_at"
+    t.string "visibilidad_sombrilla"
     t.index ["calendario_semilla"], name: "index_users_on_calendario_semilla", unique: true
     t.index ["celular"], name: "index_users_on_celular", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -1121,6 +1199,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   add_foreign_key "evento_confirmaciones", "users"
   add_foreign_key "logias", "categorias"
   add_foreign_key "logias", "logias", column: "tenant_id"
+  add_foreign_key "logias", "sombrillas"
   add_foreign_key "miembro_cargos", "cargos"
   add_foreign_key "miembro_cargos", "miembros"
   add_foreign_key "miembro_cargos", "users", column: "asignado_por_id"
@@ -1136,6 +1215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   add_foreign_key "negocio_reportes", "negocio_anuncios"
   add_foreign_key "negocio_reportes", "users"
   add_foreign_key "noticias", "logias"
+  add_foreign_key "noticias", "sombrillas"
   add_foreign_key "notificaciones", "logias"
   add_foreign_key "notificaciones", "users"
   add_foreign_key "pagos", "cobros"
@@ -1196,6 +1276,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   add_foreign_key "solicitudes_acceso", "miembros", on_delete: :nullify
   add_foreign_key "solicitudes_acceso", "users", column: "decidida_por_id", on_delete: :nullify
   add_foreign_key "solicitudes_acceso", "users", on_delete: :nullify
+  add_foreign_key "sombrilla_comentarios", "logias", column: "comunidad_id"
+  add_foreign_key "sombrilla_comentarios", "sombrilla_publicaciones", column: "publicacion_id"
+  add_foreign_key "sombrilla_comentarios", "users"
+  add_foreign_key "sombrilla_eventos", "logias", column: "comunidad_id"
+  add_foreign_key "sombrilla_eventos", "sombrillas"
+  add_foreign_key "sombrilla_eventos", "users"
+  add_foreign_key "sombrilla_publicaciones", "logias", column: "comunidad_id"
+  add_foreign_key "sombrilla_publicaciones", "sombrillas"
+  add_foreign_key "sombrilla_publicaciones", "users"
+  add_foreign_key "sombrilla_reportes", "logias", column: "comunidad_id"
+  add_foreign_key "sombrilla_reportes", "users"
+  add_foreign_key "sombrillas", "sombrillas", column: "padre_id"
   add_foreign_key "tarifas", "logias"
   add_foreign_key "tarifas", "users", column: "creado_por_id"
   add_foreign_key "users", "logias"

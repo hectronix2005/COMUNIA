@@ -19,7 +19,12 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::ReadOnlyError, with: :invitado_no_puede_guardar
 
-  helper_method :current_miembro, :current_logia, :display_logia, :notificaciones_visibles
+  helper_method :current_miembro, :current_logia, :display_logia, :notificaciones_visibles, :sombrillas_del_usuario
+
+  # Las sombrillas (barrio, localidad, ciudad) a las que llega la cuenta, para el menú.
+  def sombrillas_del_usuario
+    @sombrillas_del_usuario ||= current_user ? Sombrilla.de_usuario(current_user).to_a : []
+  end
 
   def current_miembro
     @current_miembro ||= current_user&.miembro

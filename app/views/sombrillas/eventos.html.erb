@@ -1,0 +1,63 @@
+<% content_for(:title, "Eventos · #{@sombrilla.nombre}") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <%= render "sombrillas/cabecera" %>
+
+    <% if @comunidad && current_user.visibilidad_sombrilla %>
+      <details class="card mb-3">
+        <summary class="card-body py-2 fw-semibold"><i class="bi bi-plus-circle me-1"></i>Publicar un evento en <%= @sombrilla.nombre %></summary>
+        <div class="card-body pt-0">
+          <%= form_with model: SombrillaEvento.new, url: crear_evento_sombrilla_path(@sombrilla), local: true do |f| %>
+            <div class="mb-2">
+              <%= f.label :titulo, "Qué", class: "form-label small" %>
+              <%= f.text_field :titulo, class: "form-control", maxlength: 120, required: true, placeholder: "Feria de emprendimiento, jornada de reciclaje…" %>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-sm-6">
+                <%= f.label :inicio, "Cuándo", class: "form-label small" %>
+                <%= f.datetime_local_field :inicio, class: "form-control", required: true %>
+              </div>
+              <div class="col-sm-6">
+                <%= f.label :lugar, "Dónde", class: "form-label small" %>
+                <%= f.text_field :lugar, class: "form-control", maxlength: 160 %>
+              </div>
+            </div>
+            <div class="mb-2">
+              <%= f.label :descripcion, "Detalles", class: "form-label small" %>
+              <%= f.text_area :descripcion, class: "form-control", rows: 2, maxlength: 2000 %>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Publicar evento</button>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+
+    <% @eventos.each do |evento| %>
+      <div class="card mb-2 <%= 'opacity-50' if evento.oculta %>" id="sombrilla-evento-<%= evento.id %>">
+        <div class="card-body py-2 d-flex gap-3 align-items-start">
+          <div class="text-center flex-shrink-0" style="width:3.2rem;">
+            <div class="small text-uppercase text-muted"><%= l(evento.inicio, format: "%b") %></div>
+            <div class="fs-4 fw-bold lh-1"><%= evento.inicio.day %></div>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold"><%= evento.titulo %><% if evento.oculta %> <span class="badge bg-secondary">Oculto</span><% end %></div>
+            <div class="small text-muted">
+              <%= l(evento.inicio, format: "%A %-d de %B, %-I:%M %p") %><% if evento.lugar.present? %> · <%= evento.lugar %><% end %>
+            </div>
+            <% if evento.descripcion.present? %><div class="small texto-usuario mt-1"><%= evento.descripcion %></div><% end %>
+            <div class="texto-mini text-muted mt-1">Lo publicó <%= autor_en_sombrilla(evento, modera: @modera) %></div>
+          </div>
+          <%= render "sombrillas/acciones", registro: evento, tipo: "evento" %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @eventos.empty? %>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-calendar-event fs-1 d-block mb-2 opacity-25"></i>
+        <p>No hay eventos próximos en <%= @sombrilla.nombre %>.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

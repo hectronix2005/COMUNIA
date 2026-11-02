@@ -1,0 +1,83 @@
+<% content_for(:title, @sombrilla.nombre) %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <%= render "sombrillas/cabecera" %>
+
+    <% if @comunidad && current_user.visibilidad_sombrilla %>
+      <div class="card mb-3">
+        <div class="card-body py-3">
+          <%= form_with model: SombrillaPublicacion.new, url: publicar_sombrilla_path(@sombrilla), local: true, class: "d-flex flex-column gap-2" do |f| %>
+            <%= f.text_area :contenido, class: "form-control", rows: 2, maxlength: 3000, required: true,
+                  placeholder: "¿Qué quieres contarle a #{@sombrilla.nombre}?" %>
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <%= f.file_field :imagenes, multiple: true, accept: "image/png,image/jpeg,image/webp,image/gif",
+                    class: "form-control form-control-sm", style: "max-width:220px;font-size:.78rem;" %>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-send me-1"></i>Publicar</button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% @publicaciones.each do |pub| %>
+      <div class="card mb-3 <%= 'opacity-50' if pub.oculta %>" id="sombrilla-pub-<%= pub.id %>">
+        <div class="card-body pb-2">
+          <div class="d-flex align-items-start gap-2 mb-2">
+            <div class="flex-grow-1">
+              <div class="fw-bold texto-reducido"><%= autor_en_sombrilla(pub, modera: @modera) %></div>
+              <div class="text-muted texto-mini">
+                hace <%= time_ago_in_words(pub.created_at) %>
+                <% if pub.oculta %><span class="badge bg-secondary ms-1">Oculta</span><% end %>
+              </div>
+            </div>
+            <%= render "sombrillas/acciones", registro: pub, tipo: "publicacion" %>
+          </div>
+
+          <div class="texto-usuario mb-2"><%= pub.contenido %></div>
+
+          <% if pub.imagenes.attached? %>
+            <div class="d-flex gap-1 flex-wrap mb-2">
+              <% pub.imagenes.each do |img| %>
+                <%= image_tag img, style: "max-height:200px;border-radius:8px;object-fit:cover;", class: "img-fluid", alt: "" %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% comentarios = pub.comentarios.select { @modera || !_1.oculta }.sort_by(&:created_at).last(10) %>
+          <% if comentarios.any? %>
+            <div class="mt-2 pt-2 border-top">
+              <% comentarios.each do |c| %>
+                <div class="d-flex gap-2 mb-2 <%= 'opacity-50' if c.oculta %>">
+                  <div class="flex-grow-1" style="background:#f8fafc;border-radius:12px;padding:6px 10px;font-size:.82rem;">
+                    <span class="fw-bold texto-chico"><%= autor_en_sombrilla(c, modera: @modera) %></span>
+                    <span class="text-muted ms-1 texto-mini">hace <%= time_ago_in_words(c.created_at) %></span>
+                    <div class="texto-usuario"><%= c.contenido %></div>
+                  </div>
+                  <%= render "sombrillas/acciones", registro: c, tipo: "comentario" %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if @comunidad && current_user.visibilidad_sombrilla && !pub.oculta %>
+            <%= form_with url: comentar_sombrilla_path(tipo: "publicacion", id: pub.id), method: :post, local: true, class: "d-flex gap-2 mt-2" do %>
+              <input type="text" name="contenido" maxlength="1000" required class="form-control form-control-sm"
+                     placeholder="Escribe un comentario..." style="border-radius:20px;font-size:.82rem;">
+              <button type="submit" class="btn btn-sm btn-outline-primary" style="border-radius:20px;" aria-label="Comentar"><i class="bi bi-send"></i></button>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @publicaciones.empty? %>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-<%= @sombrilla.icono %> fs-1 d-block mb-2 opacity-25"></i>
+        <p>Aún no hay publicaciones en <%= @sombrilla.nombre %>.<% if @comunidad %> ¡Cuéntale algo a tus vecinos!<% end %></p>
+      </div>
+    <% end %>
+
+    <div class="mt-3"><%= paginate @publicaciones %></div>
+  </div>
+</div>

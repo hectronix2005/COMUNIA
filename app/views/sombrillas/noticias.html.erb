@@ -1,0 +1,34 @@
+<% content_for(:title, "Noticias · #{@sombrilla.nombre}") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <%= render "sombrillas/cabecera" %>
+
+    <p class="small text-muted mb-3">
+      De internet sobre <%= @sombrilla.noticias_busquedas.map { "«#{_1}»" }.to_sentence(two_words_connector: " y ", last_word_connector: " y ") %>.
+      Se actualizan cada mañana con Google Noticias.
+    </p>
+
+    <% if @noticias.empty? %>
+      <div class="card"><div class="card-body text-muted small">Aún no hay noticias. Llegan cada mañana.</div></div>
+    <% end %>
+
+    <% @noticias.each do |noticia| %>
+      <div class="card mb-2 <%= 'opacity-50' if noticia.oculta %>" id="noticia-<%= noticia.id %>">
+        <div class="card-body py-2 d-flex gap-2 align-items-start">
+          <div class="flex-grow-1">
+            <%= link_to noticia.titulo, noticia.url, target: "_blank", rel: "noopener noreferrer nofollow",
+                  class: "fw-semibold text-decoration-none d-block" %>
+            <div class="small text-muted mt-1">
+              <% if noticia.medio %><%= noticia.medio %> · <% end %>
+              <span title="<%= l(noticia.publicada_en, format: :long) %>">hace <%= time_ago_in_words(noticia.publicada_en) %></span>
+            </div>
+          </div>
+          <%= render "sombrillas/acciones", registro: noticia, tipo: "noticia" %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="mt-3"><%= paginate @noticias %></div>
+  </div>
+</div>

@@ -138,7 +138,7 @@
                 %>
                 <%# ── Comunidad ── %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/noticias') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/noticias') || request.path.start_with?('/sombrillas') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-people-fill"></i> Comunidad
                   </a>
@@ -167,6 +167,24 @@
                       <% end %>
                     </li>
                     <li><hr class="dropdown-divider my-1"></li>
+                    <% if sombrillas_del_usuario.any? || current_user.rol_ref&.es_super_admin? %>
+                      <li><h6 class="dropdown-header menu-grupo">CERCA DE TI</h6></li>
+                      <% sombrillas_del_usuario.each do |s| %>
+                        <li>
+                          <%= link_to sombrilla_path(s), class: "dropdown-item #{'active' if request.path.start_with?("/sombrillas/#{s.slug}")}" do %>
+                            <i class="bi bi-<%= s.icono %> me-2"></i><%= s.nombre %>
+                          <% end %>
+                        </li>
+                      <% end %>
+                      <% if current_user.rol_ref&.es_super_admin? %>
+                        <li>
+                          <%= link_to sombrillas_path, class: "dropdown-item #{'active' if request.path == '/sombrillas'}" do %>
+                            <i class="bi bi-map me-2"></i>Barrios y ciudades
+                          <% end %>
+                        </li>
+                      <% end %>
+                      <li><hr class="dropdown-divider my-1"></li>
+                    <% end %>
                     <li><h6 class="dropdown-header menu-grupo">MIEMBROS</h6></li>
                     <li>
                       <%= link_to directorio_index_path, class: "dropdown-item #{'active' if request.path.start_with?('/directorio')}" do %>

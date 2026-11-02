@@ -1,0 +1,90 @@
+<% content_for(:title, "Cerca de ti") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h4 class="fw-bold mb-1"><i class="bi bi-houses me-2 text-oro"></i>Cerca de ti</h4>
+    <p class="small text-muted mb-3">
+      Tu barrio, tu localidad y tu ciudad: los forman todas las comunidades que están ahí. Hay muro, eventos y
+      noticias; el chat, el directorio y lo demás de tu comunidad nunca salen de ella.
+    </p>
+
+    <% if @mias.any? %>
+      <div class="list-group mb-4">
+        <% @mias.each do |s| %>
+          <%= link_to sombrilla_path(s), class: "list-group-item list-group-item-action d-flex align-items-center gap-3" do %>
+            <i class="bi bi-<%= s.icono %> fs-4 text-oro"></i>
+            <div>
+              <div class="fw-semibold"><%= s.nombre %></div>
+              <div class="small text-muted"><%= s.nivel_nombre %> · <%= pluralize(s.comunidades_debajo.count, "comunidad", plural: "comunidades") %></div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% elsif !superadmin? %>
+      <div class="card mb-4"><div class="card-body small text-muted">
+        Tu comunidad aún no está en ningún barrio. Si es un edificio o un conjunto, pídele al equipo de COMUNIA que la ubique.
+      </div></div>
+    <% end %>
+
+    <% if superadmin? %>
+      <h5 class="fw-bold mt-4">Catálogo (solo superadmin)</h5>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="fw-semibold">Barrio nuevo</h6>
+          <%= form_with url: crear_sombrillas_path, method: :post, local: true, class: "row g-2 align-items-end" do %>
+            <div class="col-sm-5">
+              <%= label_tag :nombre, "Nombre", class: "form-label small" %>
+              <%= text_field_tag :nombre, nil, class: "form-control", required: true, maxlength: 60 %>
+            </div>
+            <div class="col-sm-5">
+              <%= label_tag :padre_id, "Localidad", class: "form-label small" %>
+              <%= select_tag :padre_id, options_from_collection_for_select(@localidades, :id, ->(l) { "#{l.nombre} (#{l.padre&.nombre})" }),
+                    class: "form-select", required: true %>
+            </div>
+            <div class="col-sm-2"><button class="btn btn-primary w-100">Crear</button></div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="fw-semibold">Comunidades de categoría <%= Sombrilla::CATEGORIA_ANCLABLE %></h6>
+          <% if @anclables.empty? %>
+            <p class="small text-muted mb-0">No hay ninguna.</p>
+          <% end %>
+          <% @anclables.each do |comunidad| %>
+            <%= form_with url: anclar_sombrillas_path, method: :patch, local: true, class: "row g-2 align-items-center mb-2" do %>
+              <%= hidden_field_tag :logia_id, comunidad.id, id: nil %>
+              <div class="col-sm-5 small fw-semibold"><%= comunidad.nombre %></div>
+              <div class="col-sm-5">
+                <%= select_tag :sombrilla_id,
+                      options_from_collection_for_select(@barrios, :id, ->(b) { "#{b.nombre} (#{b.padre.nombre})" }, comunidad.sombrilla_id),
+                      include_blank: "Sin barrio", class: "form-select form-select-sm", id: "barrio_#{comunidad.id}",
+                      aria: { label: "Barrio de #{comunidad.nombre}" } %>
+              </div>
+              <div class="col-sm-2"><button class="btn btn-sm btn-outline-primary w-100">Guardar</button></div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="fw-semibold">Barrios</h6>
+          <ul class="small mb-0">
+            <% @barrios.each do |b| %>
+              <li>
+                <%= link_to b.nombre, sombrilla_path(b) %> (<%= b.padre.nombre %>):
+                <%= b.comunidades.map(&:nombre).to_sentence.presence || "sin comunidades" %>
+              </li>
+            <% end %>
+          </ul>
+          <p class="small text-muted mt-2 mb-0">
+            Ciudades: <%= @ciudades.map(&:nombre).to_sentence %>. Localidades: <%= @localidades.size %>.
+          </p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

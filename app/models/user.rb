@@ -96,6 +96,23 @@ class User < ApplicationRecord
     "#{nombre} #{apellido}"
   end
 
+  # Cómo aparece en las sombrillas (barrio, localidad, ciudad): lo elige cada uno la primera vez que entra.
+  # Mientras no elija (nil) puede mirar pero no publicar. Admins y superadmin ven siempre el nombre completo.
+  VISIBILIDADES_SOMBRILLA = {
+    "completo" => "Con mi nombre completo",
+    "inicial" => "Con mi nombre y la inicial del apellido",
+    "anonimo" => "Sin nombre, solo de qué comunidad soy"
+  }.freeze
+  validates :visibilidad_sombrilla, inclusion: { in: VISIBILIDADES_SOMBRILLA.keys }, allow_nil: true
+
+  # nil si no muestra su nombre. Con otro valor, cómo se vería con esa opción.
+  def nombre_en_sombrilla(valor = visibilidad_sombrilla)
+    case valor
+    when "completo" then nombre_completo.squish
+    when "inicial" then [nombre, apellido.to_s.first&.then { "#{_1}." }].compact.join(" ")
+    end
+  end
+
   # ── Varias comunidades ───────────────────────────────────────
   # La ficha de la comunidad que se está mirando (Current.organizacion, la pone ApplicationController) o, fuera
   # de una petición, la de la comunidad activa de la cuenta. Así, en Uniandes se ve la ficha de Uniandes de

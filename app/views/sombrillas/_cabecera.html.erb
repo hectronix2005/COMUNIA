@@ -1,0 +1,49 @@
+<%# Cabecera de una sombrilla: nombre, los niveles de la cuenta (barrio, localidad, ciudad), pestañas y cómo aparece. %>
+<%
+  rutas = {
+    "show" => ->(s) { sombrilla_path(s) }, "eventos" => ->(s) { eventos_sombrilla_path(s) },
+    "noticias" => ->(s) { noticias_sombrilla_path(s) }
+  }
+  ruta_actual = rutas.fetch(action_name, rutas["show"])
+%>
+<div class="mb-3">
+  <div class="d-flex align-items-center gap-2">
+    <i class="bi bi-<%= @sombrilla.icono %> fs-3 text-oro"></i>
+    <div>
+      <h4 class="fw-bold mb-0"><%= @sombrilla.nombre %></h4>
+      <div class="small text-muted">
+        <%= @sombrilla.nivel_nombre %><% if @sombrilla.padre %> en <%= @sombrilla.cadena.drop(1).map(&:nombre).join(", ") %><% end %>
+        · <%= pluralize(@sombrilla.comunidades_debajo.count, "comunidad", plural: "comunidades") %>
+      </div>
+    </div>
+  </div>
+
+  <% if @cadena.size > 1 %>
+    <div class="d-flex flex-wrap gap-1 mt-2" aria-label="Tus sombrillas">
+      <% @cadena.each do |s| %>
+        <%= link_to ruta_actual.call(s), class: "btn btn-sm #{s == @sombrilla ? 'btn-primary' : 'btn-outline-secondary'}" do %>
+          <i class="bi bi-<%= s.icono %> me-1"></i><%= s.nombre %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <ul class="nav nav-tabs mt-3">
+    <% [["show", "newspaper", "Muro"], ["eventos", "calendar-event", "Eventos"], ["noticias", "globe2", "Noticias"]].each do |accion, icono, texto| %>
+      <li class="nav-item">
+        <%= link_to rutas[accion].call(@sombrilla), class: "nav-link #{'active' if action_name == accion}", aria: { current: ("page" if action_name == accion) } do %>
+          <i class="bi bi-<%= icono %> me-1"></i><%= texto %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<% if @comunidad %>
+  <%= render "sombrillas/visibilidad" %>
+<% elsif superadmin? %>
+  <p class="small text-muted">Miras como superadmin: no publicas aquí porque no eres de ninguna comunidad de <%= @sombrilla.nombre %>.</p>
+<% end %>
+<% if @modera %>
+  <p class="small text-muted"><i class="bi bi-shield-check me-1"></i>Moderas aquí: ves los nombres completos y lo oculto, y puedes ocultar.</p>
+<% end %>

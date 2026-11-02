@@ -1,0 +1,38 @@
+<%# Menú de lo publicado en una sombrilla: reportar, ocultar o mostrar (moderadores) y eliminar (autor o moderador). %>
+<% propio = registro.respond_to?(:user_id) && registro.user_id == current_user.id %>
+<% reportable = tipo != "noticia" && @comunidad && !propio %>
+<% borrable = tipo != "noticia" && (@modera || propio) %>
+<% if reportable || @modera || borrable %>
+  <div class="dropdown">
+    <button type="button" class="btn btn-link btn-sm text-muted p-0" data-bs-toggle="dropdown" aria-label="Opciones">
+      <i class="bi bi-three-dots"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <% if reportable %>
+        <li>
+          <% if registro.reportado_por?(current_user) %>
+            <span class="dropdown-item text-muted">Ya lo reportaste</span>
+          <% else %>
+            <%= button_to "Reportar", reportar_sombrilla_path(tipo: tipo, id: registro.id), method: :post, class: "dropdown-item",
+                  form: { data: { turbo_confirm: "¿Reportarlo? Si lo reportan vecinos de #{ContenidoDeSombrilla::REPORTES_PARA_OCULTAR} comunidades distintas, se oculta." } } %>
+          <% end %>
+        </li>
+      <% end %>
+      <% if @modera %>
+        <li>
+          <% if registro.oculta %>
+            <%= button_to "Mostrar", mostrar_sombrilla_path(tipo: tipo, id: registro.id), method: :patch, class: "dropdown-item" %>
+          <% else %>
+            <%= button_to "Ocultar", ocultar_sombrilla_path(tipo: tipo, id: registro.id), method: :patch, class: "dropdown-item" %>
+          <% end %>
+        </li>
+      <% end %>
+      <% if borrable %>
+        <li>
+          <%= button_to "Eliminar", eliminar_sombrilla_path(tipo: tipo, id: registro.id), method: :delete, class: "dropdown-item text-danger",
+                form: { data: { turbo_confirm: "¿Eliminarlo?" } } %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

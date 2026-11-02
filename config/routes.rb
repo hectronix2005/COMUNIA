@@ -269,6 +269,29 @@ Rails.application.routes.draw do
   patch "noticias/:id/ocultar",   to: "noticias#ocultar",       as: :ocultar_noticia
   patch "noticias/:id/mostrar",   to: "noticias#mostrar",       as: :mostrar_noticia
 
+  # Sombrillas (barrio, localidad, ciudad): muro, eventos y noticias para las comunidades ancladas debajo.
+  # Lo publicado se comenta, reporta, oculta o borra por su tipo, de una lista blanca.
+  constraints(tipo: /publicacion|comentario|evento|noticia/) do
+    post   "sombrillas/:tipo/:id/comentar", to: "sombrilla_contenidos#comentar", as: :comentar_sombrilla
+    post   "sombrillas/:tipo/:id/reportar", to: "sombrilla_contenidos#reportar", as: :reportar_sombrilla
+    patch  "sombrillas/:tipo/:id/ocultar",  to: "sombrilla_contenidos#ocultar",  as: :ocultar_sombrilla
+    patch  "sombrillas/:tipo/:id/mostrar",  to: "sombrilla_contenidos#mostrar",  as: :mostrar_sombrilla
+    delete "sombrillas/:tipo/:id",          to: "sombrilla_contenidos#eliminar", as: :eliminar_sombrilla
+  end
+  resources :sombrillas, only: [:index, :show], param: :slug do
+    member do
+      get :eventos
+      get :noticias
+      post :publicar
+      post :crear_evento
+    end
+    collection do
+      patch :visibilidad
+      post :crear
+      patch :anclar
+    end
+  end
+
   resources :encuestas, only: [:index, :show, :new, :create] do
     member do
       post :votar

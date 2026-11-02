@@ -15,6 +15,8 @@ class Logia < ApplicationRecord
   has_many :tarifas, dependent: :destroy
   has_many :solicitudes_acceso, class_name: "SolicitudAcceso", dependent: :destroy
   has_many :noticias, dependent: :delete_all
+  # El barrio (sombrilla) al que está anclada; solo comunidades de categoría Barrio. Ver Sombrilla.
+  belongs_to :sombrilla, optional: true
   has_one_attached :logo
   validates_attachment :logo, types: :image, max: 5.megabytes
 
@@ -53,6 +55,11 @@ class Logia < ApplicationRecord
     errors.add(:noticias_busquedas, "deben tener entre 3 y 80 letras") if noticias_busquedas.any? { !_1.length.between?(3, 80) }
     errors.add(:noticias_busquedas, "necesitan al menos una búsqueda") if noticias_activas && noticias_busquedas.empty?
     errors.add(:noticias_activas, "se encienden en la comunidad, no en uno de sus grupos") if noticias_activas && tenant_id
+  end
+  validate if: :sombrilla_id do
+    errors.add(:sombrilla, "se ancla la comunidad, no uno de sus grupos") if tenant_id
+    errors.add(:sombrilla, "debe ser un barrio") unless sombrilla&.nivel == "barrio"
+    errors.add(:sombrilla, "solo para comunidades de categoría #{Sombrilla::CATEGORIA_ANCLABLE}") unless categoria&.nombre == Sombrilla::CATEGORIA_ANCLABLE
   end
   before_validation :generar_slug, if: -> { tenant_id.nil? && slug.blank? && nombre.present? }
 

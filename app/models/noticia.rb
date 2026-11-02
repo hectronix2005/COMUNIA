@@ -3,7 +3,10 @@
 # titular, el medio, la fecha y el enlace al artículo. El admin puede ocultar la que no sirva.
 class Noticia < ApplicationRecord
   self.table_name = "noticias"
-  belongs_to :logia
+  # De una comunidad o de una sombrilla (barrio, localidad, ciudad); nunca de las dos.
+  belongs_to :logia, optional: true
+  belongs_to :sombrilla, optional: true
+  validate { errors.add(:base, "es de una comunidad o de una sombrilla") unless logia_id.present? ^ sombrilla_id.present? }
 
   # Cuántas se guardan por comunidad y cuántos días duran.
   MAXIMO = 60

@@ -1,0 +1,35 @@
+<%# Cómo aparece la cuenta en sus sombrillas. Sin elegir, la pregunta va abierta y no se puede publicar. %>
+<% elegida = current_user.visibilidad_sombrilla %>
+<% formulario = capture do %>
+  <%= form_with url: visibilidad_sombrillas_path, method: :patch, local: true do %>
+    <% User::VISIBILIDADES_SOMBRILLA.each do |valor, texto| %>
+      <div class="form-check mb-1">
+        <%= radio_button_tag :visibilidad, valor, elegida == valor, class: "form-check-input", id: "visibilidad_#{valor}", required: true %>
+        <label class="form-check-label" for="visibilidad_<%= valor %>">
+          <%= texto %> <span class="text-muted small"><%= ejemplo_visibilidad(current_user, valor, @comunidad) %></span>
+        </label>
+      </div>
+    <% end %>
+    <button type="submit" class="btn btn-sm btn-primary mt-2">Guardar</button>
+  <% end %>
+<% end %>
+
+<% if elegida.nil? %>
+  <div class="card border-warning mb-3">
+    <div class="card-body">
+      <h6 class="fw-bold">¿Cómo quieres aparecer en <%= @cadena.map(&:nombre).to_sentence(two_words_connector: " y ", last_word_connector: " y ") %>?</h6>
+      <p class="small text-muted mb-2">
+        Aquí te leen personas de otras comunidades. Elige una vez y cámbialo cuando quieras. Los admins de las
+        comunidades y el equipo de COMUNIA ven siempre tu nombre completo.
+      </p>
+      <%= formulario %>
+    </div>
+  </div>
+<% else %>
+  <details class="small mb-3">
+    <summary class="text-muted">
+      Apareces como <strong><%= ejemplo_visibilidad(current_user, elegida, @comunidad) %></strong> · Cambiar
+    </summary>
+    <div class="card card-body mt-2"><%= formulario %></div>
+  </details>
+<% end %>
