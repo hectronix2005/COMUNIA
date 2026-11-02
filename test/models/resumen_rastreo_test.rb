@@ -8,7 +8,8 @@ class ResumenRastreoTest < ActiveSupport::TestCase
     @nelson = vecino("Nelson")
     @david = vecino("David")
     @hernan = vecino("Hernán")
-    [@david, @hernan].each { _1.update_columns(invitation_token: SecureRandom.hex(8), invitation_sent_at: 1.day.ago) }
+    # Como los genera la ficha del miembro: enlace sin correo, así que invitation_sent_at queda vacío.
+    [@david, @hernan].each { _1.update_columns(invitation_token: SecureRandom.hex(8), invitation_created_at: 1.day.ago) }
     rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
     @super = User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
                           password: "password123", rol_ref: rol)

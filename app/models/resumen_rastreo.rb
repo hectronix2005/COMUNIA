@@ -76,9 +76,11 @@ class ResumenRastreo
     end
   end
 
-  # Invitaciones vigentes sin aceptar de quien ese día no apareció.
+  # Invitaciones vigentes sin aceptar de quien ese día no apareció. Los enlaces se generan sin correo
+  # (skip_invitation), así que la fecha es invitation_created_at: invitation_sent_at queda vacío.
   def sin_entrar
-    @sin_entrar ||= User.invitation_not_accepted.where(invitation_sent_at: User.invite_for.ago(fin)..fin)
+    @sin_entrar ||= User.invitation_not_accepted.where.not(invitation_token: nil)
+                        .where(invitation_created_at: User.invite_for.ago(fin)..fin)
                         .where.not(id: self.class.sin_contar).where.not(id: invitaciones_abiertas.map { _1.first.id } + personas.map { _1[:user].id })
                         .order(:nombre).to_a
   end
