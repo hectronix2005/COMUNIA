@@ -42,7 +42,7 @@ module GuiaHelper
     if logia.modulo?(:negocios)
       biblioteca << guia_item("bi-briefcase", "Negocios", "Lo que ofrecen los miembros: contrata y recomienda entre la comunidad.", negocios_path)
     end
-    secciones << ["Biblioteca y más", biblioteca] if biblioteca.any?
+    secciones << [(logia.modulo?(:biblioteca) ? "Biblioteca y más" : "Más herramientas"), biblioteca] if biblioteca.any?
 
     cuenta = []
     if current_user.miembro.present?

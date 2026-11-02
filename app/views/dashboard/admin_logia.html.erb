@@ -9,7 +9,7 @@
   <%= render "reuniones/proxima" %>
   <%= render "dashboard/mis_acuerdos" %>
   <%# Lo que le toca hoy a quien administra, antes que los módulos plegados. %>
-  <% if @soporte_adjunto.positive? %>
+  <% if current_logia.modulo?(:tesoreria) && @soporte_adjunto.positive? %>
     <%= link_to cobros_path(estado: "soporte_adjunto"), class: "acceso mb-4" do %>
       <span class="icono-chip chip-info"><i class="bi bi-paperclip"></i></span>
       <span class="flex-grow-1 min-w-0">
@@ -35,6 +35,7 @@
     </div>
   </div>
 
+  <% if current_logia.modulo?(:tesoreria) %>
   <%# ---- Tesorería ---- %>
   <section class="modulo">
     <button class="modulo-cabecera" type="button" data-bs-toggle="collapse" data-bs-target="#tesoreriaBody"
@@ -146,6 +147,7 @@
       </div>
     </div>
   </section>
+  <% end %>
 
   <%# ---- Comunidad ---- %>
   <section class="modulo">
@@ -211,7 +213,7 @@
               aria-expanded="false" aria-controls="bibliotecaBody">
         <span class="icono-chip"><i class="bi bi-book-half"></i></span>
         <span>
-          <span class="modulo-titulo d-block">Biblioteca</span>
+          <span class="modulo-titulo d-block"><%= current_logia.modulo?(:biblioteca) ? "Biblioteca" : current_logia.t_documentos %></span>
           <span class="modulo-detalle"><%= [(current_logia.t_documentos if current_logia.modulo?(:documentos)), ("Libros" if current_logia.modulo?(:biblioteca))].compact.join(" · ") %></span>
         </span>
         <i class="bi bi-chevron-down"></i>

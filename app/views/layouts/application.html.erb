@@ -217,7 +217,7 @@
                     <% end %>
                     <% if _tiene_biblioteca %>
                       <% if _tiene_tesoreria %><li><hr class="dropdown-divider my-1"></li><% end %>
-                      <li><h6 class="dropdown-header menu-grupo">BIBLIOTECA</h6></li>
+                      <li><h6 class="dropdown-header menu-grupo"><%= current_logia.modulo?(:biblioteca) ? "BIBLIOTECA" : current_logia.t_documentos.upcase %></h6></li>
                     <% if current_logia.modulo?(:documentos) %>
                     <li>
                       <%= link_to biblioteca_planchas_path, class: "dropdown-item #{'active' if request.path.start_with?('/biblioteca/planchas')}" do %>

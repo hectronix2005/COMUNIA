@@ -109,6 +109,30 @@ class CategoriasTest < ActionDispatch::IntegrationTest
     assert_no_match "Actas", response.body
   end
 
+  test "sin tesorería ni biblioteca, ningún inicio enseña cobros, y los documentos se llaman como en la comunidad" do
+    @cedritos.update!(modulos_propios: "1", modulos: %w[documentos reuniones])
+    sign_in persona("Yo", @cedritos)
+    get "/t/#{@cedritos.slug}/dashboard"
+    assert_response :ok
+    assert_select "#mis-cobros", 0
+    assert_select "#pay-bar", 0
+    assert_select ".modulo-titulo", text: "Actas"
+    assert_select ".modulo-titulo", text: "Biblioteca", count: 0
+
+    rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
+    sign_in User.create!(nombre: "Super", apellido: "Panel", email: "superp_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", rol_ref: rol)
+    get "/t/#{@cedritos.slug}/dashboard"
+    assert_response :ok
+    assert_select "#tesoreriaBody", 0
+    assert_select ".modulo-titulo", text: "Tesorería", count: 0
+    assert_select ".modulo-titulo", text: "Actas"
+
+    @cedritos.update!(modulos_propios: "0")
+    get "/t/#{@cedritos.slug}/dashboard"
+    assert_select "#tesoreriaBody", 1, "con la categoría, que trae tesorería, vuelve"
+  end
+
   test "solo el superadmin, desde el panel de plataforma, elige los módulos de una comunidad" do
     sign_in persona("Admin", @cedritos)
     patch "/tenants/#{@cedritos.id}", params: { logia: { modulos_propios: "1", modulos: %w[biblioteca] } }

@@ -9,6 +9,7 @@
   <%= render "dashboard/mis_acuerdos" %>
   <%= render "calendario/proximos" %>
 
+  <% if current_logia.modulo?(:tesoreria) %>
   <% if @vencidos.any? %>
     <div class="alert alert-danger d-flex align-items-center mb-4">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -33,6 +34,7 @@
       </div>
     <% end %>
   </div>
+  <% end %>
 
   <section class="modulo">
     <button class="modulo-cabecera" type="button" data-bs-toggle="collapse" data-bs-target="#miembroComunidadBody"
@@ -70,7 +72,7 @@
               aria-expanded="false" aria-controls="miembroBibliotecaBody">
         <span class="icono-chip"><i class="bi bi-book-half"></i></span>
         <span>
-          <span class="modulo-titulo d-block">Biblioteca</span>
+          <span class="modulo-titulo d-block"><%= current_logia.modulo?(:biblioteca) ? "Biblioteca" : current_logia.t_documentos %></span>
           <span class="modulo-detalle"><%= [(current_logia.t_documentos + " (#{@biblioteca_planchas_count || 0})" if current_logia.modulo?(:documentos)), ("Libros (#{@biblioteca_libros_count || 0})" if current_logia.modulo?(:biblioteca))].compact.join(" · ") %></span>
         </span>
         <i class="bi bi-chevron-down"></i>
@@ -133,6 +135,7 @@
     </section>
   <% end %>
 
+<% if current_logia.modulo?(:tesoreria) %>
 <%# ---- Tabla de Cobros ---- %>
   <% cobros_seleccionables = @cobros.select(&:puede_adjuntar_soporte?) %>
 
@@ -202,8 +205,10 @@
       <% end %>
     </div>
   </div>
+<% end %>
 </div>
 
+<% if current_logia.modulo?(:tesoreria) %>
 <%# ---- Barra fija inferior de pago ---- %>
 <% if cobros_seleccionables.any? %>
 <div id="pay-bar" class="pay-bar" style="display: none;">
@@ -232,6 +237,7 @@
     </div>
   </div>
 </div>
+<% end %>
 <% end %>
 
 <style>
