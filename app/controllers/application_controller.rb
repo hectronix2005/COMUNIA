@@ -3,6 +3,8 @@ class ApplicationController < ActionController::Base
   include AlcanceReuniones
 
   allow_browser versions: :modern
+  # La primera, para que cuente también lo que cortan las demás (sin sesión, sin permiso).
+  prepend_around_action :rastrear_peticion
   before_action :capture_tenant_slug_from_script_name
   before_action :clear_tenant_context_on_platform_login
   before_action :authenticate_user!
@@ -282,6 +284,37 @@ class ApplicationController < ActionController::Base
   def after_sign_out_path_for(resource_or_scope)
     m = request.script_name.to_s.match(%r{\A/t/([a-z0-9][a-z0-9\-_]*)\z})
     m ? "/t/#{m[1]}/login" : new_user_session_path
+  end
+
+  # Rastreo de pruebas (config/initializers/ahoy.rb): cada petición deja un evento «Petición» con la ruta sin
+  # query string, qué acción la atendió, su estado, lo que tardó y el aviso que vio la persona. Nunca los
+  # parámetros: ahí van lo escrito en los formularios y las contraseñas.
+  def rastrear_peticion
+    inicio = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    yield
+    registrar_peticion(inicio, response.status)
+    terminada = true
+  rescue Exception => e # rubocop:disable Lint/RescueException -- se anota y se vuelve a lanzar
+    terminada = true
+    registrar_peticion(inicio, ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name), error: e.class.name)
+    raise
+  ensure
+    # Devise corta con throw :warden (sin sesión): ni vuelve del yield ni es una excepción.
+    registrar_peticion(inicio, 401, destino: "login") unless terminada
+  end
+
+  def registrar_peticion(inicio, estado, error: nil, destino: nil)
+    # Turbo pide por adelantado el enlace bajo el ratón: eso no es una visita.
+    return if ahoy.exclude? || request.headers["X-Sec-Purpose"] == "prefetch"
+    destino ||= URI.parse(response.location.to_s).path if response.redirect?
+    ahoy.track("Petición", {
+      ruta: request.path, accion: "#{controller_path}##{action_name}", metodo: request.request_method,
+      estado:, ms: ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - inicio) * 1000).round,
+      formato: request.format&.symbol&.to_s, marco: request.headers["Turbo-Frame"], destino:, error:,
+      alerta: flash[:alert].presence&.to_s&.truncate(200), aviso: flash[:notice].presence&.to_s&.truncate(200)
+    }.compact)
+  rescue StandardError => e
+    Rails.logger.warn("rastreo: #{e.class}: #{e.message}")
   end
 
   def track_last_seen

@@ -147,6 +147,11 @@ Rails.application.routes.draw do
   get   "errores/:id",          to: "errores#show",     as: :error_registrado
   patch "errores/:id/resolver", to: "errores#resolver", as: :resolver_error
 
+  # Rastreo de las pruebas «family and friends» (config/initializers/ahoy.rb), del superadmin.
+  get "rastreo",              to: "rastreo#index",   as: :rastreo
+  get "rastreo/personas/:id", to: "rastreo#persona", as: :rastreo_persona
+  get "rastreo/visitas/:id",  to: "rastreo#visita",  as: :rastreo_visita
+
   resources :categorias, except: :show
   resources :tenants, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     member do

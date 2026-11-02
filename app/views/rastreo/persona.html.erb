@@ -1,0 +1,45 @@
+<% titulo = @persona ? @persona.nombre_completo : "Visita sin sesión" %>
+<% content_for(:title, "Rastreo · #{titulo}") %>
+
+<p><%= link_to "← Rastreo", rastreo_path %></p>
+<h1 class="h3"><%= titulo %></h1>
+<% if @persona %>
+  <p class="small text-muted"><%= @persona.username %> · <%= @persona.email %>
+    <% if @persona.last_seen_at %>· visto por última vez <%= l @persona.last_seen_at, format: :short %><% end %></p>
+<% end %>
+
+<% if @visitas.empty? %>
+  <p class="text-muted">Sin visitas.</p>
+<% end %>
+
+<% @visitas.each do |visita| %>
+  <% eventos = visita.events.sort_by(&:time) %>
+  <% fin = eventos.last&.time || visita.started_at %>
+  <div class="card mb-4" id="visita-<%= visita.id %>">
+    <div class="card-header">
+      <strong><%= l visita.started_at, format: :long %></strong>
+      · duró <%= duracion_rastreo(fin - visita.started_at) %> · <%= eventos.size %> eventos
+      <div class="small text-muted">
+        <%= [visita.device_type, visita.browser, visita.os].compact.join(", ") %> · IP <%= visita.ip %>
+        · entró por <%= visita.landing_page %><% if visita.referrer %> desde <%= visita.referrer %><% end %>
+        · terminó en <strong><%= final_de_visita(eventos) || "—" %></strong>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle small">
+        <thead><tr><th>Hora</th><th>Qué</th><th>Dónde</th><th>Detalle</th></tr></thead>
+        <tbody>
+          <% eventos.each do |evento| %>
+            <% donde, detalle, fila = lectura_evento(evento) %>
+            <tr class="<%= fila %>">
+              <td class="text-nowrap"><%= evento.time.in_time_zone.strftime("%H:%M:%S") %></td>
+              <td class="text-nowrap"><%= tipo_evento(evento) %></td>
+              <td class="text-break"><%= donde %></td>
+              <td class="text-break"><%= detalle %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>

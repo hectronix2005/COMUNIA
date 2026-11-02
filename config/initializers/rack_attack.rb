@@ -72,6 +72,12 @@ class Rack::Attack
     req.ip if req.path.start_with?("/red/buscar")
   end
 
+  # Eventos del rastreo de pruebas (/ahoy, config/initializers/ahoy.rb): abiertos a quien tenga la cookie de
+  # visita, así que contra el relleno de la base.
+  throttle("rastreo/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.path.match?(%r{\A(/t/[^/]+)?/ahoy/})
+  end
+
   # 5) Ráfaga global por IP para mitigar scraping/DoS.
   throttle("req/ip", limit: 300, period: 1.minute) do |req|
     req.ip unless req.path.start_with?("/up", "/assets/")

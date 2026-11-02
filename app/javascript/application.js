@@ -2,6 +2,7 @@
 import "@hotwired/turbo-rails"
 import "controllers"
 import * as bootstrap from "bootstrap"
+import "rastreo"
 
 // Initialize Bootstrap popovers on page load and Turbo navigation
 function initPopovers() {

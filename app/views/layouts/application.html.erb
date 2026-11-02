@@ -14,6 +14,8 @@
     <meta name="vapid-public-key" content="<%= Rails.application.config.x.vapid[:public_key] %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%# Rastreo de pruebas (app/javascript/rastreo.js); los layouts de Denuncias y la red no lo llevan. %>
+    <meta name="rastreo" content="on">
     <%= render "layouts/vista_previa",
                titulo: content_for(:title) || (_logia ? _logia.nombre_display : "COMUNIA, tu comunidad en un solo lugar"),
                descripcion: "Reuniones, avisos, cobros y conversaciones de tu comunidad, en un solo lugar." %>
@@ -86,6 +88,11 @@
                   <%= link_to errores_path, class: "nav-link #{'active' if request.path.start_with?('/errores')}" do %>
                     <i class="bi bi-bug"></i> Errores
                     <% if (abiertos = ErrorApp.abiertos.count) > 0 %><span class="badge bg-danger"><%= abiertos %></span><% end %>
+                  <% end %>
+                </li>
+                <li class="nav-item">
+                  <%= link_to rastreo_path, class: "nav-link #{'active' if request.path.start_with?('/rastreo')}" do %>
+                    <i class="bi bi-activity"></i> Rastreo
                   <% end %>
                 </li>
                 <% if current_user.tiene_permiso?("roles", "index") %>

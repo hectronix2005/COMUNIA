@@ -1,0 +1,47 @@
+<% content_for(:title, "Rastreo") %>
+
+<div class="mb-4">
+  <h1><i class="bi bi-activity"></i> Rastreo de pruebas</h1>
+  <small class="text-muted">Qué hace cada persona: visitas, páginas, tiempo a la vista, clics y errores. No incluye Denuncias,
+    la red ni lo escrito en los formularios. Se borra a mano cuando acaben las pruebas.</small>
+</div>
+
+<h2 class="h5">Personas (<%= @orden.size %>)</h2>
+<% if @orden.empty? %>
+  <p class="text-muted">Nadie todavía.</p>
+<% else %>
+  <div class="table-responsive mb-4">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr><th>Persona</th><th class="text-end">Visitas</th><th class="text-end">Eventos</th><th class="text-end">Tiempo a la vista</th><th class="text-end">Errores</th><th>Última actividad</th></tr>
+      </thead>
+      <tbody>
+        <% @orden.each do |id| %>
+          <% persona = @personas[id] %>
+          <tr>
+            <td><%= link_to(persona ? persona.nombre_completo : "Usuario #{id}", rastreo_persona_path(id)) %>
+              <div class="small text-muted"><%= persona&.username %></div></td>
+            <td class="text-end"><%= @numero_visitas[id] %></td>
+            <td class="text-end"><%= @eventos[id].to_i %></td>
+            <td class="text-end text-nowrap"><%= duracion_rastreo(@segundos[id]) %></td>
+            <td class="text-end"><% if (n = @errores[id].to_i).positive? %><span class="badge bg-danger"><%= n %></span><% else %>0<% end %></td>
+            <td class="small text-nowrap"><%= l((@ultimo_evento[id] || @ultima[id]), format: :short) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<h2 class="h5">Sin sesión (últimas <%= @anonimas.size %>)</h2>
+<p class="small text-muted">Visitas de quien no ha entrado. Si luego entra en la misma visita, pasa a su nombre.</p>
+<% if @anonimas.empty? %>
+  <p class="text-muted">Ninguna.</p>
+<% else %>
+  <ul class="list-unstyled small">
+    <% @anonimas.each do |visita| %>
+      <li><%= link_to l(visita.started_at, format: :short), rastreo_visita_path(visita) %> — <%= visita.landing_page %>
+        · <%= [visita.device_type, visita.browser, visita.os].compact.join(", ") %> · <%= @eventos_anonimas[visita.id].to_i %> eventos</li>
+    <% end %>
+  </ul>
+<% end %>
