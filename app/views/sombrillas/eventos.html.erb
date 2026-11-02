@@ -43,7 +43,7 @@
           <div class="flex-grow-1">
             <div class="fw-semibold"><%= evento.titulo %><% if evento.oculta %> <span class="badge bg-secondary">Oculto</span><% end %></div>
             <div class="small text-muted">
-              <%= l(evento.inicio, format: "%A %-d de %B, %-I:%M %p") %><% if evento.lugar.present? %> · <%= evento.lugar %><% end %>
+              <%= l(evento.inicio, format: "%A %-d de %B, %-I:%M %P") %><% if evento.lugar.present? %> · <%= evento.lugar %><% end %>
             </div>
             <% if evento.descripcion.present? %><div class="small texto-usuario mt-1"><%= evento.descripcion %></div><% end %>
             <div class="texto-mini text-muted mt-1">Lo publicó <%= autor_en_sombrilla(evento, modera: @modera) %></div>

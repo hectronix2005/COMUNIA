@@ -235,8 +235,8 @@ es:
     order:     [day, month, year]
 
   time:
-    am: "am"
-    pm: "pm"
+    am: "a. m."
+    pm: "p. m."
     formats:
       default: "%d/%m/%Y %H:%M"
       short:   "%d %b %H:%M"
