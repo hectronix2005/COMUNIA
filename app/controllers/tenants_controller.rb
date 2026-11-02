@@ -146,6 +146,6 @@ class TenantsController < ApplicationController
     params.require(:logia).permit(:nombre, :codigo, :slug, :tenant_id, :categoria_id,
                                   :nombre_app, :icono, :lema, :color_primario,
                                   :termino_miembro, :termino_logia, :termino_cobro,
-                                  :logo)
+                                  :logo, :modulos_propios, modulos: [])
   end
 end

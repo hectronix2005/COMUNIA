@@ -28,6 +28,7 @@ class Logia < ApplicationRecord
     errors.add(:tenant, "no puede ser la propia logia") if tenant_id && tenant_id == id
   end
   validate { errors.add(:categoria, "se asigna a la comunidad, no a uno de sus grupos") if categoria_id && tenant_id }
+  validate { errors.add(:modulos, "se eligen en la comunidad, no en uno de sus grupos") if !modulos.nil? && tenant_id }
   validates :codigo, presence: true,
             uniqueness: { scope: :tenant_id, message: "ya existe en este tenant" },
             format: { with: /\A[A-Z0-9]+\z/, message: "solo letras mayusculas y numeros" }
@@ -36,6 +37,11 @@ class Logia < ApplicationRecord
             format: { with: /\A[a-z0-9\-]+\z/, message: "solo minúsculas, números y guiones" },
             if: -> { slug.present? }
 
+  # Sin «elegir los módulos», la comunidad vuelve a los de su categoría; con él, solo módulos conocidos.
+  before_validation do
+    self.modulos = nil if @modulos_propios == false
+    self.modulos = Array(modulos).compact_blank & Categoria::MODULOS.keys unless modulos.nil?
+  end
   before_validation :generar_slug, if: -> { tenant_id.nil? && slug.blank? && nombre.present? }
 
   scope :ordenadas,      -> { order(:nombre) }
@@ -103,10 +109,20 @@ class Logia < ApplicationRecord
     end
   end
 
-  # Una comunidad sin categoría tiene todos los módulos.
+  # Manda lo que el superadmin eligió para la comunidad; si no eligió nada, lo de su categoría. Una comunidad
+  # sin ninguna de las dos tiene todos los módulos. Los grupos heredan de su comunidad.
   def modulo?(clave)
-    categoria = organizacion.categoria
-    categoria.nil? || categoria.modulo?(clave)
+    org = organizacion
+    return org.modulos.include?(clave.to_s) unless org.modulos.nil?
+
+    org.categoria.nil? || org.categoria.modulo?(clave)
+  end
+
+  # La casilla «elegir los módulos de esta comunidad» del panel de plataforma.
+  def modulos_propios = !modulos.nil?
+
+  def modulos_propios=(valor)
+    @modulos_propios = ActiveModel::Type::Boolean.new.cast(valor)
   end
 
   # «Club · Mercedes Benz · SUV»: categoría, comunidad y, si es un grupo, su nombre.

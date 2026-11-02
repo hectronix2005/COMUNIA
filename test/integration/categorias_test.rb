@@ -80,6 +80,50 @@ class CategoriasTest < ActionDispatch::IntegrationTest
     assert Categoria.exists?(@barrio.id), "con comunidades no se borra"
   end
 
+  test "la comunidad puede tener sus propios módulos; sus grupos los heredan y sin elegir vuelve a la categoría" do
+    assert @alborada.modulo?(:tesoreria), "de la categoría"
+    @cedritos.update!(modulos_propios: "1", modulos: ["", "reuniones", "inventado"])
+    assert_equal %w[reuniones], @cedritos.reload.modulos, "solo módulos conocidos"
+    assert_not @alborada.reload.modulo?(:tesoreria), "el grupo hereda la elección de su comunidad"
+    assert @alborada.modulo?(:reuniones), "aunque la categoría no lo traiga"
+
+    @cedritos.update!(modulos_propios: "1", modulos: [""])
+    assert_equal [], @cedritos.reload.modulos, "elegir ninguno deja solo lo de siempre"
+    assert_not @cedritos.modulo?(:documentos)
+
+    @cedritos.update!(modulos_propios: "0", modulos: ["", "reuniones"])
+    assert_nil @cedritos.reload.modulos, "sin la casilla, vuelve a la categoría"
+    assert @cedritos.modulo?(:tesoreria)
+
+    @alborada.modulos = %w[tesoreria]
+    assert_not @alborada.valid?, "los módulos no se eligen en un grupo"
+  end
+
+  test "un módulo apagado en la comunidad desaparece del menú y su ruta lleva al panel" do
+    @cedritos.update!(modulos_propios: "1", modulos: %w[biblioteca])
+    sign_in persona("Yo", @cedritos)
+    get "/t/#{@cedritos.slug}/cobros"
+    assert_redirected_to "/t/#{@cedritos.slug}/dashboard"
+    get "/t/#{@cedritos.slug}/dashboard"
+    assert_match "biblioteca/libros", response.body
+    assert_no_match "Actas", response.body
+  end
+
+  test "solo el superadmin, desde el panel de plataforma, elige los módulos de una comunidad" do
+    sign_in persona("Admin", @cedritos)
+    patch "/tenants/#{@cedritos.id}", params: { logia: { modulos_propios: "1", modulos: %w[biblioteca] } }
+    assert_nil @cedritos.reload.modulos
+
+    rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
+    sign_in User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", rol_ref: rol)
+    get "/tenants/#{@cedritos.id}/edit"
+    assert_response :ok
+    assert_select "input[name='logia[modulos_propios]'][type=checkbox]:not([checked])"
+    patch "/tenants/#{@cedritos.id}", params: { logia: { modulos_propios: "1", modulos: ["", "biblioteca", "reuniones"] } }
+    assert_equal %w[biblioteca reuniones], @cedritos.reload.modulos
+  end
+
   private
 
   def logia(nombre, tenant: nil, categoria: nil)
