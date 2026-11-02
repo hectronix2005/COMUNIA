@@ -109,11 +109,14 @@ class IngresoCelularTest < ActionDispatch::IntegrationTest
     sign_in vecina
     get "/t/edificio-prueba/completa-tus-datos"
     assert_includes response.body, "Torre y apartamento (opcional)"
+    assert_includes response.body, "Cédula (opcional)"
     assert_not_includes response.body, "Grupo o promoción"
-    patch "/t/edificio-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "52111222", email: "angela@correo.co", programa: "") }
+    patch "/t/edificio-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "", email: "angela@correo.co", programa: "") }
     assert_redirected_to "/t/edificio-prueba/dashboard"
     assert_not vecina.reload.debe_completar_datos?
     assert_nil ficha.reload.bio
+    assert_nil ficha.cedula
+    assert ficha.valid?, "la ficha de un vecino sin cédula sigue siendo válida al editarla después"
     sign_out :user
 
     club = Logia.create!(nombre: "Club Prueba", slug: "club-prueba", codigo: "CLUB",
@@ -124,6 +127,9 @@ class IngresoCelularTest < ActionDispatch::IntegrationTest
     sign_in socio
     get "/t/club-prueba/completa-tus-datos"
     assert_not_includes response.body, "datos-programa"
+    assert_not_includes response.body, "Cédula (opcional)"
+    patch "/t/club-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "", email: "saul@correo.co").except(:programa) }
+    assert_response :unprocessable_entity
     patch "/t/club-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "52333444", email: "saul@correo.co").except(:programa) }
     assert_redirected_to "/t/club-prueba/dashboard"
   end

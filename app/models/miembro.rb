@@ -32,8 +32,12 @@ class Miembro < ApplicationRecord
   has_many :familiares,     class_name: "MiembroFamiliar", dependent: :destroy
 
   validates :numero_miembro, presence: true
-  # La cédula la da al primer ingreso quien entró solo con el celular (CompletarDatosController).
-  validates :cedula, presence: true, unless: -> { user&.debe_completar_datos? }
+  # La cédula la da al primer ingreso quien entró solo con el celular (CompletarDatosController). En un edificio o
+  # barrio no se exige: a un vecino no hace falta pedírsela.
+  validates :cedula, presence: true, if: :cedula_obligatoria?
+
+  def cedula_obligatoria? = !user&.debe_completar_datos? && exige_cedula?
+  def exige_cedula? = logia&.organizacion&.categoria&.nombre != "Barrio"
   normalizes :cedula, with: -> { _1.strip.presence }
   validate :unica_en_su_comunidad
   validates :telefono, length: { maximum: 20 }, format: { with: /\A[\d\s+().-]*\z/, message: "solo admite números, espacios y + ( ) - ." },

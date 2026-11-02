@@ -30,9 +30,10 @@
         <label for="datos-apellido">Apellidos completos</label>
       </div>
       <div class="form-floating mb-3">
-        <%= f.text_field :cedula, value: params.dig(:user, :cedula) || @miembro&.cedula, required: true, maxlength: 20,
+        <% cedula_obligatoria = @miembro.nil? || @miembro.exige_cedula? %>
+        <%= f.text_field :cedula, value: params.dig(:user, :cedula) || @miembro&.cedula, required: cedula_obligatoria, maxlength: 20,
                                   inputmode: "numeric", class: "form-control", placeholder: "Cédula", id: "datos-cedula" %>
-        <label for="datos-cedula">Cédula</label>
+        <label for="datos-cedula"><%= cedula_obligatoria ? "Cédula" : "Cédula (opcional)" %></label>
       </div>
       <div class="form-floating mb-3">
         <%= f.email_field :email, required: true, maxlength: 120, autocomplete: "email", class: "form-control", placeholder: "Correo", id: "datos-email" %>
