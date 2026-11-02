@@ -99,4 +99,26 @@ class RastreoTest < ActionDispatch::IntegrationTest
     assert_match "dashboard#index", response.body
     assert_match "Chrome Mobile", response.body
   end
+
+  test "abrir la invitación anota a quién era, sin el token" do
+    @yo.update_columns(invitation_token: Devise.token_generator.digest(User, :invitation_token, "TOKEN123"),
+                       invitation_sent_at: Time.current, invitation_created_at: Time.current)
+    get "/invitacion?invitation_token=TOKEN123", headers: NAVEGADOR
+    assert_response :ok
+    evento = Ahoy::Event.find_by!(name: "Petición")
+    assert_equal @yo.id, evento.properties["invitado_id"]
+    assert_not_includes Ahoy::Event.pluck(:properties).to_json + Ahoy::Visit.pluck(:landing_page).join, "TOKEN123"
+  end
+
+  test "el panel enseña el resumen por día" do
+    sign_in @yo
+    get "/t/#{@logia.slug}/dashboard", headers: NAVEGADOR
+    reset!
+    rol = Rol.find_or_create_by!(codigo: "super_admin") { _1.nombre = "Super Admin" }
+    sign_in User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
+                         password: "password123", rol_ref: rol)
+    get "/rastreo", headers: NAVEGADOR
+    assert_match "Por día", response.body
+    assert_match "Rastreo de hoy: 1 persona, sin errores", response.body
+  end
 end

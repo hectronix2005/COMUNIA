@@ -6,6 +6,23 @@
     la red ni lo escrito en los formularios. Se borra a mano cuando acaben las pruebas.</small>
 </div>
 
+<% if @dias.any? %>
+  <h2 class="h5">Por día</h2>
+  <p class="small text-muted">El de hoy te llega como aviso a las 9 p. m. Sin contar a los superadmins.</p>
+  <div class="row g-3 mb-4">
+    <% @dias.each do |dia| %>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header fw-semibold"><%= dia.titulo %></div>
+          <ul class="card-body small mb-0 ps-4">
+            <% dia.lineas.each do |linea| %><li><%= linea %></li><% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
 <h2 class="h5">Personas (<%= @orden.size %>)</h2>
 <% if @orden.empty? %>
   <p class="text-muted">Nadie todavía.</p>

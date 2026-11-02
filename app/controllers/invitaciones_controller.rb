@@ -16,6 +16,12 @@ class InvitacionesController < Devise::InvitationsController
 
   protected
 
+  # El rastreo apunta de quién es la invitación que se abrió (el token no se guarda): así el resumen diario dice
+  # «abrió la invitación, no la aceptó» aunque aún no tenga sesión.
+  def rastreo_extra
+    action_name == "edit" && resource&.persisted? ? { invitado_id: resource.id } : {}
+  end
+
   def after_accept_path_for(_resource)
     bienvenida_path
   end

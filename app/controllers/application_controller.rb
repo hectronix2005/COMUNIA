@@ -311,11 +311,15 @@ class ApplicationController < ActionController::Base
       ruta: request.path, accion: "#{controller_path}##{action_name}", metodo: request.request_method,
       estado:, ms: ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - inicio) * 1000).round,
       formato: request.format&.symbol&.to_s, marco: request.headers["Turbo-Frame"], destino:, error:,
-      alerta: flash[:alert].presence&.to_s&.truncate(200), aviso: flash[:notice].presence&.to_s&.truncate(200)
+      alerta: flash[:alert].presence&.to_s&.truncate(200), aviso: flash[:notice].presence&.to_s&.truncate(200),
+      **rastreo_extra
     }.compact)
   rescue StandardError => e
     Rails.logger.warn("rastreo: #{e.class}: #{e.message}")
   end
+
+  # Lo que un controlador añade al evento «Petición» (InvitacionesController: de quién es la invitación).
+  def rastreo_extra = {}
 
   def track_last_seen
     current_user&.touch_last_seen! if current_user

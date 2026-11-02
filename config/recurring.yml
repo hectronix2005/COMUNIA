@@ -21,6 +21,10 @@ production:
   marcar_vencidos:
     class: MarcarVencidosJob
     schedule: at 6am every day
+  # Resumen del día del rastreo de pruebas a los superadmins (Héctor, 1-nov-2026). Hora de Bogotá.
+  resumen_rastreo:
+    class: ResumenRastreoJob
+    schedule: at 9pm every day
   red_mantenimiento:
     class: Red::MantenimientoDiarioJob
     schedule: at 4am every day

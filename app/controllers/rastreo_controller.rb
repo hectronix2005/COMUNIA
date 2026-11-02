@@ -20,6 +20,7 @@ class RastreoController < ApplicationController
     @orden = @numero_visitas.keys.sort_by { |id| @ultimo_evento[id] || @ultima[id] }.reverse
     @anonimas = Ahoy::Visit.where(user_id: nil).order(started_at: :desc).limit(50)
     @eventos_anonimas = Ahoy::Event.where(visit_id: @anonimas.map(&:id)).group(:visit_id).count
+    @dias = (0..6).map { ResumenRastreo.new(Time.zone.today - _1) }.reject(&:vacio?)
   end
 
   def persona
