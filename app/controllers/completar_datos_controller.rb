@@ -1,5 +1,5 @@
 # Primer ingreso de quien entró con el celular y una contraseña temporal (User#debe_completar_datos): elige su
-# contraseña y da sus datos reales (correo, apellidos, cédula y su programa o grupo). Hasta entonces el resto de
+# contraseña y da sus datos reales (correo, apellidos, cédula y, según la comunidad, su programa o su apartamento). Hasta entonces el resto de
 # la app lo trae aquí (ApplicationController#exigir_datos_completos).
 class CompletarDatosController < ApplicationController
   before_action -> { redirect_to dashboard_path unless current_user.debe_completar_datos? }
@@ -17,7 +17,8 @@ class CompletarDatosController < ApplicationController
 
     @user.assign_attributes(datos.slice(:nombre, :apellido, :email, :password, :password_confirmation).merge(
                               debe_completar_datos: false, completando_datos: true))
-    @miembro&.assign_attributes(cedula: datos[:cedula], bio: datos[:programa].to_s.strip.presence)
+    @miembro&.assign_attributes(cedula: datos[:cedula])
+    @miembro&.bio = datos[:programa].to_s.strip.presence if campo_programa
 
     if datos_validos?(datos)
       User.transaction do
@@ -41,7 +42,9 @@ class CompletarDatosController < ApplicationController
     @miembro&.valid?
     @user.errors.add(:apellido, :blank) if datos[:apellido].blank?
     @user.errors.add(:email, :blank) if datos[:email].blank?
-    @user.errors.add(:base, "#{etiqueta_programa} no puede estar en blanco") if datos[:programa].blank?
+    if campo_programa&.dig(:obligatorio) && datos[:programa].blank?
+      @user.errors.add(:base, "#{campo_programa[:etiqueta]} no puede estar en blanco")
+    end
     @user.errors.add(:password, :blank) if datos[:password].blank?
     @user.errors.add(:password, "debe ser distinta de la temporal") if datos[:password].present? &&
                                                                     User.find(@user.id).valid_password?(datos[:password])
@@ -49,7 +52,14 @@ class CompletarDatosController < ApplicationController
     @user.errors.none?
   end
 
-  helper_method def etiqueta_programa
-    current_logia.organizacion.categoria&.nombre == "Universidad" ? "Programa y cohorte" : "Grupo o promoción"
+  # Lo que se pregunta además depende del tipo de comunidad: a un egresado, su programa (obligatorio); a un vecino,
+  # su torre y apartamento (si quiere). Las demás no preguntan nada. Se guarda en la ficha (Miembro#bio).
+  CAMPOS_PROGRAMA = {
+    "Universidad" => { etiqueta: "Programa y cohorte", obligatorio: true },
+    "Barrio" => { etiqueta: "Torre y apartamento (opcional)", obligatorio: false }
+  }.freeze
+
+  helper_method def campo_programa
+    @campo_programa ||= CAMPOS_PROGRAMA[current_logia.organizacion.categoria&.nombre]
   end
 end

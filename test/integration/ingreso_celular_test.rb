@@ -1,8 +1,8 @@
 require "test_helper"
 
 # Ingreso con el celular: la comunidad solo tiene el nombre y el celular de la persona, que entra con él y una
-# contraseña temporal. Hasta que elige la suya y da sus datos reales (correo, apellidos, cédula y su programa),
-# toda la app la lleva a «Completa tus datos».
+# contraseña temporal. Hasta que elige la suya y da sus datos reales (correo, apellidos, cédula y, según la comunidad,
+# su programa o su apartamento), toda la app la lleva a «Completa tus datos».
 class IngresoCelularTest < ActionDispatch::IntegrationTest
   setup do
     @rol_miembro = Rol.find_or_create_by!(codigo: "miembro") { _1.nombre = "Miembro" }
@@ -98,6 +98,34 @@ class IngresoCelularTest < ActionDispatch::IntegrationTest
     delete "/logout"
     post "/login", params: { user: { email: "juan@correo.co", password: "mi-clave-nueva-2026" } }
     assert_redirected_to "/dashboard"
+  end
+
+  test "a un vecino se le pregunta torre y apartamento sin obligar; a un club, nada" do
+    barrio = Logia.create!(nombre: "Edificio Prueba", slug: "edificio-prueba", codigo: "EDIF",
+                           categoria: Categoria.find_or_create_by!(nombre: "Barrio"))
+    vecina = User.create!(nombre: "Angela", celular: "3001112233", password: @clave, logia: barrio,
+                          rol_ref: @rol_miembro, debe_completar_datos: true)
+    ficha = Miembro.create!(user: vecina, logia: barrio, numero_miembro: "MBR-010", estado: :activo, telefono: "3001112233")
+    sign_in vecina
+    get "/t/edificio-prueba/completa-tus-datos"
+    assert_includes response.body, "Torre y apartamento (opcional)"
+    assert_not_includes response.body, "Grupo o promoción"
+    patch "/t/edificio-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "52111222", email: "angela@correo.co", programa: "") }
+    assert_redirected_to "/t/edificio-prueba/dashboard"
+    assert_not vecina.reload.debe_completar_datos?
+    assert_nil ficha.reload.bio
+    sign_out :user
+
+    club = Logia.create!(nombre: "Club Prueba", slug: "club-prueba", codigo: "CLUB",
+                         categoria: Categoria.find_or_create_by!(nombre: "Club"))
+    socio = User.create!(nombre: "Saúl", celular: "3004445566", password: @clave, logia: club,
+                         rol_ref: @rol_miembro, debe_completar_datos: true)
+    Miembro.create!(user: socio, logia: club, numero_miembro: "MBR-011", estado: :activo)
+    sign_in socio
+    get "/t/club-prueba/completa-tus-datos"
+    assert_not_includes response.body, "datos-programa"
+    patch "/t/club-prueba/completa-tus-datos", params: { user: datos_completos(cedula: "52333444", email: "saul@correo.co").except(:programa) }
+    assert_redirected_to "/t/club-prueba/dashboard"
   end
 
   private

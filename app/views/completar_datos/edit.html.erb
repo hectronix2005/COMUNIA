@@ -38,11 +38,13 @@
         <%= f.email_field :email, required: true, maxlength: 120, autocomplete: "email", class: "form-control", placeholder: "Correo", id: "datos-email" %>
         <label for="datos-email">Correo electrónico</label>
       </div>
-      <div class="form-floating mb-3">
-        <%= f.text_field :programa, value: params.dig(:user, :programa) || @miembro&.bio, required: true, maxlength: 120,
-                                    class: "form-control", placeholder: etiqueta_programa, id: "datos-programa" %>
-        <label for="datos-programa"><%= etiqueta_programa %></label>
-      </div>
+      <% if campo_programa %>
+        <div class="form-floating mb-3">
+          <%= f.text_field :programa, value: params.dig(:user, :programa) || @miembro&.bio, required: campo_programa[:obligatorio],
+                                      maxlength: 120, class: "form-control", placeholder: campo_programa[:etiqueta], id: "datos-programa" %>
+          <label for="datos-programa"><%= campo_programa[:etiqueta] %></label>
+        </div>
+      <% end %>
 
       <div class="form-floating mb-3">
         <%= f.password_field :password, required: true, autocomplete: "new-password", minlength: 10,
