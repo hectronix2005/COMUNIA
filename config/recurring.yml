@@ -21,6 +21,10 @@ production:
   marcar_vencidos:
     class: MarcarVencidosJob
     schedule: at 6am every day
+  # Noticias de internet de las comunidades que las encendieron (Héctor, 2-nov-2026). Hora de Bogotá.
+  actualizar_noticias:
+    class: ActualizarNoticiasJob
+    schedule: at 6:30am every day
   # Resumen del día del rastreo de pruebas a los superadmins (Héctor, 1-nov-2026). Hora de Bogotá.
   resumen_rastreo:
     class: ResumenRastreoJob

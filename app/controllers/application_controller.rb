@@ -121,6 +121,15 @@ class ApplicationController < ActionController::Base
 
   # Un admin modera (borra, fija, cierra) lo publicado en las logias que gestiona, no en las demás. El rol
   # es el de rol_ref, como los permisos: el enum rol de users no siempre coincide con él.
+  # El admin de la comunidad entera (o el superadmin), no el de uno de sus grupos: configura lo que es de toda
+  # la comunidad, como Noticias.
+  def admin_de_la_comunidad?
+    return false unless current_user
+    return true if current_user.rol_ref&.es_super_admin?
+
+    current_user.rol_ref&.codigo == "admin_logia" && logia_ids_gestionables.include?(current_logia.organizacion.id)
+  end
+
   def modera?(registro)
     return true if current_user.rol_ref&.es_super_admin?
     current_user.rol_ref&.codigo == "admin_logia" && logia_ids_gestionables.include?(registro.logia_id)
@@ -153,7 +162,7 @@ class ApplicationController < ActionController::Base
     platform_admin_context? ? periodos : periodos.de_organizacion(current_logia.organizacion)
   end
 
-  helper_method :previewing_tenant?, :platform_admin_context?, :modera?
+  helper_method :previewing_tenant?, :platform_admin_context?, :modera?, :admin_de_la_comunidad?
 
   def previewing_tenant?
     session[:preview_logia_id].present? && current_user&.rol_ref&.es_super_admin?

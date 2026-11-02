@@ -262,6 +262,13 @@ Rails.application.routes.draw do
   end
 
   # ── Encuestas ──────────────────────────────────────────────
+  # Noticias de internet sobre la comunidad (NoticiasController), si su admin las encendió.
+  get   "noticias",               to: "noticias#index",         as: :noticias
+  get   "noticias/configuracion", to: "noticias#configuracion", as: :configuracion_noticias
+  patch "noticias/configuracion", to: "noticias#guardar"
+  patch "noticias/:id/ocultar",   to: "noticias#ocultar",       as: :ocultar_noticia
+  patch "noticias/:id/mostrar",   to: "noticias#mostrar",       as: :mostrar_noticia
+
   resources :encuestas, only: [:index, :show, :new, :create] do
     member do
       post :votar

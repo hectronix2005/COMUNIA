@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_012230) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -429,6 +429,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_012230) do
     t.string "codigo_acceso"
     t.boolean "demo", default: false, null: false
     t.string "modulos", array: true
+    t.boolean "noticias_activas", default: false, null: false
+    t.string "noticias_busquedas", default: [], null: false, array: true
     t.index ["categoria_id"], name: "index_logias_on_categoria_id"
     t.index ["codigo_acceso"], name: "index_logias_on_codigo_acceso", unique: true
     t.index ["demo"], name: "index_logias_on_demo", unique: true, where: "demo"
@@ -574,6 +576,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_012230) do
     t.index ["negocio_anuncio_id", "user_id"], name: "index_negocio_reportes_on_negocio_anuncio_id_and_user_id", unique: true
     t.index ["negocio_anuncio_id"], name: "index_negocio_reportes_on_negocio_anuncio_id"
     t.index ["user_id"], name: "index_negocio_reportes_on_user_id"
+  end
+
+  create_table "noticias", force: :cascade do |t|
+    t.bigint "logia_id", null: false
+    t.string "titulo", null: false
+    t.string "medio"
+    t.string "url", limit: 2000, null: false
+    t.string "busqueda"
+    t.datetime "publicada_en", null: false
+    t.boolean "oculta", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["logia_id", "publicada_en"], name: "index_noticias_on_logia_id_and_publicada_en"
+    t.index ["logia_id", "url"], name: "index_noticias_on_logia_id_and_url", unique: true
+    t.index ["logia_id"], name: "index_noticias_on_logia_id"
   end
 
   create_table "notificaciones", force: :cascade do |t|
@@ -1118,6 +1135,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_012230) do
   add_foreign_key "negocio_mensajes", "users"
   add_foreign_key "negocio_reportes", "negocio_anuncios"
   add_foreign_key "negocio_reportes", "users"
+  add_foreign_key "noticias", "logias"
   add_foreign_key "notificaciones", "logias"
   add_foreign_key "notificaciones", "users"
   add_foreign_key "pagos", "cobros"

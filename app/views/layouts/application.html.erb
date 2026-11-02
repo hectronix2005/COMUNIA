@@ -138,7 +138,7 @@
                 %>
                 <%# ── Comunidad ── %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/noticias') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-people-fill"></i> Comunidad
                   </a>
@@ -149,6 +149,13 @@
                         <i class="bi bi-newspaper me-2"></i>Muro
                       <% end %>
                     </li>
+                    <% if current_logia.organizacion.noticias_activas %>
+                      <li>
+                        <%= link_to noticias_path, class: "dropdown-item #{'active' if request.path.start_with?('/noticias')}" do %>
+                          <i class="bi bi-globe2 me-2"></i>Noticias
+                        <% end %>
+                      </li>
+                    <% end %>
                     <li>
                       <%= link_to chat_path, class: "dropdown-item #{'active' if request.path.start_with?('/chat')}" do %>
                         <i class="bi bi-chat-dots me-2"></i>Chat

@@ -169,7 +169,12 @@
               [encuestas_path, "bi-bar-chart", "Encuestas", "Votaciones y opiniones"],
               [directorio_index_path, "bi-person-vcard", "Directorio", "Perfiles de miembros"],
               [calendario_index_path, "bi-calendar3", "Calendario", "Eventos y asistencia"],
-              [hospitalia_cumpleanos_path, "bi-balloon-heart", "Cumpleaños", "#{@hospitalia_cumpleanos || 0} próximos"]].each do |ruta, icono, titulo, detalle| %>
+              [hospitalia_cumpleanos_path, "bi-balloon-heart", "Cumpleaños", "#{@hospitalia_cumpleanos || 0} próximos"],
+              (if current_logia.organizacion.noticias_activas
+                 [noticias_path, "bi-globe2", "Noticias", "De internet sobre la comunidad"]
+               elsif admin_de_la_comunidad?
+                 [configuracion_noticias_path, "bi-globe2", "Noticias", "Apagadas · enciéndelas"]
+               end)].compact.each do |ruta, icono, titulo, detalle| %>
             <div class="col-6 col-xl-4">
               <%= link_to ruta, class: "acceso" do %>
                 <span class="icono-chip"><i class="bi <%= icono %>"></i></span>

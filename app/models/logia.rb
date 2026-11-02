@@ -14,6 +14,7 @@ class Logia < ApplicationRecord
   has_many :conceptos_cobro, dependent: :destroy
   has_many :tarifas, dependent: :destroy
   has_many :solicitudes_acceso, class_name: "SolicitudAcceso", dependent: :destroy
+  has_many :noticias, dependent: :delete_all
   has_one_attached :logo
   validates_attachment :logo, types: :image, max: 5.megabytes
 
@@ -41,6 +42,17 @@ class Logia < ApplicationRecord
   before_validation do
     self.modulos = nil if @modulos_propios == false
     self.modulos = Array(modulos).compact_blank & Categoria::MODULOS.keys unless modulos.nil?
+  end
+  # Noticias: hasta tres búsquedas cortas, sin repetir; las enciende el admin de la comunidad, no de un grupo.
+  BUSQUEDAS_NOTICIAS = 3
+  before_validation do
+    self.noticias_busquedas = Array(noticias_busquedas).map { _1.to_s.squish }.compact_blank.uniq(&:downcase)
+  end
+  validate do
+    errors.add(:noticias_busquedas, "admite hasta #{BUSQUEDAS_NOTICIAS} búsquedas") if noticias_busquedas.size > BUSQUEDAS_NOTICIAS
+    errors.add(:noticias_busquedas, "deben tener entre 3 y 80 letras") if noticias_busquedas.any? { !_1.length.between?(3, 80) }
+    errors.add(:noticias_busquedas, "necesitan al menos una búsqueda") if noticias_activas && noticias_busquedas.empty?
+    errors.add(:noticias_activas, "se encienden en la comunidad, no en uno de sus grupos") if noticias_activas && tenant_id
   end
   before_validation :generar_slug, if: -> { tenant_id.nil? && slug.blank? && nombre.present? }
 

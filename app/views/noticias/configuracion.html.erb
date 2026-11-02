@@ -1,0 +1,36 @@
+<% content_for(:title, "Noticias") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="fw-bold mb-1"><i class="bi bi-globe2 me-2 text-oro"></i>Noticias de internet</h4>
+    <p class="small text-muted mb-3">
+      Cada mañana buscamos en Google Noticias lo que escribas aquí y lo mostramos a los miembros de
+      <strong><%= @comunidad.nombre %></strong> en su sección «Noticias». Solo el titular, el medio y el enlace al artículo.
+      Puedes ocultar las que no sirvan.
+    </p>
+
+    <% if @comunidad.errors.any? %>
+      <div class="alert alert-danger small"><%= @comunidad.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <%= form_with url: configuracion_noticias_path, method: :patch, scope: :noticias, local: true, class: "card" do |f| %>
+      <div class="card-body">
+        <div class="form-check form-switch mb-3">
+          <%= f.check_box :activas, { checked: @comunidad.noticias_activas, class: "form-check-input", id: "noticias_activas" }, "1", "0" %>
+          <label class="form-check-label fw-semibold" for="noticias_activas">Mostrar Noticias en la comunidad</label>
+        </div>
+
+        <label class="form-label fw-semibold">Qué buscar (hasta <%= Logia::BUSQUEDAS_NOTICIAS %>)</label>
+        <p class="small text-muted">Frases cortas y concretas: «masonería Colombia», «Universidad de los Andes», «barrio Cedritos».</p>
+        <% Logia::BUSQUEDAS_NOTICIAS.times do |i| %>
+          <%= text_field_tag "noticias[busquedas][]", @comunidad.noticias_busquedas[i], maxlength: 80,
+                class: "form-control mb-2", placeholder: "Búsqueda #{i + 1}", aria: { label: "Búsqueda #{i + 1}" } %>
+        <% end %>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <% if @comunidad.noticias_activas %><%= link_to "Ver las noticias", noticias_path, class: "small" %><% else %><span></span><% end %>
+        <%= f.submit "Guardar", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

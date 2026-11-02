@@ -1,0 +1,57 @@
+<% content_for(:title, "Noticias") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center justify-content-between mb-1 gap-2">
+      <h4 class="fw-bold mb-0"><i class="bi bi-globe2 me-2 text-oro"></i>Noticias</h4>
+      <% if @admin %>
+        <%= link_to configuracion_noticias_path, class: "btn btn-sm btn-outline-secondary" do %><i class="bi bi-gear me-1"></i>Búsquedas<% end %>
+      <% end %>
+    </div>
+    <p class="small text-muted mb-3">
+      De internet sobre <%= @comunidad.noticias_busquedas.map { "«#{_1}»" }.to_sentence(two_words_connector: " y ", last_word_connector: " y ") %>.
+      Se actualizan cada mañana con Google Noticias.
+    </p>
+
+    <% if @admin && @ocultas.to_i.positive? %>
+      <p class="small">
+        <% if params[:ocultas] == "1" %>
+          <%= link_to "Ver solo las visibles", noticias_path %>
+        <% else %>
+          <%= link_to "Ver también las #{@ocultas} ocultas", noticias_path(ocultas: 1) %>
+        <% end %>
+      </p>
+    <% end %>
+
+    <% if @noticias.empty? %>
+      <div class="card"><div class="card-body text-muted small">
+        Aún no hay noticias. Llegan en un minuto tras encenderlas, y después cada mañana.
+      </div></div>
+    <% end %>
+
+    <% @noticias.each do |noticia| %>
+      <div class="card mb-2 <%= 'opacity-50' if noticia.oculta %>" id="noticia-<%= noticia.id %>">
+        <div class="card-body py-2">
+          <%= link_to noticia.titulo, noticia.url, target: "_blank", rel: "noopener noreferrer nofollow",
+                class: "fw-semibold text-decoration-none d-block" %>
+          <div class="small text-muted d-flex flex-wrap align-items-center gap-2 mt-1">
+            <% if noticia.medio %><span><%= noticia.medio %></span>·<% end %>
+            <span title="<%= l(noticia.publicada_en, format: :long) %>">hace <%= time_ago_in_words(noticia.publicada_en) %></span>
+            <% if @admin %>
+              <span class="ms-auto">
+                <% if noticia.oculta %>
+                  <%= button_to "Mostrar", mostrar_noticia_path(noticia), method: :patch, class: "btn btn-link btn-sm p-0" %>
+                <% else %>
+                  <%= button_to "Ocultar", ocultar_noticia_path(noticia), method: :patch, class: "btn btn-link btn-sm p-0 text-muted",
+                        title: "Los miembros dejan de verla" %>
+                <% end %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="mt-3"><%= paginate @noticias %></div>
+  </div>
+</div>
