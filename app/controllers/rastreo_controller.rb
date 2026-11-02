@@ -8,8 +8,9 @@ class RastreoController < ApplicationController
   end
 
   def index
-    visitas = Ahoy::Visit.where.not(user_id: nil).group(:user_id)
-    eventos = Ahoy::Event.joins(:visit).where.not(ahoy_visits: { user_id: nil }).group("ahoy_visits.user_id")
+    contadas = Ahoy::Visit.where.not(user_id: nil).where.not(user_id: ResumenRastreo.sin_contar)
+    visitas = contadas.group(:user_id)
+    eventos = Ahoy::Event.joins(:visit).merge(contadas).group("ahoy_visits.user_id")
     @numero_visitas = visitas.count
     @ultima = visitas.maximum(:started_at)
     @eventos = eventos.count

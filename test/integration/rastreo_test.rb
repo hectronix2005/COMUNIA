@@ -119,6 +119,7 @@ class RastreoTest < ActionDispatch::IntegrationTest
                          password: "password123", rol_ref: rol)
     get "/rastreo", headers: NAVEGADOR
     assert_match "Por día", response.body
+    assert_match "ni a hneira", response.body
     assert_match "Rastreo de hoy: 1 persona, sin errores", response.body
   end
 end

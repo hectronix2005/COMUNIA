@@ -1,10 +1,20 @@
 # Resumen de un día del rastreo de pruebas (config/initializers/ahoy.rb): quién entró, cuánto estuvo y hasta
 # dónde llegó, quién abrió su invitación sin aceptarla, quién no ha entrado y qué errores hubo. Lo manda
 # ResumenRastreoJob a los superadmins a las 9 p. m. (Héctor, 1-nov-2026) y lo pinta /rastreo, día por día.
-# No cuenta a los superadmins: son quienes lo leen.
+# No cuenta a los superadmins (son quienes lo leen) ni las cuentas de RASTREO_SIN_CONTAR: hneira es la de Héctor,
+# y sus visitas se mezclaban con las de family and friends (1-nov-2026).
 class ResumenRastreo
   MAX_PAGINAS = 4
   MAX_ERRORES = 3
+
+  # Usernames separados por comas; sin la variable, hneira.
+  def self.usernames_sin_contar = ENV.fetch("RASTREO_SIN_CONTAR", "hneira").split(",").map(&:strip).compact_blank
+
+  # Quienes no cuentan en el rastreo: los superadmins y las cuentas de RASTREO_SIN_CONTAR.
+  def self.sin_contar
+    con_rol = User.left_joins(:rol_ref)
+    con_rol.where(roles: { codigo: "super_admin" }).or(con_rol.where(username: usernames_sin_contar)).select(:id)
+  end
 
   attr_reader :fecha
 
@@ -69,7 +79,7 @@ class ResumenRastreo
   # Invitaciones vigentes sin aceptar de quien ese día no apareció.
   def sin_entrar
     @sin_entrar ||= User.invitation_not_accepted.where(invitation_sent_at: User.invite_for.ago(fin)..fin)
-                        .where.not(id: invitaciones_abiertas.map { _1.first.id } + personas.map { _1[:user].id })
+                        .where.not(id: self.class.sin_contar).where.not(id: invitaciones_abiertas.map { _1.first.id } + personas.map { _1[:user].id })
                         .order(:nombre).to_a
   end
 
@@ -91,9 +101,8 @@ class ResumenRastreo
 
   def visitas
     @visitas ||= begin
-      superadmins = User.joins(:rol_ref).where(roles: { codigo: "super_admin" }).select(:id)
       Ahoy::Visit.where(id: Ahoy::Event.where(time: inicio..fin).select(:visit_id))
-                 .where("ahoy_visits.user_id IS NULL OR ahoy_visits.user_id NOT IN (?)", superadmins)
+                 .where("ahoy_visits.user_id IS NULL OR ahoy_visits.user_id NOT IN (?)", self.class.sin_contar)
                  .includes(:user).to_a
     end
   end

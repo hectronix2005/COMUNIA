@@ -70,4 +70,14 @@ class ResumenRastreoTest < ActiveSupport::TestCase
     assert_equal "Rastreo de hoy: 1 persona, sin errores", aviso.titulo
     assert_includes aviso.cuerpo, "Nelson: 1 visita, 45 s; llegó a Inicio."
   end
+
+  test "las cuentas de RASTREO_SIN_CONTAR (hneira, sin la variable) no cuentan" do
+    hector = vecino("Hector")
+    hector.update_columns(username: "hneira")
+    vista(visita(hector), "Inicio", 300)
+    assert ResumenRastreo.new(Time.zone.today).vacio?
+
+    vista(visita(@nelson), "Inicio", 60)
+    assert_equal ["Nelson"], ResumenRastreo.new(Time.zone.today).personas.map { _1[:user].nombre }
+  end
 end

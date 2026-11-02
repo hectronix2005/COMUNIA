@@ -8,7 +8,7 @@
 
 <% if @dias.any? %>
   <h2 class="h5">Por día</h2>
-  <p class="small text-muted">El de hoy te llega como aviso a las 9 p. m. Sin contar a los superadmins.</p>
+  <p class="small text-muted">El de hoy te llega como aviso a las 9 p. m. Sin contar a los superadmins ni a <%= ResumenRastreo.usernames_sin_contar.to_sentence(two_words_connector: " y ", last_word_connector: " y ") %>.</p>
   <div class="row g-3 mb-4">
     <% @dias.each do |dia| %>
       <div class="col-md-6">
