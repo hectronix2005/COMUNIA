@@ -51,8 +51,9 @@
         <input type="hidden" name="ficha" value="nueva">
         <div class="row g-2 align-items-end">
           <div class="col-sm-4">
-            <label class="form-label" for="sa-cedula">Cédula</label>
-            <input class="form-control" id="sa-cedula" name="cedula" required maxlength="30">
+            <% exige_cedula = @solicitud.logia.exige_cedula? %>
+            <label class="form-label" for="sa-cedula"><%= exige_cedula ? "Cédula" : "Cédula (opcional)" %></label>
+            <input class="form-control" id="sa-cedula" name="cedula" maxlength="30" <%= "required" if exige_cedula %>>
           </div>
           <div class="col-sm-4">
             <label class="form-label" for="sa-numero">Número de <%= current_logia.t_miembro.downcase %></label>

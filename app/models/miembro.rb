@@ -33,11 +33,11 @@ class Miembro < ApplicationRecord
 
   validates :numero_miembro, presence: true
   # La cédula la da al primer ingreso quien entró solo con el celular (CompletarDatosController). En un edificio o
-  # barrio no se exige: a un vecino no hace falta pedírsela.
+  # barrio no se exige (Logia#exige_cedula?).
   validates :cedula, presence: true, if: :cedula_obligatoria?
 
   def cedula_obligatoria? = !user&.debe_completar_datos? && exige_cedula?
-  def exige_cedula? = logia&.organizacion&.categoria&.nombre != "Barrio"
+  def exige_cedula? = logia.nil? || logia.exige_cedula?
   normalizes :cedula, with: -> { _1.strip.presence }
   validate :unica_en_su_comunidad
   validates :telefono, length: { maximum: 20 }, format: { with: /\A[\d\s+().-]*\z/, message: "solo admite números, espacios y + ( ) - ." },

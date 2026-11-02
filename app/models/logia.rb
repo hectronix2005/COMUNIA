@@ -68,6 +68,9 @@ class Logia < ApplicationRecord
   scope :reales,         -> { where(demo: false) }
   # La organización a la que pertenece: ella misma si es raíz.
   def organizacion = tenant || self
+
+  # A un vecino (edificio o barrio) no hace falta pedirle la cédula; al resto de comunidades, sí.
+  def exige_cedula? = organizacion.categoria&.nombre != "Barrio"
   # Ids de la organización y sus logias.
   def ids_de_la_organizacion = [organizacion.id, *organizacion.logias.ids]
 

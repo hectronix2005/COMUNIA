@@ -96,6 +96,24 @@ class SolicitudesAccesoTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/dashboard"
   end
 
+  test "en un edificio o barrio se aprueba con ficha nueva sin cédula; en un club, no" do
+    solicitud = solicitar
+    sign_in @admin
+    get "/solicitudes/#{solicitud.id}"
+    assert_select "label[for=sa-cedula]", text: "Cédula"
+    assert_no_difference -> { Miembro.count } do
+      post "/solicitudes/#{solicitud.id}/aprobar", params: { ficha: "nueva", cedula: "", numero_miembro: "N-997" }
+    end
+    assert solicitud.reload.pendiente?
+
+    @logia.update!(categoria: Categoria.find_or_create_by!(nombre: "Barrio"))
+    get "/solicitudes/#{solicitud.id}"
+    assert_select "label[for=sa-cedula]", text: "Cédula (opcional)"
+    assert_select "input#sa-cedula:not([required])"
+    post "/solicitudes/#{solicitud.id}/aprobar", params: { ficha: "nueva", cedula: "", numero_miembro: "N-997" }
+    assert_nil solicitud.reload.miembro.cedula
+  end
+
   test "rechazar borra la cuenta en espera" do
     solicitud = solicitar
     sign_in @admin
