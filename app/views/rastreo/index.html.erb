@@ -6,6 +6,49 @@
     la red ni lo escrito en los formularios. Se borra a mano cuando acaben las pruebas.</small>
 </div>
 
+<% if @actividad.any? %>
+  <h2 class="h5">Activos por semana</h2>
+  <p class="small text-muted">
+    De lunes a domingo, sobre los miembros activos de hoy. <strong>Entraron</strong>: abrieron COMUNIA en esa comunidad.
+    <strong>Participaron</strong>: publicaron, comentaron, dieron me gusta, escribieron en el chat, votaron, respondieron
+    a un evento o usaron «Pido / ofrezco». Meta: que entre el <%= (ActividadSemanal::META * 100).round %> % cada semana.
+    «—»: aún no había rastreo (empezó el 1-nov-2026).
+  </p>
+  <div class="table-responsive mb-4">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Comunidad</th><th class="text-end">Miembros</th>
+          <% @actividad.first.semanas.each do |semana| %>
+            <th class="text-end"><%= semana.en_curso? ? "Esta semana" : "Semana del #{l(semana.inicio.to_date, format: '%-d %b')}" %></th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @actividad.each do |fila| %>
+          <tr>
+            <td>
+              <%= fila.comunidad.nombre_display %>
+              <% if fila.en_meta? %><span class="badge bg-success ms-1">en la meta</span><% end %>
+            </td>
+            <td class="text-end"><%= fila.miembros %></td>
+            <% fila.semanas.each do |semana| %>
+              <td class="text-end small">
+                <% if semana.entraron.nil? %>
+                  <span class="text-muted">—</span>
+                <% else %>
+                  <span class="fw-semibold"><%= semana.entraron %></span> entraron (<%= fila.porcentaje(semana.entraron) %> %)
+                <% end %>
+                <div class="text-muted"><%= semana.participaron %> participaron</div>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
 <% if @dias.any? %>
   <h2 class="h5">Por día</h2>
   <p class="small text-muted">El de hoy te llega como aviso a las 9 p. m. Sin contar a los superadmins ni a <%= ResumenRastreo.usernames_sin_contar.to_sentence(two_words_connector: " y ", last_word_connector: " y ") %>.</p>

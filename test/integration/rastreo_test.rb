@@ -92,6 +92,8 @@ class RastreoTest < ActionDispatch::IntegrationTest
     get "/rastreo", headers: NAVEGADOR
     assert_response :ok
     assert_match @yo.nombre_completo, response.body
+    assert_match "Activos por semana", response.body
+    assert_match %r{<span class="fw-semibold">1</span> entraron \(100 %\)}, response.body, "#{@yo.nombre} entró en su comunidad"
     assert_equal 0, Ahoy::Visit.where(user: super_admin).count, "el panel no se rastrea a sí mismo"
 
     get "/rastreo/personas/#{@yo.id}"
