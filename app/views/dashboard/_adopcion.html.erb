@@ -6,6 +6,11 @@
     <div class="card-body">
       <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
         <h6 class="fw-bold mb-0 me-auto"><i class="bi bi-phone me-1"></i>Quién usa la app</h6>
+        <% if admin_de_la_comunidad? %>
+          <%= link_to semana_path, class: "btn btn-sm btn-outline-success" do %>
+            <i class="bi bi-whatsapp me-1"></i>Resumen de la semana
+          <% end %>
+        <% end %>
         <% if (a[:faltan] + a[:invitados]).positive? && policy(Miembro).invitar_en_bloque? %>
           <%= link_to acceso_miembros_path, class: "btn btn-sm btn-primary" do %>
             <i class="bi bi-send me-1"></i>Invitar a quienes faltan

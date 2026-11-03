@@ -252,6 +252,9 @@ Rails.application.routes.draw do
   # ── Directorio ──────────────────────────────────────────────
   resources :directorio, only: [:index, :show, :edit, :update]
 
+  # Lo de esta semana (ResumenSemanal): adonde lleva el aviso de los lunes; el admin copia el texto para WhatsApp.
+  get "semana", to: "semana#show", as: :semana
+
   # ── Muro / Feed ──────────────────────────────────────────
   resources :publicaciones, only: [:index, :create, :destroy] do
     member do

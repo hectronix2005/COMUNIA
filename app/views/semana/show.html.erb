@@ -1,0 +1,89 @@
+<% content_for(:title, "Esta semana") %>
+<% r = @resumen %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="fw-bold mb-1"><i class="bi bi-calendar-week me-2 text-primary"></i><%= r.titulo %></h4>
+    <p class="small text-muted mb-3">Lo de los próximos 7 días y lo nuevo del muro. Cada lunes te llega este resumen.</p>
+
+    <% if r.vacio? %>
+      <div class="card border-0 shadow-sm mb-3"><div class="card-body text-muted">Esta semana no hay nada programado ni publicaciones nuevas.</div></div>
+    <% end %>
+
+    <% if r.reuniones.any? %>
+      <h6 class="fw-bold mt-3"><%= current_logia.t_reuniones %></h6>
+      <div class="list-group mb-3">
+        <% r.reuniones.each do |reunion| %>
+          <%= link_to reunion_path(reunion), class: "list-group-item list-group-item-action" do %>
+            <div class="fw-semibold"><%= reunion.titulo %></div>
+            <div class="small text-muted"><%= r.cuando(reunion.inicio) %><%= " · #{reunion.lugar}" if reunion.lugar.present? %> · confirma si vas</div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if r.eventos.any? %>
+      <h6 class="fw-bold mt-3">Eventos</h6>
+      <div class="list-group mb-3">
+        <% r.eventos.each do |evento| %>
+          <%= link_to calendario_path(evento), class: "list-group-item list-group-item-action" do %>
+            <div class="fw-semibold"><%= evento.titulo %></div>
+            <div class="small text-muted"><%= r.cuando(evento.inicio, todo_el_dia: evento.todo_el_dia) %><%= " · #{evento.ubicacion}" if evento.ubicacion.present? %></div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if r.encuestas.any? %>
+      <h6 class="fw-bold mt-3">Encuestas por votar</h6>
+      <div class="list-group mb-3">
+        <% r.encuestas.each do |encuesta| %>
+          <%= link_to encuesta.titulo, encuesta_path(encuesta), class: "list-group-item list-group-item-action fw-semibold" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if r.cumpleanos.any? %>
+      <h6 class="fw-bold mt-3">Cumpleaños</h6>
+      <div class="list-group mb-3">
+        <% r.cumpleanos.each do |familiar, fecha| %>
+          <%= link_to hospitalia_cumpleanos_path(rango: 7), class: "list-group-item list-group-item-action" do %>
+            <div class="fw-semibold"><%= familiar.nombre_completo %></div>
+            <div class="small text-muted"><%= familiar.parentesco.downcase %> de <%= familiar.miembro.user.nombre_corto %> · <%= l(fecha, format: "%A %-d").capitalize %></div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if r.publicaciones.positive? %>
+      <h6 class="fw-bold mt-3">En el muro</h6>
+      <%= link_to publicaciones_path, class: "card border-0 shadow-sm mb-3 text-decoration-none text-body" do %>
+        <div class="card-body">
+          <div class="small text-muted mb-1"><%= pluralize(r.publicaciones, "publicación nueva", plural: "publicaciones nuevas") %> esta semana</div>
+          <% if (pub = r.publicacion_destacada) %>
+            <div class="fw-semibold"><%= pub.user.nombre_corto %></div>
+            <div><%= truncate(pub.contenido, length: 160) %></div>
+            <div class="small text-muted mt-1"><i class="bi bi-chat me-1"></i><%= pub.comentarios_count.to_i %> · <i class="bi bi-heart me-1"></i><%= pub.likes_count.to_i %></div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% if @whatsapp %>
+      <div class="card border-0 shadow-sm mt-4" data-controller="copiar">
+        <div class="card-body">
+          <h6 class="fw-bold"><i class="bi bi-whatsapp me-1 text-success"></i>Para el grupo de WhatsApp</h6>
+          <p class="small text-muted">
+            Solo lo de toda la comunidad, sin cumpleaños ni lo que dice el muro. Cópialo y pégalo en el grupo: es lo que
+            más trae a la gente a COMUNIA.
+          </p>
+          <textarea class="form-control small mb-2" rows="8" readonly data-copiar-target="texto"><%= @whatsapp %></textarea>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-primary" data-action="copiar#copiar" data-copiar-target="boton">Copiar</button>
+            <%= link_to "Abrir WhatsApp", whatsapp_url(nil, @whatsapp), class: "btn btn-sm btn-success", target: "_blank", rel: "noopener" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

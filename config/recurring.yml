@@ -35,8 +35,10 @@ production:
   cumpleanos_notificaciones:
     class: CumpleanosNotificacionJob
     schedule: at 7am every day
-  cumpleanos_semana:
-    class: CumpleanosSemanaJob
+  # Lo de la semana a todos los miembros (ResumenSemanalJob); trae los cumpleaños, así que sustituye al antiguo
+  # cumpleanos_semana (CumpleanosSemanaJob, que se queda sin programar).
+  resumen_semanal:
+    class: ResumenSemanalJob
     schedule: every monday at 7:05am
   recordatorio_reuniones:
     class: RecordatorioReunionesJob
