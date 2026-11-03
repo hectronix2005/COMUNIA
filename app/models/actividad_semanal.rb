@@ -3,7 +3,7 @@
 # 3-nov-2026 eran 5 de 51. Lo pinta /rastreo.
 #
 # «Entró» cuenta a quien hizo alguna petición bajo /t/<slug> de la comunidad (o de uno de sus grupos), según el
-# rastreo de Ahoy, que empezó el 1-nov-2026: las semanas anteriores salen sin dato. «Participó» cuenta a quien
+# rastreo de Ahoy, que empezó el 1-nov-2026: las semanas que empezaron antes salen sin dato. «Participó» cuenta a quien
 # publicó, comentó, dio me gusta, escribió en el chat, votó una encuesta, respondió a un evento, o pidió, ofreció o
 # respondió en «Pido / ofrezco». No cuenta a quienes no cuenta el rastreo (ResumenRastreo.sin_contar) ni la
 # comunidad de demostración.
@@ -42,7 +42,7 @@ class ActividadSemanal
       entradas = por_semana(entradas(miembros, slugs))
       participaciones = por_semana(participaciones(miembros, ids))
       semanas = inicios.map do |inicio|
-        entraron = inicio.end_of_week < rastreo_desde ? nil : entradas[inicio]&.size.to_i
+        entraron = inicio < rastreo_desde ? nil : entradas[inicio]&.size.to_i # a medias no vale
         Semana.new(inicio:, entraron:, participaron: participaciones[inicio]&.size.to_i)
       end
       Fila.new(comunidad:, miembros: miembros.size, semanas:)

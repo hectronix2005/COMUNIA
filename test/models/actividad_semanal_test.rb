@@ -54,12 +54,13 @@ class ActividadSemanalTest < ActiveSupport::TestCase
     assert_equal 0, fila(filas, @fede.logia).actual.entraron
   end
 
-  test "las semanas de antes del rastreo salen sin dato; la demostración no sale" do
+  test "las semanas que empezaron antes del rastreo salen sin dato; la demostración no sale" do
     Ahoy::Visit.delete_all
-    Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid, started_at: Time.current)
+    Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid, started_at: 1.week.ago.end_of_week - 3.hours)
     @fede.logia.update!(slug: Demo::SLUG)
     filas = ActividadSemanal.filas
-    assert_nil fila(filas, @comunidad).semanas.last.entraron
+    assert_nil fila(filas, @comunidad).semanas.second.entraron, "la semana en que empezó el rastreo está a medias"
+    assert_equal 0, fila(filas, @comunidad).actual.entraron
     assert_nil fila(filas, @fede.logia)
   end
 end
