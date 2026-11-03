@@ -11,9 +11,14 @@ class PublicacionesController < ApplicationController
     @pub = Publicacion.new(publicacion_params)
     @pub.user = current_user
     @pub.logia = current_logia
+    # La pregunta de la semana: solo el admin de la comunidad; queda fijada arriba y sustituye a la anterior.
+    @pub.pregunta = @pub.fijada = params.dig(:publicacion, :pregunta) == "1" && admin_de_la_comunidad?
 
     if @pub.save
-      redirect_to publicaciones_path, notice: "Publicación creada."
+      if @pub.pregunta?
+        Publicacion.de_logias(logia_ids_de_la_organizacion).where(pregunta: true, fijada: true).where.not(id: @pub.id).update_all(fijada: false)
+      end
+      redirect_to publicaciones_path, notice: @pub.pregunta? ? "Pregunta de la semana publicada y fijada arriba." : "Publicación creada."
     else
       @publicaciones = Publicacion.de_logias(logia_ids_visibles).recientes
                                   .includes(:user, :logia).page(1).per(15)

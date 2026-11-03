@@ -4,10 +4,19 @@
 <div class="row justify-content-center">
   <div class="col-lg-7">
     <h4 class="fw-bold mb-1"><i class="bi bi-calendar-week me-2 text-primary"></i><%= r.titulo %></h4>
-    <p class="small text-muted mb-3">Lo de los próximos 7 días y lo nuevo del muro. Cada lunes te llega este resumen.</p>
+    <p class="small text-muted mb-3">Lo de los próximos 7 días, lo nuevo del muro y lo que piden y ofrecen. Cada lunes te llega este resumen.</p>
 
     <% if r.vacio? %>
       <div class="card border-0 shadow-sm mb-3"><div class="card-body text-muted">Esta semana no hay nada programado ni publicaciones nuevas.</div></div>
+    <% end %>
+
+    <% if r.pregunta %>
+      <%= link_to publicaciones_path(anchor: "pub-#{r.pregunta.id}"), class: "card border-0 shadow-sm mb-3 text-decoration-none text-body" do %>
+        <div class="card-body">
+          <div class="small text-muted mb-1"><i class="bi bi-question-circle me-1"></i>Pregunta de la semana · responde en el muro</div>
+          <div class="fw-semibold"><%= truncate(r.pregunta.contenido, length: 200) %></div>
+        </div>
+      <% end %>
     <% end %>
 
     <% if r.reuniones.any? %>
@@ -55,6 +64,24 @@
       </div>
     <% end %>
 
+    <% if r.favores.any? %>
+      <h6 class="fw-bold mt-3">Pido / ofrezco</h6>
+      <div class="list-group mb-3">
+        <% r.favores.first(6).each do |favor| %>
+          <%= link_to favor_path(favor), class: "list-group-item list-group-item-action d-flex align-items-center gap-2" do %>
+            <span class="badge <%= favor.pido? ? 'chip-aviso' : 'chip-info' %> flex-shrink-0"><%= favor.etiqueta %></span>
+            <span class="min-w-0">
+              <span class="fw-semibold d-block text-truncate"><%= favor.titulo %></span>
+              <span class="small text-muted"><%= favor.user.nombre_corto %></span>
+            </span>
+          <% end %>
+        <% end %>
+        <% if r.favores.size > 6 %>
+          <%= link_to "Ver los #{r.favores.size}", favores_path, class: "list-group-item list-group-item-action small" %>
+        <% end %>
+      </div>
+    <% end %>
+
     <% if r.publicaciones.positive? %>
       <h6 class="fw-bold mt-3">En el muro</h6>
       <%= link_to publicaciones_path, class: "card border-0 shadow-sm mb-3 text-decoration-none text-body" do %>
@@ -74,7 +101,7 @@
         <div class="card-body">
           <h6 class="fw-bold"><i class="bi bi-whatsapp me-1 text-success"></i>Para el grupo de WhatsApp</h6>
           <p class="small text-muted">
-            Solo lo de toda la comunidad, sin cumpleaños ni lo que dice el muro. Cópialo y pégalo en el grupo: es lo que
+            Solo lo de toda la comunidad, sin cumpleaños ni lo que dice el muro (de «Pido / ofrezco», solo cuántos hay). Cópialo y pégalo en el grupo: es lo que
             más trae a la gente a COMUNIA.
           </p>
           <textarea class="form-control small mb-2" rows="8" readonly data-copiar-target="texto"><%= @whatsapp %></textarea>

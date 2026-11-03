@@ -115,11 +115,11 @@ end
 puts "  Usuarios migrados a roles dinamicos"
 
 # === CATEGORÍAS DE COMUNIDAD === (las mismas que crea la migración 20261026020000)
-todos = Categoria::MODULOS.keys
+todos = Categoria::MODULOS.keys - %w[pido_ofrezco]
 [
   ["Masonería",   "bank",        "Hermano",  "Logia",    "Cuota",  "Tenida",    "Hospitalía",      "Planchas",   todos],
   ["Club",        "car-front",   "Socio",    "Grupo",    "Cuota",  "Encuentro", "Fondo social",    "Documentos", todos - %w[grados]],
-  ["Barrio",      "houses",      "Vecino",   "Conjunto", "Cuota",  "Asamblea",  "Fondo común",     "Actas",      todos - %w[grados biblioteca]],
+  ["Barrio",      "houses",      "Vecino",   "Conjunto", "Cuota",  "Asamblea",  "Fondo común",     "Actas",      todos - %w[grados biblioteca] + %w[pido_ofrezco]],
   ["Universidad", "mortarboard", "Egresado", "Cohorte",  "Aporte", "Encuentro", "Fondo solidario", "Documentos", todos - %w[grados]]
 ].each do |nombre, icono, miembro, logia, cobro, reunion, ayuda, documentos, modulos|
   Categoria.find_or_create_by!(nombre: nombre) do |c|

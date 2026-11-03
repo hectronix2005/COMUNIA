@@ -255,6 +255,15 @@ Rails.application.routes.draw do
   # Lo de esta semana (ResumenSemanal): adonde lleva el aviso de los lunes; el admin copia el texto para WhatsApp.
   get "semana", to: "semana#show", as: :semana
 
+  # Pido / ofrezco entre vecinos (FavoresController), si la comunidad tiene el módulo.
+  resources :favores, only: %i[index show new create] do
+    member do
+      post  :ayudar
+      patch :resolver
+      patch :cerrar
+    end
+  end
+
   # ── Muro / Feed ──────────────────────────────────────────
   resources :publicaciones, only: [:index, :create, :destroy] do
     member do

@@ -138,7 +138,7 @@
                 %>
                 <%# ── Comunidad ── %>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/noticias') || request.path.start_with?('/sombrillas') || request.path.start_with?('/encuestas') || request.path.start_with?('/directorio') %>"
+                  <a class="nav-link dropdown-toggle <%= 'active' if request.path.start_with?('/chat') || request.path.start_with?('/calendario') || request.path.start_with?('/hospitalia/cumpleanos') || request.path.start_with?('/publicaciones') || request.path.start_with?('/noticias') || request.path.start_with?('/sombrillas') || request.path.start_with?('/encuestas') || request.path.start_with?('/favores') || request.path.start_with?('/directorio') %>"
                      href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-people-fill"></i> Comunidad
                   </a>
@@ -166,6 +166,13 @@
                         <i class="bi bi-bar-chart me-2"></i>Encuestas
                       <% end %>
                     </li>
+                    <% if current_logia.modulo?(:pido_ofrezco) %>
+                      <li>
+                        <%= link_to favores_path, class: "dropdown-item #{'active' if request.path.start_with?('/favores')}" do %>
+                          <i class="bi bi-hand-thumbs-up me-2"></i>Pido / ofrezco
+                        <% end %>
+                      </li>
+                    <% end %>
                     <li><hr class="dropdown-divider my-1"></li>
                     <% if sombrillas_del_usuario.any? || current_user.rol_ref&.es_super_admin? %>
                       <li><h6 class="dropdown-header menu-grupo">CERCA DE TI</h6></li>

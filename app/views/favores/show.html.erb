@@ -1,0 +1,71 @@
+<% content_for(:title, @favor.titulo) %>
+<% mio = @favor.user_id == current_user.id %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="mb-3">
+      <%= link_to favores_path, class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Pido / ofrezco
+      <% end %>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <span class="badge <%= @favor.pido? ? 'chip-aviso' : 'chip-info' %> mb-2"><%= @favor.etiqueta %></span>
+        <h5 class="fw-bold"><%= @favor.titulo %></h5>
+        <% if @favor.detalle.present? %>
+          <p class="mb-2" style="white-space: pre-line"><%= @favor.detalle %></p>
+        <% end %>
+        <div class="text-muted small mb-3">
+          <%= @favor.user.nombre_corto %> · hace <%= time_ago_in_words(@favor.created_at) %>
+          <% if @favor.vigente? %>
+            · abierto hasta el <%= l(@favor.vence_el.to_date, format: "%-d de %B") %>
+          <% elsif @favor.estado == "resuelto" %>
+            · <span class="badge bg-success">Resuelto</span>
+          <% else %>
+            · <span class="badge bg-secondary">Ya no está abierto</span>
+          <% end %>
+        </div>
+
+        <% if !mio && @favor.vigente? %>
+          <%= button_to ayudar_favor_path(@favor), class: "btn btn-success w-100" do %>
+            <i class="bi bi-chat-dots me-1"></i><%= @favor.pido? ? "Puedo ayudar" : "Me interesa" %>
+          <% end %>
+          <div class="text-muted texto-chico mt-1 text-center">Se abre el chat privado con <%= @favor.user.nombre_corto %>.</div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if mio && @favor.abierto? %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="fw-semibold">¿Ya está resuelto?</h6>
+          <%= form_with url: resolver_favor_path(@favor), method: :patch, local: true do |f| %>
+            <% if @respuestas.any? %>
+              <p class="small text-muted mb-2">Dale las gracias a quien te ayudó: le llega un aviso.</p>
+              <% @respuestas.each do |r| %>
+                <div class="form-check">
+                  <%= f.radio_button :ayudante_id, r.user_id, class: "form-check-input", id: "ayudante_#{r.user_id}" %>
+                  <label class="form-check-label" for="ayudante_<%= r.user_id %>"><%= r.user.nombre_corto %></label>
+                  <%= link_to "chat", chat_path(con: r.user_id), class: "small ms-1" %>
+                </div>
+              <% end %>
+              <div class="form-check mb-2">
+                <%= f.radio_button :ayudante_id, "", class: "form-check-input", id: "ayudante_nadie", checked: true %>
+                <label class="form-check-label" for="ayudante_nadie">Nadie de la lista</label>
+              </div>
+            <% else %>
+              <p class="small text-muted mb-2">Aún no ha respondido nadie.</p>
+            <% end %>
+            <%= f.submit "Marcar como resuelto", class: "btn btn-sm btn-success" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @favor.abierto? && (mio || modera?(@favor)) %>
+      <%= button_to "Quitar de la lista", cerrar_favor_path(@favor), method: :patch, class: "btn btn-sm btn-outline-danger",
+                    form: { data: { turbo_confirm: "¿Quitarlo de «Pido / ofrezco»?" } } %>
+    <% end %>
+  </div>
+</div>

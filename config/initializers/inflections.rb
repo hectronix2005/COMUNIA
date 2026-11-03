@@ -44,4 +44,7 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "votacion", "votaciones"
   inflect.irregular "propuesta", "propuestas"
   inflect.irregular "opcion", "opciones"
+  # Pido / ofrezco
+  inflect.irregular "favor", "favores"
+  inflect.irregular "favor_respuesta", "favor_respuestas"
 end

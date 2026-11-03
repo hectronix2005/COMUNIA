@@ -17,6 +17,15 @@
                   placeholder: "¿Qué quieres compartir, #{current_user.nombre}?",
                   style: "resize:none;background:#f8fafc;" %>
           </div>
+          <%# La pregunta de la semana (fase 2 del plan de engagement): el admin la lanza y queda fijada arriba. %>
+          <% if admin_de_la_comunidad? %>
+            <div class="form-check small ms-5">
+              <%= f.check_box :pregunta, class: "form-check-input", id: "publicacion_pregunta" %>
+              <label class="form-check-label" for="publicacion_pregunta">
+                Es la <strong>pregunta de la semana</strong>: queda fijada arriba y sale en el resumen del lunes
+              </label>
+            </div>
+          <% end %>
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <%= f.file_field :imagenes, multiple: true, accept: "image/*", class: "form-control form-control-sm",
@@ -45,7 +54,9 @@
               <div class="text-muted texto-mini">
                 <%= time_ago_in_words(pub.created_at) %>
                 <span class="ms-1 badge bg-light text-dark texto-mini"><%= pub.logia.nombre %></span>
-                <% if pub.fijada? %>
+                <% if pub.pregunta? %>
+                  <span class="ms-1 badge chip-aviso texto-mini"><i class="bi bi-question-circle me-1"></i>Pregunta de la semana</span>
+                <% elsif pub.fijada? %>
                   <i class="bi bi-pin-fill ms-1 text-oro" title="Fijada"></i>
                 <% end %>
               </div>

@@ -1,0 +1,32 @@
+<%# En el panel: lo que piden y ofrecen los vecinos, con «Puedo ayudar» a un clic, y el atajo para pedir. %>
+<% if current_logia.modulo?(:pido_ofrezco) && !current_user.invitado? %>
+  <% favores = favores_del_panel %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+      <%= link_to favores_path, class: "fw-semibold text-decoration-none text-reset" do %>
+        <i class="bi bi-hand-thumbs-up me-2"></i>Pido / ofrezco
+      <% end %>
+      <%= link_to new_favor_path(tipo: "pido"), class: "small text-decoration-none" do %>
+        <i class="bi bi-megaphone me-1"></i>Pedir una mano
+      <% end %>
+    </div>
+    <% if favores.any? %>
+      <ul class="list-group list-group-flush">
+        <% favores.each do |favor| %>
+          <li class="list-group-item d-flex align-items-center gap-2">
+            <span class="badge <%= favor.pido? ? 'chip-aviso' : 'chip-info' %> flex-shrink-0"><%= favor.etiqueta %></span>
+            <div class="flex-grow-1 min-w-0">
+              <%= link_to favor.titulo, favor_path(favor), class: "text-decoration-none d-block text-truncate" %>
+              <div class="text-muted texto-chico"><%= favor.user.nombre_corto %></div>
+            </div>
+            <%= button_to (favor.pido? ? "Puedo ayudar" : "Me interesa"), ayudar_favor_path(favor), class: "btn btn-sm btn-success flex-shrink-0" %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="card-body small text-muted">
+        ¿Necesitas una escalera, alguien que riegue las plantas o una recomendación? Pídelo a tus vecinos.
+      </div>
+    <% end %>
+  </div>
+<% end %>

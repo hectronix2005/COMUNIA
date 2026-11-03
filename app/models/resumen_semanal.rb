@@ -1,12 +1,14 @@
 # Lo de esta semana en una comunidad: reuniones y eventos de los próximos 7 días, encuestas abiertas, el muro de
-# los últimos 7 días y, si están encendidos, los cumpleaños. Lo manda ResumenSemanalJob los lunes a todos los
+# los últimos 7 días, la pregunta de la semana, lo que piden y ofrecen los vecinos y, si están encendidos, los
+# cumpleaños. Lo manda ResumenSemanalJob los lunes a todos los
 # miembros activos, sin que lo pidan, y lo pinta /semana: según la investigación del 3-nov-2026, un resumen que
 # llega fuera de la app (43-59 % de apertura) trae más gente que esperar a que entren (~6 % al mes).
 #
 # Con persona, respeta el alcance de cada pantalla: reuniones y eventos de la raíz y de su grupo (los grupos
 # hermanos no se ven, como en AlcanceReuniones); muro y encuestas, de toda la comunidad; sin lo que ya votó ni lo
 # que escribió. Sin persona es el texto para el grupo de WhatsApp de la comunidad: solo lo de la raíz, sin
-# cumpleaños (son datos de familiares) ni lo que dice el muro (no sale de COMUNIA).
+# cumpleaños (son datos de familiares) ni lo que dice el muro o los «pido / ofrezco» (no sale de COMUNIA; solo
+# cuántos hay). La pregunta de la semana sí va: la escribe el admin para toda la comunidad.
 class ResumenSemanal
   DIAS = 7
 
@@ -18,7 +20,7 @@ class ResumenSemanal
     @ahora = ahora
   end
 
-  def vacio? = [reuniones, eventos, encuestas, cumpleanos].all?(&:empty?) && publicaciones.zero?
+  def vacio? = [reuniones, eventos, encuestas, cumpleanos, favores].all?(&:empty?) && publicaciones.zero? && pregunta.nil?
 
   def reuniones
     return [] unless comunidad.modulo?(:reuniones)
@@ -50,6 +52,25 @@ class ResumenSemanal
     @publicacion_destacada ||= muro.includes(:user).order(comentarios_count: :desc, likes_count: :desc, created_at: :desc).first
   end
 
+  # La pregunta de la semana que lanzó el admin en el muro (la última de los 7 días).
+  def pregunta
+    return @pregunta if defined?(@pregunta)
+
+    @pregunta = Publicacion.de_logias(ids_organizacion).where(pregunta: true, created_at: (ahora - DIAS.days)..ahora)
+                           .order(created_at: :desc).first
+  end
+
+  # «Pido / ofrezco» abiertos de los demás, si la comunidad tiene el módulo: los «pido» primero.
+  def favores
+    return [] unless comunidad.modulo?(:pido_ofrezco)
+
+    @favores ||= begin
+      abiertos = Favor.de_logias(ids_organizacion).vigentes.includes(:user)
+      abiertos = abiertos.where.not(user:) if user
+      abiertos.sort_by { [_1.pido? ? 0 : 1, -_1.created_at.to_i] }
+    end
+  end
+
   # [familiar, fecha] de los próximos 7 días, como CumpleanosSemanaJob, al que sustituye los lunes.
   def cumpleanos
     return [] unless user && comunidad.cumpleanos?
@@ -71,7 +92,10 @@ class ResumenSemanal
     partes << contar(eventos.size, "evento", "eventos")
     partes << contar(encuestas.size, "encuesta por votar", "encuestas por votar")
     partes << contar(cumpleanos.size, "cumpleaños", "cumpleaños")
+    partes << contar(favores.count(&:pido?), "vecino pide una mano", "vecinos piden una mano")
+    partes << contar(favores.count { !_1.pido? }, "oferta entre vecinos", "ofertas entre vecinos")
     partes << contar(publicaciones, "publicación nueva en el muro", "publicaciones nuevas en el muro")
+    partes.unshift("Pregunta de la semana: «#{pregunta.contenido.truncate(80)}»") if pregunta
     partes.compact.to_sentence(words_connector: ", ", two_words_connector: " y ", last_word_connector: " y ")
   end
 
@@ -81,6 +105,12 @@ class ResumenSemanal
     reuniones.each { lineas << "📅 #{_1.nombre} — #{cuando(_1.inicio)}#{" · #{_1.lugar}" if _1.lugar.present?}" }
     eventos.each { lineas << "🗓️ #{_1.titulo} — #{cuando(_1.inicio, todo_el_dia: _1.todo_el_dia)}#{" · #{_1.ubicacion}" if _1.ubicacion.present?}" }
     encuestas.each { lineas << "🗳️ Encuesta abierta: #{_1.titulo}" }
+    lineas << "❓ Pregunta de la semana: «#{pregunta.contenido.squish.truncate(200)}»" if pregunta
+    pidos = favores.count(&:pido?)
+    ofertas = favores.size - pidos
+    if favores.any?
+      lineas << "🙋 #{[contar(pidos, 'pedido de ayuda', 'pedidos de ayuda'), contar(ofertas, 'oferta', 'ofertas')].compact.join(' y ')} entre vecinos"
+    end
     lineas << "💬 #{contar(publicaciones, 'publicación nueva', 'publicaciones nuevas')} en el muro" if publicaciones.positive?
     lineas << "Esta semana no hay nada programado." if lineas.size == 2
     lineas += ["", "Confirma, vota y comenta en COMUNIA: #{enlace}"]

@@ -1,0 +1,59 @@
+<% content_for(:title, "Pido / ofrezco") %>
+
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-hand-thumbs-up me-2 text-oro"></i>Pido / ofrezco</h4>
+  <div class="d-flex gap-2">
+    <%= link_to new_favor_path(tipo: "pido"), class: "btn btn-sm btn-primary" do %>
+      <i class="bi bi-megaphone me-1"></i>Pedir una mano
+    <% end %>
+    <%= link_to new_favor_path(tipo: "ofrezco"), class: "btn btn-sm btn-outline-primary" do %>
+      <i class="bi bi-gift me-1"></i>Ofrecer algo
+    <% end %>
+  </div>
+</div>
+<p class="text-muted small mb-3">
+  Préstamos, favores, recomendaciones y lo que sepas hacer. Si puedes ayudar, toca «Puedo ayudar» y se abre el chat
+  con esa persona. Cada uno dura <%= Favor::VIGENCIA.in_days.to_i %> días.
+</p>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <ul class="nav nav-pills mb-3 small">
+      <% [[nil, "Todo"], ["pido", "Piden"], ["ofrezco", "Ofrecen"]].each do |tipo, texto| %>
+        <li class="nav-item"><%= link_to texto, favores_path(tipo:), class: "nav-link py-1 #{'active' if @tipo == tipo}" %></li>
+      <% end %>
+    </ul>
+
+    <% @favores.each do |favor| %>
+      <%= render "favor", favor: %>
+    <% end %>
+
+    <% if @favores.empty? %>
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-hand-thumbs-up fs-1 d-block mb-2 opacity-25"></i>
+        <p class="mb-1">Nadie ha pedido ni ofrecido nada por ahora.</p>
+        <p class="small">¿Necesitas una escalera, alguien que riegue las plantas o una recomendación? Pídelo aquí.</p>
+      </div>
+    <% end %>
+
+    <% if @mios.any? %>
+      <h6 class="fw-semibold mt-4 mb-2 text-muted">Lo tuyo que ya no está abierto</h6>
+      <ul class="list-group mb-3">
+        <% @mios.each do |favor| %>
+          <li class="list-group-item d-flex justify-content-between align-items-center small">
+            <%= link_to favor.titulo, favor_path(favor), class: "text-decoration-none text-truncate" %>
+            <span class="text-muted flex-shrink-0 ms-2">
+              <% if favor.estado == "resuelto" %>
+                Resuelto<%= " con #{favor.ayudante.nombre_corto}" if favor.ayudante %>
+              <% elsif favor.estado == "cerrado" %>
+                Cerrado
+              <% else %>
+                Vencido
+              <% end %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

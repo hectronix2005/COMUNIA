@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -382,6 +382,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
     t.index ["user_id"], name: "index_evento_confirmaciones_on_user_id"
   end
 
+  create_table "favor_respuestas", force: :cascade do |t|
+    t.bigint "favor_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["favor_id", "user_id"], name: "index_favor_respuestas_on_favor_id_and_user_id", unique: true
+    t.index ["favor_id"], name: "index_favor_respuestas_on_favor_id"
+    t.index ["user_id"], name: "index_favor_respuestas_on_user_id"
+  end
+
+  create_table "favores", force: :cascade do |t|
+    t.bigint "logia_id", null: false
+    t.bigint "user_id", null: false
+    t.string "tipo", null: false
+    t.string "titulo", limit: 120, null: false
+    t.text "detalle"
+    t.string "estado", default: "abierto", null: false
+    t.datetime "resuelto_at"
+    t.bigint "ayudante_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ayudante_id"], name: "index_favores_on_ayudante_id"
+    t.index ["logia_id", "estado", "created_at"], name: "index_favores_on_logia_id_and_estado_and_created_at"
+    t.index ["logia_id"], name: "index_favores_on_logia_id"
+    t.index ["user_id"], name: "index_favores_on_user_id"
+    t.check_constraint "estado::text = ANY (ARRAY['abierto'::character varying, 'resuelto'::character varying, 'cerrado'::character varying]::text[])", name: "favores_estado"
+    t.check_constraint "tipo::text = ANY (ARRAY['pido'::character varying, 'ofrezco'::character varying]::text[])", name: "favores_tipo"
+  end
+
   create_table "hospitalia_gastos", force: :cascade do |t|
     t.string "concepto", null: false
     t.decimal "monto", precision: 12, scale: 2, null: false
@@ -703,6 +732,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
     t.integer "comentarios_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "pregunta", default: false, null: false
     t.index ["logia_id", "created_at"], name: "index_publicaciones_on_logia_id_and_created_at", order: { created_at: :desc }
     t.index ["logia_id"], name: "index_publicaciones_on_logia_id"
     t.index ["user_id"], name: "index_publicaciones_on_user_id"
@@ -1198,6 +1228,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120000) do
   add_foreign_key "encuestas", "users"
   add_foreign_key "evento_confirmaciones", "calendario_eventos"
   add_foreign_key "evento_confirmaciones", "users"
+  add_foreign_key "favor_respuestas", "favores", on_delete: :cascade
+  add_foreign_key "favor_respuestas", "users"
+  add_foreign_key "favores", "logias"
+  add_foreign_key "favores", "users"
+  add_foreign_key "favores", "users", column: "ayudante_id"
   add_foreign_key "logias", "categorias"
   add_foreign_key "logias", "logias", column: "tenant_id"
   add_foreign_key "logias", "sombrillas"

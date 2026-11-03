@@ -8,7 +8,8 @@ class Categoria < ApplicationRecord
     "ayuda"      => "Fondo de ayuda (recaudos y gastos)",
     "negocios"   => "Negocios",
     "reuniones"  => "Reuniones (convocatoria, asistencia y acta)",
-    "grados"     => "Grados de los miembros"
+    "grados"     => "Grados de los miembros",
+    "pido_ofrezco" => "Pido / ofrezco entre vecinos"
   }.freeze
 
   TERMINOS = %w[miembro logia cobro reunion ayuda documentos].freeze
