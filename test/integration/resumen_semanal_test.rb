@@ -71,12 +71,16 @@ class ResumenSemanalTest < ActionDispatch::IntegrationTest
 
   test "el lunes avisa a cada miembro activo con algo que ver, y a nadie de una comunidad sin nada" do
     callado = vecino("Ciro")
+    de_demo = vecino("Dora")
+    de_demo.logia.update!(slug: Demo::SLUG)
+    Publicacion.create!(logia: de_demo.logia, user: callado, contenido: "Algo que ver")
     assert_difference -> { Notificacion.where(tipo: "resumen_semanal", user: [@admin, @vera, @beto]).count }, 3 do
       ResumenSemanalJob.perform_now
     end
     aviso = Notificacion.find_by!(tipo: "resumen_semanal", user: @vera)
     assert_equal [@comunidad, "/semana"], [aviso.logia, aviso.url]
     assert_not Notificacion.exists?(tipo: "resumen_semanal", user: callado)
+    assert_not Notificacion.exists?(tipo: "resumen_semanal", user: de_demo), "la comunidad de demostración no recibe"
   end
 
   test "la página /semana: el miembro ve lo suyo; solo el admin de la comunidad tiene el texto para WhatsApp" do

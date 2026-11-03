@@ -5,7 +5,8 @@ class ResumenSemanalJob < ApplicationJob
   queue_as :default
 
   def perform
-    Logia.tenants_raiz.find_each do |comunidad|
+    # La comunidad de demostración (Demo) es de cuentas ficticias: a nadie le sirve su resumen.
+    Logia.tenants_raiz.where.not(slug: Demo::SLUG).find_each do |comunidad|
       ids = [comunidad.id, *comunidad.logias.ids]
       User.where(id: Miembro.where(logia_id: ids).activos.select(:user_id)).find_each do |user|
         resumen = ResumenSemanal.new(comunidad, user:)
