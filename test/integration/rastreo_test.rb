@@ -89,6 +89,8 @@ class RastreoTest < ActionDispatch::IntegrationTest
     super_admin = User.create!(nombre: "Super", apellido: "Prueba", email: "super_#{SecureRandom.hex(3)}@correo.co",
                                password: "password123", rol_ref: rol)
     sign_in super_admin
+    # El rastreo empezó antes de esta semana; si no, esta semana estaría a medias y saldría sin dato.
+    Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: SecureRandom.uuid, started_at: 30.days.ago)
     get "/rastreo", headers: NAVEGADOR
     assert_response :ok
     assert_match @yo.nombre_completo, response.body
