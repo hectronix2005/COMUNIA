@@ -205,11 +205,13 @@
                         <i class="bi bi-calendar3 me-2"></i>Calendario
                       <% end %>
                     </li>
-                    <li>
-                      <%= link_to hospitalia_cumpleanos_path, class: "dropdown-item #{'active' if request.path.start_with?('/hospitalia/cumpleanos')}" do %>
-                        <i class="bi bi-balloon-heart me-2 text-warning"></i>Cumpleaños
-                      <% end %>
-                    </li>
+                    <% if current_logia.cumpleanos? %>
+                      <li>
+                        <%= link_to hospitalia_cumpleanos_path, class: "dropdown-item #{'active' if request.path.start_with?('/hospitalia/cumpleanos')}" do %>
+                          <i class="bi bi-balloon-heart me-2 text-warning"></i>Cumpleaños
+                        <% end %>
+                      </li>
+                    <% end %>
                   </ul>
                 </li>
 

@@ -73,7 +73,7 @@
       </div>
       <div class="card-body">
         <p class="text-muted small">
-          Muro, chat, encuestas, directorio, calendario y cumpleaños están siempre.
+          Muro, chat, encuestas, directorio, calendario y cumpleaños están siempre; en un Barrio, Cumpleaños lo enciende su admin.
           <% if logia.categoria %>
             Su categoría, <%= logia.categoria.nombre %>, trae:
             <%= logia.categoria.modulos.map { Categoria::MODULOS[_1] }.to_sentence.presence || "ninguno" %>.

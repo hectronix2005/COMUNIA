@@ -122,7 +122,7 @@ class DashboardController < ApplicationController
     recaudado = HospitaliaRecaudo.where(logia_id: ids).sum(:monto)
     gastado   = HospitaliaGasto.where(logia_id: ids).sum(:monto)
     @hospitalia_saldo = recaudado - gastado
-    @hospitalia_cumpleanos = MiembroFamiliar
+    @hospitalia_cumpleanos = logia.cumpleanos? && MiembroFamiliar
                                .joins(miembro: :logia)
                                .where(logias: { id: ids })
                                .con_cumpleanos

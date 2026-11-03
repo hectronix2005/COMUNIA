@@ -1,7 +1,11 @@
 class HospitaliaController < ApplicationController
-  before_action -> { requiere_modulo!(:ayuda) }, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar]
+  before_action -> { requiere_modulo!(:ayuda) }, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar
+                                                              configuracion_cumpleanos guardar_cumpleanos]
   include ActionView::Helpers::NumberHelper
-  before_action :require_hospitalario!, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar]
+  before_action :require_hospitalario!, except: %i[cumpleanos enviar_felicitacion familiares create_familiar destroy_familiar
+                                                    configuracion_cumpleanos guardar_cumpleanos]
+  before_action :exigir_cumpleanos, only: %i[cumpleanos enviar_felicitacion]
+  before_action :exigir_admin_de_la_comunidad, only: %i[configuracion_cumpleanos guardar_cumpleanos]
 
   def index
     @recaudos = HospitaliaRecaudo.de_logia(current_logia.id).ordenados.limit(10)
@@ -108,6 +112,21 @@ class HospitaliaController < ApplicationController
     redirect_to hospitalia_cumpleanos_path, notice: "Felicitación enviada a #{miembro.user.nombre_completo}."
   end
 
+  # En un edificio o barrio, Cumpleaños lo enciende o apaga el admin de la comunidad, no el de un grupo.
+  def configuracion_cumpleanos
+    @comunidad = current_logia.organizacion
+  end
+
+  def guardar_cumpleanos
+    @comunidad = current_logia.organizacion
+    @comunidad.update!(cumpleanos_activos: params.dig(:cumpleanos, :activos) == "1")
+    if @comunidad.cumpleanos_activos
+      redirect_to hospitalia_cumpleanos_path, notice: "Cumpleaños encendido para toda la comunidad."
+    else
+      redirect_to hospitalia_configuracion_cumpleanos_path, notice: "Cumpleaños apagado."
+    end
+  end
+
   # ── Familiares ────────────────────────────────────────────────
   def familiares
     @miembro  = miembro_con_familia
@@ -135,6 +154,19 @@ class HospitaliaController < ApplicationController
   end
 
   private
+
+  def exigir_cumpleanos
+    return if current_logia.cumpleanos?
+    return redirect_to(hospitalia_configuracion_cumpleanos_path) if admin_de_la_comunidad? && request.get?
+
+    redirect_to dashboard_path, alert: "Tu comunidad no tiene Cumpleaños."
+  end
+
+  def exigir_admin_de_la_comunidad
+    return if current_logia.cumpleanos_opcional? && admin_de_la_comunidad?
+
+    redirect_to dashboard_path, alert: "Solo el administrador de la comunidad enciende Cumpleaños."
+  end
 
   # Lo usan las vistas de recaudos y gastos para mostrar los formularios; misma
   # regla que require_hospitalario! (sin él las dos páginas daban 500).

@@ -60,6 +60,7 @@
         <div class="text-muted texto-chico">Egresos del fondo</div>
       <% end %>
     </div>
+    <% if current_logia.cumpleanos? %>
     <div class="col-6 col-md-3">
       <%= link_to hospitalia_cumpleanos_path, class: "card border-0 shadow-sm text-decoration-none text-dark text-center p-3 h-100" do %>
         <i class="bi bi-balloon-heart text-warning fs-4 d-block mb-2"></i>
@@ -67,6 +68,7 @@
         <div class="text-muted texto-chico">Próximas fechas</div>
       <% end %>
     </div>
+    <% end %>
     <div class="col-6 col-md-3">
       <% miembro_actual = current_user.miembro %>
       <% if miembro_actual %>

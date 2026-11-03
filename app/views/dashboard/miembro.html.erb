@@ -53,7 +53,7 @@
                         [encuestas_path, "bi-bar-chart", "Encuestas"], [directorio_index_path, "bi-person-vcard", "Directorio"],
                         [calendario_index_path, "bi-calendar3", "Calendario"]]
              accesos << [reuniones_path, "bi-people", current_logia.t_reuniones] if current_logia.modulo?(:reuniones)
-             accesos << [hospitalia_cumpleanos_path, "bi-balloon-heart", "Cumpleaños"] %>
+             accesos << [hospitalia_cumpleanos_path, "bi-balloon-heart", "Cumpleaños"] if current_logia.cumpleanos? %>
           <% accesos.each do |ruta, icono, titulo| %>
             <div class="col-6 col-md-4">
               <%= link_to ruta, class: "acceso py-2" do %>
@@ -106,7 +106,9 @@
           <% if current_user.tiene_cargo?("Hospitalario") %>
             <%= link_to hospitalia_path, class: "btn btn-light border" do %><i class="bi bi-wallet2 me-1"></i>Resumen<% end %>
           <% end %>
-          <%= link_to hospitalia_cumpleanos_path, class: "btn btn-light border" do %><i class="bi bi-balloon-heart me-1"></i>Cumpleaños<% end %>
+          <% if current_logia.cumpleanos? %>
+            <%= link_to hospitalia_cumpleanos_path, class: "btn btn-light border" do %><i class="bi bi-balloon-heart me-1"></i>Cumpleaños<% end %>
+          <% end %>
           <% if current_user.miembro %>
             <%= link_to hospitalia_familiares_path(miembro_id: current_user.miembro.id), class: "btn btn-light border" do %><i class="bi bi-people me-1"></i>Mi familia<% end %>
           <% end %>

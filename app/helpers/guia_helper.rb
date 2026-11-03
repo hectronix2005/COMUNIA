@@ -12,7 +12,9 @@ module GuiaHelper
     if logia.modulo?(:reuniones)
       dia << guia_item("bi-people", logia.t_reuniones, "Convocatorias, asistencia y actas. Confirma si vas con un toque.", reuniones_path)
     end
-    dia << guia_item("bi-balloon-heart", "Cumpleaños", "Quién cumple este mes, para que nadie quede sin saludo.", hospitalia_cumpleanos_path)
+    if logia.cumpleanos?
+      dia << guia_item("bi-balloon-heart", "Cumpleaños", "Quién cumple este mes, para que nadie quede sin saludo.", hospitalia_cumpleanos_path)
+    end
     dia << guia_item("bi-bell", "Notificaciones", "Todo lo que te ha llegado: convocatorias, respuestas y recordatorios.", notificaciones_path)
     secciones << ["Tu día a día", dia]
 

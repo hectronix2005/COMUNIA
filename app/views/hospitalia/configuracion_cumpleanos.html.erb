@@ -1,0 +1,24 @@
+<% content_for(:title, "Cumpleaños") %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="fw-bold mb-1"><i class="bi bi-balloon-heart me-2 text-warning"></i>Cumpleaños</h4>
+    <p class="small text-muted mb-3">
+      En <strong><%= @comunidad.nombre %></strong>, Cumpleaños está apagado hasta que lo enciendas. Encendido, todos los
+      vecinos ven las fechas que cada uno haya registrado de su familia y reciben un aviso el día y un resumen cada lunes.
+    </p>
+
+    <%= form_with url: hospitalia_configuracion_cumpleanos_path, method: :patch, scope: :cumpleanos, local: true, class: "card" do |f| %>
+      <div class="card-body">
+        <div class="form-check form-switch">
+          <%= f.check_box :activos, { checked: @comunidad.cumpleanos_activos, class: "form-check-input", id: "cumpleanos_activos" }, "1", "0" %>
+          <label class="form-check-label fw-semibold" for="cumpleanos_activos">Mostrar Cumpleaños en la comunidad</label>
+        </div>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <% if @comunidad.cumpleanos_activos %><%= link_to "Ver los cumpleaños", hospitalia_cumpleanos_path, class: "small" %><% else %><span></span><% end %>
+        <%= f.submit "Guardar", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

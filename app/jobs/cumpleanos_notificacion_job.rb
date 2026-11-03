@@ -5,6 +5,8 @@ class CumpleanosNotificacionJob < ApplicationJob
     hoy = Date.current
 
     Logia.tenants_raiz.find_each do |tenant|
+      next unless tenant.cumpleanos?
+
       logia_ids = [tenant.id] + tenant.logias.pluck(:id)
       miembros = Miembro.where(logia_id: logia_ids).activos.includes(:user, :familiares)
 

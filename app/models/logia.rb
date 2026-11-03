@@ -55,6 +55,7 @@ class Logia < ApplicationRecord
     errors.add(:noticias_busquedas, "deben tener entre 3 y 80 letras") if noticias_busquedas.any? { !_1.length.between?(3, 80) }
     errors.add(:noticias_busquedas, "necesitan al menos una búsqueda") if noticias_activas && noticias_busquedas.empty?
     errors.add(:noticias_activas, "se encienden en la comunidad, no en uno de sus grupos") if noticias_activas && tenant_id
+    errors.add(:cumpleanos_activos, "se encienden en la comunidad, no en uno de sus grupos") if cumpleanos_activos && tenant_id
   end
   validate if: :sombrilla_id do
     errors.add(:sombrilla, "se ancla la comunidad, no uno de sus grupos") if tenant_id
@@ -71,6 +72,12 @@ class Logia < ApplicationRecord
 
   # A un vecino (edificio o barrio) no hace falta pedirle la cédula; al resto de comunidades, sí.
   def exige_cedula? = organizacion.categoria&.nombre != "Barrio"
+
+  # Cumpleaños es del núcleo, salvo en las categorías de esta lista: ahí está apagado hasta que el admin de la
+  # comunidad lo encienda (Héctor, 3-nov-2026: en un edificio no todos quieren que se sepa su fecha).
+  CATEGORIAS_CUMPLEANOS_OPCIONAL = %w[Barrio].freeze
+  def cumpleanos_opcional? = organizacion.categoria&.nombre.in?(CATEGORIAS_CUMPLEANOS_OPCIONAL)
+  def cumpleanos? = !cumpleanos_opcional? || organizacion.cumpleanos_activos
   # Ids de la organización y sus logias.
   def ids_de_la_organizacion = [organizacion.id, *organizacion.logias.ids]
 

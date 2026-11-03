@@ -12,6 +12,11 @@
         <% if @rango.positive? %>en los próximos <%= @rango %> días<% else %>registrados<% end %>
       </p>
     </div>
+    <% if current_logia.cumpleanos_opcional? && admin_de_la_comunidad? %>
+      <%= link_to hospitalia_configuracion_cumpleanos_path, class: "btn btn-sm btn-outline-secondary ms-auto" do %>
+        <i class="bi bi-gear me-1"></i>Encender o apagar
+      <% end %>
+    <% end %>
   </div>
 
   <%# ── Filtros de rango ──────────────────────────────────── %>

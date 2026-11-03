@@ -372,6 +372,8 @@ Rails.application.routes.draw do
   post   "hospitalia/gastos",                  to: "hospitalia#create_gasto",    as: :hospitalia_create_gasto
   delete "hospitalia/gastos/:id",              to: "hospitalia#destroy_gasto",   as: :hospitalia_destroy_gasto
   get    "hospitalia/cumpleanos",              to: "hospitalia#cumpleanos",      as: :hospitalia_cumpleanos
+  get    "hospitalia/cumpleanos/configuracion", to: "hospitalia#configuracion_cumpleanos", as: :hospitalia_configuracion_cumpleanos
+  patch  "hospitalia/cumpleanos/configuracion", to: "hospitalia#guardar_cumpleanos"
   post   "hospitalia/felicitacion",            to: "hospitalia#enviar_felicitacion", as: :hospitalia_enviar_felicitacion
   get    "hospitalia/familiares",              to: "hospitalia#familiares",      as: :hospitalia_familiares
   post   "hospitalia/familiares",              to: "hospitalia#create_familiar", as: :hospitalia_create_familiar
