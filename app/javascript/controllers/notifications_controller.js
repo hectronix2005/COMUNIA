@@ -78,7 +78,7 @@ export default class extends Controller {
       const json = sub.toJSON()
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 
-      await fetch("/push_subscriptions", {
+      const respuesta = await fetch("/push_subscriptions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,9 +90,20 @@ export default class extends Controller {
           auth: json.keys.auth
         })
       })
+      this.anotarSuscripcion(respuesta.ok ? "guardada" : `el servidor respondió ${respuesta.status}`)
     } catch (err) {
       console.warn("Push subscription failed:", err)
+      this.anotarSuscripcion(String(err?.message || err).slice(0, 200))
     }
+  }
+
+  // Al rastreo (rastreo.js), solo cuando cambia: en cada carga se vuelve a guardar la misma suscripción.
+  anotarSuscripcion(resultado) {
+    try {
+      if (sessionStorage.getItem("avisos_suscripcion") === resultado) return
+      sessionStorage.setItem("avisos_suscripcion", resultado)
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent("rastreo:evento", { detail: { nombre: "Avisos: suscripción", datos: { resultado } } }))
   }
 
   urlBase64ToUint8Array(base64String) {

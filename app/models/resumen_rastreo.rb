@@ -41,6 +41,7 @@ class ResumenRastreo
     invitaciones_abiertas.each do |user, segundos|
       lineas << "#{nombre(user)}: abrió la invitación, no la aceptó; #{duracion(segundos)}."
     end
+    lineas << linea_de_avisos if personas.any?
     if sin_entrar.any?
       lineas << "Sin entrar: #{enumerar(sin_entrar.map { nombre(_1) })} (#{sin_entrar.one? ? 'invitación pendiente' : 'invitaciones pendientes'})."
     end
@@ -83,6 +84,13 @@ class ResumenRastreo
                         .where(invitation_created_at: User.invite_for.ago(fin)..fin)
                         .where.not(id: self.class.sin_contar).where.not(id: invitaciones_abiertas.map { _1.first.id } + personas.map { _1[:user].id })
                         .order(:nombre).to_a
+  end
+
+  # Sin avisos activados no llegan los recordatorios; en iPhone hace falta instalar la app (3-nov-2026).
+  def linea_de_avisos
+    con, sin = personas.map { _1[:user] }.partition { _1.push_subscriptions.exists? }
+    falta = " Les faltan a #{enumerar(sin.map { nombre(_1) })}." if sin.any?
+    "Avisos activados: #{con.size} de #{personas.size}.#{falta}"
   end
 
   def errores

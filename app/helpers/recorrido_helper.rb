@@ -11,15 +11,26 @@ module RecorridoHelper
     current_user.invitado? || current_user.recorrido_visto_at.nil?
   end
 
+  # En iPhone los avisos solo llegan con la app en la pantalla de inicio: el paso lo dice, y la tarjeta da los pasos.
+  def paso_de_avisos
+    if request.user_agent.to_s.match?(/iPhone|iPad|iPod/)
+      paso(dashboard_path, "avisos", "Recibe los avisos",
+           "En iPhone los avisos solo llegan con la app en tu pantalla de inicio. Aquí tienes los tres pasos; " \
+           "te toma un minuto y así no te pierdes las convocatorias.", opcional: true)
+    else
+      paso(dashboard_path, "avisos", "Activa los avisos",
+           "Así te llegan al teléfono las convocatorias y los recordatorios, sin tener que entrar a mirar.",
+           opcional: true)
+    end
+  end
+
   def pasos_del_recorrido
     logia = current_logia
     pasos = [
       paso(dashboard_path, "saludo", "Te damos la bienvenida",
            "En un minuto te enseño dónde está cada cosa en #{logia.nombre_display}. Puedes salir cuando quieras; " \
            "el recorrido queda en la Guía para repetirlo."),
-      paso(dashboard_path, "avisos", "Activa los avisos",
-           "Así te llegan al teléfono las convocatorias y los recordatorios, sin tener que entrar a mirar.",
-           opcional: true),
+      paso_de_avisos,
       paso(dashboard_path, "proxima", "Lo próximo",
            "Aquí aparece el siguiente encuentro. Confirma si vas con un toque: quien organiza lo ve al instante.",
            opcional: true),

@@ -64,6 +64,12 @@ document.addEventListener("submit", (e) => {
   ahoy.track("$submit", { page: location.pathname, id: f.id || null, accion: sinQuery(f.action), metodo: (f.querySelector("[name=_method]")?.value || f.method || "get").toUpperCase() })
 }, true)
 
+// Eventos con nombre que mandan los controladores (los pasos para activar los avisos, por ejemplo).
+addEventListener("rastreo:evento", (e) => {
+  if (!activo() || !e.detail?.nombre) return
+  ahoy.track(String(e.detail.nombre).slice(0, 60), { page: location.pathname, ...(e.detail.datos || {}) })
+})
+
 function errorNavegador(datos) {
   if (!activo()) return
   ahoy.track("Error del navegador", { page: location.pathname, ...datos })

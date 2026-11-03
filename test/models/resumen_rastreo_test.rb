@@ -43,8 +43,15 @@ class ResumenRastreoTest < ActiveSupport::TestCase
     assert_equal "Rastreo de hoy: 2 personas, 1 error", resumen.titulo
     assert_equal ["Nelson: 2 visitas, 14 min; llegó a Inicio, Calendario y Chat.",
                   "David: abrió la invitación, no la aceptó; 2 min.",
+                  "Avisos activados: 0 de 1. Les faltan a Nelson.",
                   "Sin entrar: Hernán (invitación pendiente).",
                   "1 error: 500 en /chat (Nelson)."], resumen.lineas
+  end
+
+  test "cuenta quién tiene los avisos activados" do
+    vista(visita(@nelson), "Inicio", 60)
+    @nelson.push_subscriptions.create!(endpoint: "https://push.example.com/n", p256dh: "clave", auth: "secreto")
+    assert_includes ResumenRastreo.new(Time.zone.today).lineas, "Avisos activados: 1 de 1."
   end
 
   test "lo de otro día no entra, y un día sin nadie queda vacío y no avisa" do

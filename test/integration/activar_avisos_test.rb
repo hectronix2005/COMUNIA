@@ -17,10 +17,20 @@ class ActivarAvisosTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_includes response.body, 'data-controller="activar-avisos"'
     assert_includes response.body, "Activa los avisos en este teléfono"
+    assert_includes response.body, "Recibe los avisos en tu iPhone", "los pasos para instalarla van en la misma tarjeta"
 
     post "/push_subscriptions", params: { endpoint: "https://push.example.com/abc", p256dh: "clave", auth: "secreto" }, as: :json
     assert_equal 1, @socio.push_subscriptions.count
     get "/t/#{@mercedes.slug}/dashboard"
     assert_not_includes response.body, "Activa los avisos en este teléfono"
+  end
+
+  test "en iPhone, el recorrido dice que hay que instalar la app" do
+    iphone = { "HTTP_USER_AGENT" => "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1" }
+    sign_in @socio
+    get "/t/#{@mercedes.slug}/dashboard", headers: iphone
+    assert_includes response.body, "En iPhone los avisos solo llegan con la app en tu pantalla de inicio"
+    get "/t/#{@mercedes.slug}/dashboard"
+    assert_not_includes response.body, "En iPhone los avisos solo llegan con la app en tu pantalla de inicio"
   end
 end

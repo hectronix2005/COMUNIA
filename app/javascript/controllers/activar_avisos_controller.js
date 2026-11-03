@@ -1,23 +1,28 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Tarjeta del panel para activar los avisos en este teléfono con un toque (iPhone solo pide permiso así, y solo
-// con la app instalada). Si ya están activados, no sale; «Ahora no» la esconde dos semanas en este navegador.
-// La suscripción push la hace notifications_controller al recibir «avisos:permitidos».
+// con la app instalada: en Safari enseña los tres pasos para instalarla). Si ya están activados, no sale;
+// «Ahora no» la esconde tres días en este navegador. La suscripción push la hace notifications_controller al
+// recibir «avisos:permitidos». Cada paso se anota en el rastreo para ver dónde se queda la gente.
 const AHORA_NO = "avisos_ahora_no"
-const DOS_SEMANAS = 14 * 24 * 60 * 60 * 1000
+const TRES_DIAS = 3 * 24 * 60 * 60 * 1000
 
 export default class extends Controller {
-  static targets = ["boton", "estado"]
+  static targets = ["boton", "estado", "normal", "iphone"]
 
   connect() {
-    if (this.pospuesta()) return
     const iphone = /iPhone|iPad|iPod/.test(navigator.userAgent)
-    const instalada = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone
+    const instalada = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true
+    const admite = ("Notification" in window) && ("PushManager" in window)
+    this.anotarUnaVez("Avisos: tarjeta", {
+      iphone, instalada, admite, permiso: admite ? Notification.permission : "sin soporte", pospuesta: this.pospuesta()
+    })
+    if (this.pospuesta()) return
 
-    if (!("Notification" in window) || !("PushManager" in window)) {
+    if (!admite) {
       if (!iphone || instalada) return
-      this.decir("En iPhone, primero instala la app: toca Compartir y luego «Añadir a pantalla de inicio». Ábrela desde ahí y activa los avisos.")
-      this.botonTarget.classList.add("d-none")
+      this.normalTarget.classList.add("d-none")
+      this.iphoneTarget.classList.remove("d-none")
     } else if (Notification.permission === "granted") {
       return
     } else if (Notification.permission === "denied") {
@@ -29,6 +34,7 @@ export default class extends Controller {
 
   async activar() {
     const permiso = await Notification.requestPermission()
+    this.anotar("Avisos: permiso", { resultado: permiso })
     if (permiso === "granted") {
       window.dispatchEvent(new CustomEvent("avisos:permitidos"))
       this.decir("Listo: los avisos llegarán a este teléfono.")
@@ -44,11 +50,24 @@ export default class extends Controller {
   }
 
   pospuesta() {
-    try { return Date.now() - Number(localStorage.getItem(AHORA_NO) || 0) < DOS_SEMANAS } catch (_) { return false }
+    try { return Date.now() - Number(localStorage.getItem(AHORA_NO) || 0) < TRES_DIAS } catch (_) { return false }
   }
 
   decir(texto) {
     this.estadoTarget.textContent = texto
     this.estadoTarget.classList.remove("d-none")
+  }
+
+  // La tarjeta sale en cada visita al panel: al rastreo, una vez por sesión del navegador.
+  anotarUnaVez(nombre, datos) {
+    try {
+      if (sessionStorage.getItem("avisos_tarjeta")) return
+      sessionStorage.setItem("avisos_tarjeta", "1")
+    } catch (_) {}
+    this.anotar(nombre, datos)
+  }
+
+  anotar(nombre, datos) {
+    window.dispatchEvent(new CustomEvent("rastreo:evento", { detail: { nombre, datos } }))
   }
 }
