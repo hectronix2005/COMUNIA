@@ -57,7 +57,7 @@ gem "web-push", "~> 3.0"
 # Authentication
 gem "devise", "~> 5.0", ">= 5.0.4"
 # Invitaciones de un solo uso para los miembros que crea un admin (el enlace se manda por WhatsApp)
-gem "devise_invitable", "~> 2.0", ">= 2.0.14"
+gem "devise_invitable", "~> 3.0"
 
 # Authorization
 gem "pundit", "~> 2.4"
