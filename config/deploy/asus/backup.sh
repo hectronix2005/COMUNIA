@@ -126,5 +126,5 @@ if [ -n "$(ls -A "$EVIDENCIA" 2>/dev/null)" ]; then
 fi
 
 # En R2 lo borra la regla «borrar-30-dias» del bucket.
-rclone delete "$REMOTE" --min-age 30d --quiet || true
+rclone delete --drive-use-trash=false "$REMOTE" --min-age 30d --quiet || true
 estado "OK $(basename "$F.gpg") usuarios=$USERS"
