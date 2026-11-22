@@ -2,6 +2,7 @@
 # shellcheck disable=SC2174  # mkdir -m solo hace falta en la última carpeta
 # Despliegue de COMUNIA en asus. Lo lanza bin/deploy después de dejar ~/services/comunia en origin/main;
 # recibe el commit que había antes (para dar versión a la que está en marcha si aún no la tiene).
+#  0. Si lo que corre ya es este commit (misma versión y sonda en verde), termina sin hacer nada.
 #  1. Construye la imagen y la etiqueta comunia-web:<versión> (vAAAA.MM.DD-N).
 #  2. Copia de la base (pg_dump -Fc) en ~/backups/comunia-versiones/comunia-<versión>.dump ANTES de
 #     arrancar: las migraciones corren al arrancar (bin/docker-entrypoint → db:prepare). Guarda las 5 últimas.
@@ -30,6 +31,21 @@ if [ -z "$ANTERIOR" ] && [ -n "$ANTES" ] && docker inspect "$CONTENEDOR" >/dev/n
     git push --quiet origin "refs/tags/$ANTERIOR" ||
     aviso "no se pudo etiquetar en git la versión en marcha $ANTERIOR"
   echo "versión en marcha sin número: queda como $ANTERIOR ($ANTES)"
+fi
+
+# Nada que desplegar: lo que corre ya es este commit, con su versión y la sonda en verde. Sin esto, un
+# bin/deploy repetido reconstruía, copiaba la base, recreaba el contenedor y sacaba otra versión del mismo
+# commit (v2026.11.22-3 = -2, 22-nov-2026). Para reconstruir igualmente (secretos cambiados, parche de la
+# imagen base): COMUNIA_FORZAR=1 bin/deploy, desde el Air o desde asus. Un solo intento rápido de sonda:
+# con la app caída no se pierden minutos antes de desplegar.
+if [ "${COMUNIA_FORZAR:-0}" != 1 ] && [ -n "$ANTERIOR" ] && [ "$ANTES" = "$COMMIT" ] &&
+   [ "$(cat "$ESTADO_VERSION" 2>/dev/null)" = "$ANTERIOR $COMMIT" ] &&
+   [ "$(curl -sS -m 5 -o /dev/null -w '%{http_code}' -H 'X-Forwarded-Proto: https' "$SONDA_LOCAL" 2>/dev/null)" = 200 ]; then
+  echo "nada que desplegar: $ANTERIOR ya sirve ${COMMIT:0:7} (secretos cambiados: COMUNIA_FORZAR=1 bin/deploy)"
+  git rev-parse -q --verify "refs/tags/$ANTERIOR" >/dev/null ||
+    aviso "$ANTERIOR no tiene etiqueta de git: repite con COMUNIA_FORZAR=1 bin/deploy"
+  sonda_publica || { echo "la app responde en local pero no por Funnel (vigila-funnel.sh lo reinicia)" >&2; exit 1; }
+  exit 0
 fi
 
 EN_MARCHA_ID=$(docker inspect "$CONTENEDOR" --format '{{.Image}}' 2>/dev/null || true)
