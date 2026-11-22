@@ -6,8 +6,12 @@
 set -euo pipefail
 source "$(dirname "$0")/../config/deploy/asus/en-asus.sh"
 
-en_asus <<'PASOS'
+# COMUNIA_FORZAR=1 bin/deploy reconstruye aunque ya corra este commit; va como argumento porque por ssh
+# las variables no viajan.
+case "${COMUNIA_FORZAR:-0}" in 0|1) ;; *) echo "COMUNIA_FORZAR debe ser 0 o 1" >&2; exit 1 ;; esac
+en_asus "${COMUNIA_FORZAR:-0}" <<'PASOS'
 set -euo pipefail
+export COMUNIA_FORZAR=${1:-0}
 # El candado antes del reset: un segundo bin/deploy no puede cambiar el código a mitad de la construcción.
 exec 8>~/services/comunia-despliegue.lock
 flock -n 8 || { echo "ya hay un despliegue o rollback en curso" >&2; exit 1; }

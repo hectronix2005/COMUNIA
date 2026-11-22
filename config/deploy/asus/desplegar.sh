@@ -35,10 +35,16 @@ fi
 
 # Nada que desplegar: lo que corre ya es este commit, con su versión y la sonda en verde. Sin esto, un
 # bin/deploy repetido reconstruía, copiaba la base, recreaba el contenedor y sacaba otra versión del mismo
-# commit (v2026.11.22-3 = -2, 22-nov-2026). Para reconstruir igualmente: COMUNIA_FORZAR=1 (en asus).
+# commit (v2026.11.22-3 = -2, 22-nov-2026). Para reconstruir igualmente (secretos cambiados, parche de la
+# imagen base): COMUNIA_FORZAR=1 bin/deploy, desde el Air o desde asus. Un solo intento rápido de sonda:
+# con la app caída no se pierden minutos antes de desplegar.
 if [ "${COMUNIA_FORZAR:-0}" != 1 ] && [ -n "$ANTERIOR" ] && [ "$ANTES" = "$COMMIT" ] &&
-   [ "$(cat "$ESTADO_VERSION" 2>/dev/null)" = "$ANTERIOR $COMMIT" ] && sonda_local >/dev/null 2>&1; then
-  echo "nada que desplegar: $ANTERIOR ya sirve ${COMMIT:0:7} (COMUNIA_FORZAR=1 para reconstruir)"
+   [ "$(cat "$ESTADO_VERSION" 2>/dev/null)" = "$ANTERIOR $COMMIT" ] &&
+   [ "$(curl -sS -m 5 -o /dev/null -w '%{http_code}' -H 'X-Forwarded-Proto: https' "$SONDA_LOCAL" 2>/dev/null)" = 200 ]; then
+  echo "nada que desplegar: $ANTERIOR ya sirve ${COMMIT:0:7} (secretos cambiados: COMUNIA_FORZAR=1 bin/deploy)"
+  git rev-parse -q --verify "refs/tags/$ANTERIOR" >/dev/null ||
+    aviso "$ANTERIOR no tiene etiqueta de git: repite con COMUNIA_FORZAR=1 bin/deploy"
+  sonda_publica || { echo "la app responde en local pero no por Funnel (vigila-funnel.sh lo reinicia)" >&2; exit 1; }
   exit 0
 fi
 
