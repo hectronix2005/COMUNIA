@@ -229,12 +229,16 @@ scripts/               # Seeds y utilitarios
 
 ## Despliegue
 
-Preparado para **Kamal** (ver `.kamal/`) con `Dockerfile` y `Thruster` como edge layer.
+Producción corre en asus con Docker compose (`config/deploy/asus/compose.yml`), detrás de un Funnel de
+Tailscale propio. `config/deploy.yml` (Kamal) es de la plantilla y no se usa.
 
 ```bash
-kamal setup        # primera vez
-kamal deploy       # despliegues subsecuentes
+bin/deploy                # despliega origin/main en asus (versión, copia de la base, sonda, etiqueta)
+bin/rollback --seco       # qué haría volver a la versión anterior, sin tocar nada
+bin/rollback [versión]    # vuelve a la anterior (o a vAAAA.MM.DD-N); no restaura la base
 ```
+
+Detalle en `CLAUDE.md` › «Versiones y rollback».
 
 Variables de entorno críticas (no commitear):
 

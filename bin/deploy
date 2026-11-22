@@ -1,37 +1,20 @@
 #!/usr/bin/env bash
-# Despliega main en asus: actualiza el checkout, reconstruye la imagen y reinicia web.
-# Las migraciones corren al arrancar (bin/docker-entrypoint → db:prepare).
-# Sirve lanzado desde el Air o desde la propia asus.
+# Despliega main en asus: actualiza el checkout de producción y corre config/deploy/asus/desplegar.sh
+# (imagen con versión, copia de la base antes de migrar, sonda, etiqueta vAAAA.MM.DD-N y Release;
+# si la sonda falla, rollback automático a la versión anterior). Las migraciones corren al arrancar
+# (bin/docker-entrypoint → db:prepare). Sirve lanzado desde el Air o desde la propia asus.
 set -euo pipefail
+source "$(dirname "$0")/../config/deploy/asus/en-asus.sh"
 
-STEPS='set -euo pipefail
-  cd ~/services/comunia
-  git fetch --quiet origin main
-  git reset --hard origin/main
-  export SECRETS_DIR=~/services/comunia-secrets
-  export DENUNCIAS_DIR=~/services/denuncias-evidencia
-  export STORAGE_DIR=~/services/comunia-storage
-  mkdir -p -m 700 "$DENUNCIAS_DIR" "$STORAGE_DIR"
-  docker compose -f config/deploy/asus/compose.yml up -d --build
-  docker image prune -f >/dev/null'
-
-# ControlPath=none: una conexión multiplexada abierta antes de entrar en el grupo
-# docker no lo tiene. Desde asus, si este shell tampoco lo tiene (tmux arrancado
-# antes), se entra por el Air, porque asus no se acepta ssh a sí misma.
-if [ -d ~/services/comunia/.git ]; then
-  if docker ps -q >/dev/null 2>&1; then
-    bash -c "$STEPS"
-  else
-    ssh air ssh -o ControlPath=none asus bash -s <<<"$STEPS"
-  fi
-else
-  ssh -o ControlPath=none asus bash -s <<<"$STEPS"
-fi
-
-for i in 1 2 3 4 5 6; do
-  code=$(curl -sS -m 15 -o /dev/null -w "%{http_code}" https://comunia.tail0be41e.ts.net/up || true)
-  [ "$code" = 200 ] && break
-  sleep 10
-done
-echo "up: $code"
-[ "$code" = 200 ]
+en_asus <<'PASOS'
+set -euo pipefail
+# El candado antes del reset: un segundo bin/deploy no puede cambiar el código a mitad de la construcción.
+exec 8>~/services/comunia-despliegue.lock
+flock -n 8 || { echo "ya hay un despliegue o rollback en curso" >&2; exit 1; }
+export COMUNIA_CANDADO=1
+cd ~/services/comunia
+ANTES=$(git rev-parse HEAD)
+git fetch --quiet origin main
+git reset --hard origin/main
+exec bash config/deploy/asus/desplegar.sh "$ANTES" </dev/null
+PASOS
