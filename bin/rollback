@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Vuelve producción (asus) a una versión anterior: bin/rollback [--seco] [--aceptar-base-nueva] [versión]
+#   sin versión   la versión anterior a la que está en marcha
+#   --seco        dice qué haría y comprueba que la imagen está, sin tocar nada (solo trae etiquetas)
+#   --aceptar-base-nueva  sigue aunque la base tenga migraciones que esa versión no conoce (lo decide Héctor)
+# No restaura la base. La lógica está en config/deploy/asus/rollback.sh; se manda por ssh desde esta copia.
+set -euo pipefail
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+case "${1:-}" in -h|--help|--ayuda) sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+for a in "$@"; do
+  [[ "$a" =~ ^(--seco|--aceptar-base-nueva|v[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]+)$ ]] ||
+    { echo "argumento no válido: $a (bin/rollback --ayuda)" >&2; exit 1; }
+done
+source "$DIR/config/deploy/asus/en-asus.sh"
+# Dentro de una función: bash lee el guion entero antes de ejecutarlo, y nada de lo que lea la entrada
+# estándar (un ssh, por ejemplo) se puede comer el resto.
+{ cat "$DIR/config/deploy/asus/versiones.sh"; echo 'principal() {'; cat "$DIR/config/deploy/asus/rollback.sh"
+  echo '}'; echo 'principal "$@"'; } | en_asus "$@"
