@@ -42,8 +42,8 @@ class SolicitudAcceso < ApplicationRecord
       destino = miembro.user
       correo, resumen = solicitante.email, solicitante.encrypted_password
       solicitante.destroy!
-      destino.update!(email: correo, encrypted_password: resumen, invitation_token: nil, invitation_created_at: nil,
-                      invitation_sent_at: nil, failed_attempts: 0, locked_at: nil, unlock_token: nil)
+      destino.update!(email: correo, encrypted_password: resumen, failed_attempts: 0, locked_at: nil, unlock_token: nil)
+      destino.anular_invitaciones! # una invitación pendiente la dejaría en espera, sin poder entrar
       decidir!(:aprobada, por: por, user: destino, miembro: miembro)
     end
   end

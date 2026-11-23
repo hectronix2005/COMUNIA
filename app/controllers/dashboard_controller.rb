@@ -149,7 +149,7 @@ class DashboardController < ApplicationController
   # Quién usa la app entre los miembros activos: los que entraron, los invitados que aún no y los que faltan
   # por invitar (o con la invitación caducada), más los que entraron en los últimos 7 días.
   def adopcion_de(ids)
-    usuarios = User.where(id: Miembro.activos.where(logia_id: ids).select(:user_id))
+    usuarios = User.where(id: Miembro.activos.where(logia_id: ids).select(:user_id)).includes(:devise_invitations)
     estados = usuarios.map(&:acceso).tally
     { total: usuarios.size, entraron: estados[:entro].to_i, invitados: estados[:invitado].to_i,
       faltan: estados[:nunca].to_i + estados[:invitacion_caducada].to_i,

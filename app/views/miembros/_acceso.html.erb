@@ -12,7 +12,7 @@
         Última vez en la app: <%= l(u.last_seen_at.to_date, format: :long) %>.
       <% end %>
       <% if u.acceso == :invitado %>
-        Tiene un enlace de invitación sin usar que caduca el <%= l(u.invitation_due_at.to_date, format: :long) %>.
+        Tiene un enlace de invitación sin usar<%= invitacion_caduca_el(u)&.then { " que caduca el #{_1}" } %>.
       <% end %>
     </p>
 
@@ -21,8 +21,8 @@
       <%# Sin .alert: en esta app es flex en fila (para el icono de los avisos) y apretaba el enlace. %>
       <div class="rounded-3 border border-info-subtle bg-info-subtle text-info-emphasis p-3" data-controller="copiar">
         <p class="mb-2">
-          <strong>Enlace listo.</strong> Solo se muestra ahora: mándalo ya. Sirve una sola vez y caduca el
-          <%= l(u.invitation_due_at.to_date, format: :long) %>. Si se pierde, genera otro.
+          <strong>Enlace listo.</strong> Solo se muestra ahora: mándalo ya. Sirve una sola
+          vez<%= invitacion_caduca_el(u)&.then { " y caduca el #{_1}" } %>. Si se pierde, genera otro.
         </p>
         <input type="text" class="form-control form-control-sm mb-2" value="<%= enlace %>" readonly
                data-copiar-target="texto" aria-label="Enlace de invitación">

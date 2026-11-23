@@ -13,9 +13,14 @@ module MiembrosHelper
 
   def texto_invitacion(miembro, enlace)
     u = miembro.user
+    caduca = invitacion_caduca_el(u)&.then { " y caduca el #{_1}" }
     "Hola, #{u.nombre}. Te invito a COMUNIA, la app de #{miembro.logia.nombre}. Entra con este enlace " \
-      "y elige tu contraseña; tu usuario es #{u.username}. El enlace sirve una sola vez y caduca el " \
-      "#{l(u.invitation_due_at.to_date, format: :long)}: #{enlace}"
+      "y elige tu contraseña; tu usuario es #{u.username}. El enlace sirve una sola vez#{caduca}: #{enlace}"
+  end
+
+  # Fecha larga en que caduca la invitación pendiente; nil si no tiene (invitation_sent_at vacío).
+  def invitacion_caduca_el(user)
+    user.invitation_due_at&.then { l(_1.to_date, format: :long) }
   end
 
   # Enlace de WhatsApp con el mensaje escrito. Con un celular colombiano o un número con indicativo va
