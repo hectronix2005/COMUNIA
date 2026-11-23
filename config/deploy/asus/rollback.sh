@@ -63,6 +63,7 @@ if [ -n "$COMMIT" ]; then
   [ -z "$COMPATIBLES" ] || echo "migraciones nuevas compatibles con $OBJETIVO, no paran: $COMPATIBLES"
 else
   BASE_NUEVA="(sin etiqueta de git: no se puede comprobar)"
+  echo "sin etiqueta de $OBJETIVO: no se ejecutan las vueltas de config/deploy/asus/vuelta" >&2
 fi
 
 echo "objetivo: $OBJETIVO (${COMMIT:-sin commit}) con la imagen $IMAGEN:$OBJETIVO"
@@ -85,16 +86,24 @@ fi
 
 echo "rollback: ${ACTUAL:-sin versión} → $OBJETIVO"
 # Lo que pida cada migración nueva para volver atrás: config/deploy/asus/vuelta/<versión>.sql del código en marcha
-# (REF), en una transacción. Si falla, se para antes de cambiar de imagen y se avisa.
+# (REF), en una transacción y con web parado, para que nada escriba entre el ajuste y el cambio de imagen. Si falla,
+# web vuelve a arrancar con la versión en marcha, se avisa y se para.
+VUELTAS=
 for v in $NUEVAS; do
-  f="config/deploy/asus/vuelta/$v.sql"
-  git cat-file -e "$REF:$f" 2>/dev/null || continue
-  echo "vuelta de $v: $f"
-  if ! git show "$REF:$f" | docker exec -i comunia-db-1 psql -U comunia -d comunia_production -v ON_ERROR_STOP=1 -1 -q; then
-    avisar "COMUNIA: rollback a $OBJETIVO parado" "Falló $f antes de cambiar de imagen: sigue en marcha ${ACTUAL:-sin versión}. Hace falta mirarlo a mano."
-    exit 1
-  fi
+  git cat-file -e "$REF:config/deploy/asus/vuelta/$v.sql" 2>/dev/null && VUELTAS="$VUELTAS $v"
 done
+if [ -n "$VUELTAS" ]; then
+  "${COMPOSE[@]}" stop web
+  for v in $VUELTAS; do
+    f="config/deploy/asus/vuelta/$v.sql"
+    echo "vuelta de $v: $f"
+    if ! git show "$REF:$f" | docker exec -i comunia-db-1 psql -U comunia -d comunia_production -v ON_ERROR_STOP=1 -1 -q; then
+      "${COMPOSE[@]}" start web || true
+      avisar "COMUNIA: rollback a $OBJETIVO parado" "Falló $f antes de cambiar de imagen: sigue ${ACTUAL:-sin versión} (web arrancado otra vez). Hace falta mirarlo a mano."
+      exit 1
+    fi
+  done
+fi
 docker tag "$IMAGEN:$OBJETIVO" "$IMAGEN:latest"
 "${COMPOSE[@]}" up -d --no-build web
 MOTIVO=$([ "$AUTO" = 1 ] && echo "automático: la sonda falló tras desplegar ${ACTUAL:-?}" || echo "manual")
