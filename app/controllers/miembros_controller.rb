@@ -13,7 +13,7 @@ class MiembrosController < ApplicationController
       @solicitudes_pendientes = policy_scope(SolicitudAcceso).pendiente.where(logia_id: logia_ids_de_la_organizacion).count
     end
 
-    @miembros = base.includes(:user, :logia)
+    @miembros = base.includes(:logia, user: :devise_invitations)
 
     @corte_fecha = params[:corte_fecha].present? ? (Date.parse(params[:corte_fecha].to_s) rescue nil) : nil
 
@@ -239,7 +239,8 @@ class MiembrosController < ApplicationController
   def invitar
     authorize @miembro
     user = @miembro.user
-    user.invite!(current_user) { |u| u.skip_invitation = true }
+    # El bloqueo evita que dos admins generen a la vez dos enlaces válidos para la misma persona.
+    User.transaction { user.lock!.invite!(current_user) { |u| u.skip_invitation = true } }
     flash[:enlace_invitacion] = accept_user_invitation_url(invitation_token: user.raw_invitation_token)
     redirect_to miembro_path(@miembro, anchor: "acceso")
   end
@@ -271,7 +272,7 @@ class MiembrosController < ApplicationController
       @pendientes.each do |m|
         m.save! if m.telefono_changed?
         next unless elegidos.include?(m.id)
-        m.user.invite!(current_user) { |u| u.skip_invitation = true }
+        m.user.lock!.invite!(current_user) { |u| u.skip_invitation = true }
         @invitados << [m, accept_user_invitation_url(invitation_token: m.user.raw_invitation_token)]
       end
     end
@@ -304,7 +305,7 @@ class MiembrosController < ApplicationController
   end
 
   def pendientes_de_acceso
-    base = policy_scope(Miembro).activo.includes(:logia, user: :rol_ref).joins(:user).order("users.apellido", "users.nombre")
+    base = policy_scope(Miembro).activo.includes(:logia, user: [:rol_ref, :devise_invitations]).joins(:user).order("users.apellido", "users.nombre")
     base = base.where(logia_id: logia_ids_de_la_organizacion) if current_logia
     base.reject { |m| m.user.acceso == :entro || !policy(m).invitar? }
   end

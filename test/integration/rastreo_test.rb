@@ -105,13 +105,14 @@ class RastreoTest < ActionDispatch::IntegrationTest
   end
 
   test "abrir la invitación anota a quién era, sin el token" do
-    @yo.update_columns(invitation_token: Devise.token_generator.digest(User, :invitation_token, "TOKEN123"),
-                       invitation_sent_at: Time.current, invitation_created_at: Time.current)
-    get "/invitacion?invitation_token=TOKEN123", headers: NAVEGADOR
+    @yo.invite! { _1.skip_invitation = true }
+    token = @yo.raw_invitation_token
+    get "/invitacion?#{{ invitation_token: token }.to_query}", headers: NAVEGADOR
     assert_response :ok
     evento = Ahoy::Event.find_by!(name: "Petición")
     assert_equal @yo.id, evento.properties["invitado_id"]
-    assert_not_includes Ahoy::Event.pluck(:properties).to_json + Ahoy::Visit.pluck(:landing_page).join, "TOKEN123"
+    guardado = Ahoy::Event.pluck(:properties).to_json + Ahoy::Visit.pluck(:landing_page).join
+    [token, CGI.escape(token), token[0, 40]].each { assert_not_includes guardado, _1 }
   end
 
   test "el panel enseña el resumen por día" do

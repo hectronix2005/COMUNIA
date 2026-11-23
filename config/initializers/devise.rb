@@ -141,6 +141,12 @@ Devise.setup do |config|
   config.invite_for = 7.days
   # Quien acepta elige ahí su contraseña y entra sin volver a escribirla (lo que la gema hace por defecto).
   config.allow_insecure_sign_in_after_accept = true
+  # devise_invitable 3 (22-nov-2026): las invitaciones viven en devise_invitations. La cuenta ya existe (la crea la
+  # ficha del miembro), así que la invitación se enlaza a ella. La clave de la invitación es el id: el correo no
+  # sirve porque los miembros solo con celular no tienen, y con una clave repetida aceptar una invitación anula y
+  # se queda las de los demás. User#preparar_invitacion completa el resto.
+  config.create_resource_on_invitation = true
+  config.invite_key = { id: Integer }
 
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without

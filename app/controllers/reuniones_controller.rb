@@ -193,7 +193,7 @@ class ReunionesController < ApplicationController
   # Para quien gestiona: los convocados por su respuesta (confirmado, rechazado o sin responder), por nombre.
   def quien_viene
     respuestas = @reunion.confirmaciones.pluck(:user_id, :estado).to_h
-    @reunion.convocados.includes(:user).sort_by { _1.user.nombre_corto }
+    @reunion.convocados.includes(user: :devise_invitations).sort_by { _1.user.nombre_corto }
             .group_by { respuestas[_1.user_id].presence_in(%w[confirmado rechazado]) || "sin_responder" }
   end
 

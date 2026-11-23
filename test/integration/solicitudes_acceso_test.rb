@@ -80,6 +80,24 @@ class SolicitudesAccesoTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/dashboard"
   end
 
+  test "aprobar con una ficha que tenía una invitación pendiente: entra con su clave y el enlace deja de servir" do
+    @nuevo.user.invite! { _1.skip_invitation = true }
+    enlace = "/invitacion?#{{ invitation_token: @nuevo.user.raw_invitation_token }.to_query}"
+    solicitud = solicitar
+
+    sign_in @admin
+    post "/solicitudes/#{solicitud.id}/aprobar", params: { miembro_id: @nuevo.id.to_s }
+    assert solicitud.reload.aprobada?
+    sign_out :user
+
+    post "/login", params: { user: { email: "nora.nueva@correo.co", password: "clave-segura-1" } }
+    assert_redirected_to "/dashboard"
+    sign_out :user
+    get enlace
+    assert_response :redirect
+    assert_equal :entro, @nuevo.user.reload.acceso, "ya sin invitación pendiente"
+  end
+
   test "aprobar con una ficha nueva" do
     solicitud = solicitar
     sign_in @admin

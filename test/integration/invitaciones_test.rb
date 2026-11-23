@@ -16,6 +16,8 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
   test "el admin genera el enlace, el miembro elige contraseña, entra y el enlace no vuelve a servir" do
     enlace = invitar(@miembro)
     assert_includes response.body, "wa.me/573001234567?text="
+    assert_includes response.body, "caduca el #{I18n.l(7.days.from_now.to_date, format: :long)}"
+    assert_equal :invitado, @user.reload.acceso
     assert_not @user.reload.valid_password?("password123"), "la contraseña anterior deja de servir hasta aceptar"
     sign_out :user
 
@@ -24,7 +26,7 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
     assert_includes response.body, @user.username
     assert_equal "no-store", response.headers["Cache-Control"]
 
-    token = enlace[/invitation_token=([^&]+)/, 1]
+    token = CGI.unescape(enlace[/invitation_token=([^&]+)/, 1])
     patch "/invitacion", params: { user: { invitation_token: token, password: "corta", password_confirmation: "corta" } }
     assert_response :unprocessable_entity
     assert_nil @user.reload.invitation_accepted_at
@@ -43,7 +45,7 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
   end
 
   test "si la respuesta del primer envío no llegó, reenviar el formulario lleva a entrar con la contraseña ya elegida" do
-    token = invitar(@miembro)[/invitation_token=([^&]+)/, 1]
+    token = CGI.unescape(invitar(@miembro)[/invitation_token=([^&]+)/, 1])
     sign_out :user
     patch "/invitacion", params: { user: { invitation_token: token, password: "una clave larga", password_confirmation: "una clave larga" } }
     assert_redirected_to "/bienvenida"
@@ -75,6 +77,7 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
     travel 7.days + 1.minute do
       get enlace
       assert_response :redirect
+      assert_equal :invitacion_caducada, @user.reload.acceso
     end
   end
 
@@ -126,7 +129,130 @@ class InvitacionesTest < ActionDispatch::IntegrationTest
     assert_equal respuestas.first, respuestas.last
   end
 
+  test "dos miembros solo con celular: aceptar una invitación no anula ni se queda la del otro" do
+    celia = ficha(usuario("Celia", email: nil, celular: "3001110001", rol_ref: @user.rol_ref))
+    ciro = ficha(usuario("Ciro", email: nil, celular: "3001110002", rol_ref: @user.rol_ref))
+    de_celia = invitar(celia)
+    de_ciro = invitar(ciro)
+    sign_out :user
+
+    aceptar(de_celia, "la clave de celia")
+    assert_redirected_to "/bienvenida"
+    sign_out :user
+    get de_ciro
+    assert_response :ok
+    assert_includes response.body, ciro.user.username
+    aceptar(de_ciro, "la clave de ciro")
+    assert_redirected_to "/bienvenida"
+    sign_out :user
+
+    assert_equal [ciro.user.id], DeviseInvitable::Invitation.accepted.where(invitable: ciro.user).pluck(:invitable_id)
+    assert_nil ciro.user.reload.email
+    post "/login", params: { user: { email: "300 111 0002", password: "la clave de ciro" } }
+    assert_redirected_to "/dashboard"
+  end
+
+  test "quien ya había entrado: el enlace nuevo lo deja en espera y guarda la contraseña que elige" do
+    @user.update_column(:last_seen_at, 3.days.ago)
+    enlace = invitar(@miembro)
+    sign_out :user
+    post "/login", params: { user: { email: @user.username, password: "password123" } }
+    assert_not_equal "/dashboard", URI(response.location.to_s).path, "la contraseña anterior no entra hasta aceptar"
+
+    aceptar(enlace, "una clave nueva larga")
+    assert_redirected_to "/bienvenida"
+    assert @user.reload.valid_password?("una clave nueva larga")
+    assert_not @user.valid_password?("password123")
+  end
+
+  test "un enlace de la 2.x que la migración pasó a devise_invitations sigue sirviendo" do
+    # Lo que deja UpgradeUsersDeviseInvitations: el resumen del token, la clave (id) y las fechas de la 2.x.
+    DeviseInvitable::Invitation.create!(
+      invitable: @user, invited_by: @admin, invite_key: { "id" => @user.id },
+      invitation_token: Devise.token_generator.digest(User, :invitation_token, "LEGADO2x"),
+      invitation_created_at: 2.days.ago, invitation_sent_at: 2.days.ago, resource_created_at: 2.days.ago
+    )
+    get "/invitacion?invitation_token=LEGADO2x"
+    assert_response :ok
+    assert_includes response.body, @user.username
+    aceptar("invitation_token=LEGADO2x", "una clave de antes")
+    assert_redirected_to "/bienvenida"
+    assert @user.reload.valid_password?("una clave de antes")
+  end
+
+  test "el enlace sigue sirviendo si al copiarlo se descodificó y el «+» llegó como espacio" do
+    token = nil
+    token = CGI.unescape(invitar(@miembro)[/invitation_token=([^&]+)/, 1]) until token&.include?("+")
+    sign_out :user
+    get "/invitacion?invitation_token=#{token}"
+    assert_response :ok
+    assert_includes response.body, @user.username
+    aceptar("invitation_token=#{token.tr('+', ' ')}", "una clave larga")
+    assert_redirected_to "/bienvenida"
+  end
+
+  test "un token alterado o de otro tipo de cuenta no sirve" do
+    token = CGI.unescape(invitar(@miembro)[/invitation_token=([^&]+)/, 1])
+    sign_out :user
+    otro = token.sub(/\A./) { _1 == "A" ? "B" : "A" }
+    get "/invitacion?#{{ invitation_token: otro }.to_query}"
+    assert_response :redirect
+    aceptar("invitation_token=#{CGI.escape(otro)}", "una clave larga")
+    assert_response :see_other
+    assert_nil @user.reload.invitation_accepted_at
+
+    patch "/invitacion", params: { user: "texto" }
+    assert_response :see_other
+    get "/invitacion?invitation_token[a]=b"
+    assert_response :redirect
+    patch "/invitacion", params: { user: { invitation_token: { a: "b" }, password: "una clave larga" } }
+    assert_response :see_other
+  end
+
+  test "aceptar la invitación de una comunidad no abre otra" do
+    otra = Logia.create!(nombre: "Otra", slug: "otra-#{SecureRandom.hex(3)}", codigo: "OT#{rand(10_000)}")
+    ajena = ficha(usuario("Ana", logia: otra))
+    enlace = invitar(@miembro)
+    sign_out :user
+    aceptar(enlace, "una clave larga")
+    assert_redirected_to "/bienvenida"
+
+    get "/miembros/#{ajena.id}"
+    assert_response :not_found
+    assert_equal [@logia.organizacion.id], @user.reload.pertenencias.pluck(:organizacion_id).uniq
+  end
+
+  test "borrar la cuenta deja sin valor su enlace y no crea otra" do
+    enlace = invitar(@miembro)
+    sign_out :user
+    @user.destroy!
+    get enlace
+    assert_response :redirect
+    assert_no_difference -> { User.count } do
+      aceptar(enlace, "una clave larga")
+    end
+    assert DeviseInvitable::Invitation.where(invitable_id: nil).all?(&:revoked_at)
+  end
+
+  test "más de 20 intentos por hora desde la misma IP se cortan" do
+    anterior = Rack::Attack.cache.store
+    Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+    20.times do |i|
+      get "/invitacion?invitation_token=intento#{i}"
+      assert_not_equal 429, response.status
+    end
+    get "/invitacion?invitation_token=uno-mas"
+    assert_response 429
+  ensure
+    Rack::Attack.cache.store = anterior
+  end
+
   private
+
+  def aceptar(enlace, clave)
+    token = CGI.unescape(enlace[/invitation_token=([^&]+)/, 1])
+    patch "/invitacion", params: { user: { invitation_token: token, password: clave, password_confirmation: clave } }
+  end
 
   def usuario(nombre, logia: @logia, **attrs)
     User.create!(nombre: nombre, apellido: "Prueba", email: "#{nombre.downcase}_#{SecureRandom.hex(3)}@correo.co",

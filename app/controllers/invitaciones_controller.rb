@@ -2,6 +2,7 @@
 # y entra. El token caduca a los 7 días y sirve una sola vez (Devise guarda solo su resumen).
 class InvitacionesController < Devise::InvitationsController
   after_action -> { response.set_header("Cache-Control", "no-store") }, only: :edit
+  prepend_before_action :reparar_token, only: %i[edit update]
 
   # Con el enlace ya usado o caducado no se vuelve a pintar el formulario: si la respuesta al primer envío no llegó
   # al teléfono, la contraseña ya quedó guardada y la persona debe ir a entrar con ella, no reintentar sin salida.
@@ -15,6 +16,18 @@ class InvitacionesController < Devise::InvitationsController
   end
 
   protected
+
+  # Desde devise_invitable 3 el token es base64 con «+», «/» y «=», que el enlace lleva codificados. Si alguien lo
+  # descodifica al copiarlo o reenviarlo, el «+» llega como espacio. Un token nunca tiene espacios: se devuelven a «+».
+  # Un token que no es texto (invitation_token[a]=b) se descarta: la gema lo pasaría tal cual al descifrador.
+  def reparar_token
+    token = params[:invitation_token]
+    params.delete(:invitation_token) unless token.nil? || token.is_a?(String)
+    params[:invitation_token] = token.tr(" ", "+") if token.is_a?(String)
+    usuario = params[:user]
+    return unless usuario.is_a?(ActionController::Parameters) && usuario[:invitation_token].is_a?(String)
+    usuario[:invitation_token] = usuario[:invitation_token].tr(" ", "+")
+  end
 
   # El rastreo apunta de quién es la invitación que se abrió (el token no se guarda): así el resumen diario dice
   # «abrió la invitación, no la aceptó» aunque aún no tenga sesión.

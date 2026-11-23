@@ -60,6 +60,12 @@ class User < ApplicationRecord
   def active_for_authentication? = super && !espera_aprobacion?
   def inactive_message = espera_aprobacion? ? :espera_aprobacion : super
 
+  # devise_invitable 3: los enlaces salen por WhatsApp (skip_invitation), así que la invitación cuenta como enviada al
+  # generarla. Ver #preparar_invitacion.
+  before_invitation_created :preparar_invitacion
+  # Antes que el :nullify de la gema: una invitación pendiente sin dueño crearía una cuenta nueva con su enlace.
+  before_destroy :anular_invitaciones!, prepend: true
+
   attr_accessor :completando_datos
 
   # Con celular no hace falta correo: lo pide la pantalla de completar datos.
@@ -189,14 +195,23 @@ class User < ApplicationRecord
   end
 
   # Estado del acceso a la app, para la ficha y la lista de miembros.
+  # Las listas precargan devise_invitations; por eso se mira la asociación y no current_invitation (una consulta).
   def acceso
-    if invitation_token.present? && invitation_created_at
-      valid_invitation? ? :invitado : :invitacion_caducada
+    if (invitacion = devise_invitations.select(&:pending?).max_by { _1.invitation_created_at.to_i })
+      invitacion.invitation_period_valid?(self.class.invite_for) ? :invitado : :invitacion_caducada
     elsif last_seen_at
       :entro
     else
       :nunca
     end
+  end
+
+  # Deja sin valor los enlaces pendientes (al aprobar una solicitud de acceso o al borrar la cuenta). No es
+  # revoke_invitation! de la gema: ese borra la cuenta si la invitación la tenía en espera.
+  def anular_invitaciones!
+    DeviseInvitable::Invitation.pending.where(invitable: self)
+                               .update_all(revoked_at: Time.current, invitation_token: nil, updated_at: Time.current)
+    devise_invitations.reset
   end
 
   def online?
@@ -284,6 +299,21 @@ class User < ApplicationRecord
   end
 
   private
+
+  # Como en la 2.x: los 7 días cuentan desde que se genera el enlace (invitation_sent_at; sin él nace caducado), la
+  # cuenta queda en espera hasta aceptarlo (resource_created_at: la contraseña anterior deja de servir y la que se
+  # elige al aceptar se guarda; sin él la gema la descarta) y el enlace anterior deja de servir.
+  def preparar_invitacion
+    # La clave de la invitación es el id (config.invite_key): sin cuenta guardada todas compartirían la misma.
+    raise ArgumentError, "solo se invita a cuentas ya creadas" unless persisted?
+
+    ahora = Time.current
+    DeviseInvitable::Invitation.pending.where(invitable: self).where.not(id: current_invitation.id)
+                               .update_all(superseded_at: ahora, superseded_reason: "reinvited", invitation_token: nil,
+                                           updated_at: ahora)
+    current_invitation.invitation_sent_at = ahora
+    current_invitation.resource_created_at = ahora
+  end
 
   # La pertenencia de la comunidad activa sigue a la cuenta: crearla, cambiarle el rol o moverla de logia (el
   # superadmin) se guarda también ahí. Si la logia nueva es de otra comunidad, la cuenta se mudó y deja la
