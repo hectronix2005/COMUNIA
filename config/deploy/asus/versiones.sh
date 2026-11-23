@@ -103,7 +103,8 @@ migraciones_de() {
 migraciones_compatibles() {
   local marcadas peligrosas
   marcadas=$(git -C "$COMUNIA_DIR" grep -l -E '^# rollback: compatible' "$1" -- db/migrate/ 2>/dev/null || true)
-  peligrosas=$(git -C "$COMUNIA_DIR" grep -l -w -E 'remove_column|remove_columns|remove_reference|remove_belongs_to|drop_table|rename_column|rename_table|change_column' "$1" -- db/migrate/ 2>/dev/null || true)
+  # Por prefijo: remove_column(s), remove_reference, drop_table, rename_*, change_column, change_column_null…
+  peligrosas=$(git -C "$COMUNIA_DIR" grep -l -E '(remove|drop|rename|change)_[a-z_]+' "$1" -- db/migrate/ 2>/dev/null || true)
   comm -23 <(echo "$marcadas" | sed '/^$/d' | sort) <(echo "$peligrosas" | sed '/^$/d' | sort) |
     sed -nE 's#^[^:]+:db/migrate/([0-9]+)_.*\.rb$#\1#p' | sort
 }
