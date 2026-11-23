@@ -1,14 +1,12 @@
+# rollback: compatible — copia y no borra; la 2.x arranca con esta base (probado sobre una copia de producción el
+# 22-nov-2026) y config/deploy/asus/vuelta/20261123015837.sql le pone al día lo que la 3.x cerró.
 # devise_invitable 3: las invitaciones salen de users a devise_invitations (generada con
-# `rails g devise_invitable:upgrade User`). Copia cada invitación y borra las columnas viejas: no tiene vuelta atrás,
-# por eso bin/deploy hace pg_dump antes de arrancar la versión que la trae.
+# `rails g devise_invitable:upgrade User`). Copia cada invitación y DEJA las columnas viejas de users: User las
+# ignora (ignored_columns) y se borran en un despliegue posterior. Así, si hay que volver a la versión anterior,
+# arranca con esta base (bin/rollback --aceptar-base-nueva) sin restaurar la copia.
 require "digest"
 
 class UpgradeUsersDeviseInvitations < ActiveRecord::Migration[8.1]
-  OLD_INVITATION_COLUMNS = %i[
-    invitation_token invitation_created_at invitation_sent_at
-    invitation_accepted_at invited_by_id invited_by_type
-  ].freeze
-
   def up
     create_devise_invitations_table unless table_exists?(:devise_invitations)
 
@@ -45,15 +43,11 @@ class UpgradeUsersDeviseInvitations < ActiveRecord::Migration[8.1]
         updated_at: resource.invitation_accepted_at || resource.invitation_sent_at || resource.invitation_created_at
       )
     end
-
-    OLD_INVITATION_COLUMNS.each do |column|
-      remove_column :users, column if column_exists?(:users, column)
-    end
   end
 
+  # Las columnas de users siguen ahí; borra TODAS las invitaciones de la tabla nueva, también las creadas con la 3.x.
   def down
-    raise ActiveRecord::IrreversibleMigration,
-      'Multiple invitation records cannot be losslessly moved back onto users'
+    execute "DELETE FROM devise_invitations"
   end
 
   private

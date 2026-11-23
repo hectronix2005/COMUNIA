@@ -96,6 +96,18 @@ migraciones_de() {
   git -C "$COMUNIA_DIR" ls-tree --name-only "$1" db/migrate/ | sed -nE 's#^db/migrate/([0-9]+)_.*\.rb$#\1#p' | sort
 }
 
+# Migraciones de un commit que declaran que la versión anterior aguanta la base que dejan: llevan una línea
+# «# rollback: compatible» (p. ej. tablas nuevas, o columnas que se dejan para borrarlas en otro despliegue). Las
+# que borran, renombran o cambian columnas o tablas nunca cuentan, aunque lleven la marca: la marca vale para
+# cualquier versión anterior, no solo la inmediata.
+migraciones_compatibles() {
+  local marcadas peligrosas
+  marcadas=$(git -C "$COMUNIA_DIR" grep -l -E '^# rollback: compatible' "$1" -- db/migrate/ 2>/dev/null || true)
+  peligrosas=$(git -C "$COMUNIA_DIR" grep -l -w -E 'remove_column|remove_columns|remove_reference|remove_belongs_to|drop_table|rename_column|rename_table|change_column' "$1" -- db/migrate/ 2>/dev/null || true)
+  comm -23 <(echo "$marcadas" | sed '/^$/d' | sort) <(echo "$peligrosas" | sed '/^$/d' | sort) |
+    sed -nE 's#^[^:]+:db/migrate/([0-9]+)_.*\.rb$#\1#p' | sort
+}
+
 # Migraciones aplicadas en la base de producción (solo lectura).
 migraciones_en_base() {
   docker exec comunia-db-1 psql -U comunia -d comunia_production -Atc 'select version from schema_migrations' | sort

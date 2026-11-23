@@ -1198,7 +1198,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_015837) do
     t.datetime "locked_at"
     t.datetime "last_seen_at"
     t.boolean "solo_red", default: false, null: false
+    t.string "invitation_token"
+    t.datetime "invitation_created_at"
+    t.datetime "invitation_sent_at"
+    t.datetime "invitation_accepted_at"
     t.integer "invitation_limit"
+    t.string "invited_by_type"
+    t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
     t.string "calendario_semilla"
     t.boolean "espera_aprobacion", default: false, null: false
@@ -1211,6 +1217,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_015837) do
     t.index ["celular"], name: "index_users_on_celular", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitado"], name: "index_users_on_invitado", unique: true, where: "invitado"
+    t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
+    t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
+    t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"
     t.index ["logia_id"], name: "index_users_on_logia_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["rol"], name: "index_users_on_rol"
