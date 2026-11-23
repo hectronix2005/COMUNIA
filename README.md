@@ -74,7 +74,7 @@ Estilo "Facebook Marketplace" para el taller:
 | Paginación | Kaminari |
 | OCR / PDF | `rtesseract`, `pdf-reader`, `wicked_pdf` |
 | Maps | Leaflet + OpenStreetMap |
-| Deploy | Kamal, Dockerfile, Thruster |
+| Deploy | Docker compose (`bin/deploy`), Dockerfile, Thruster |
 
 ---
 
@@ -230,7 +230,7 @@ scripts/               # Seeds y utilitarios
 ## Despliegue
 
 Producción corre en asus con Docker compose (`config/deploy/asus/compose.yml`), detrás de un Funnel de
-Tailscale propio. `config/deploy.yml` (Kamal) es de la plantilla y no se usa.
+Tailscale propio.
 
 ```bash
 bin/deploy                # despliega origin/main en asus (versión, copia de la base, sonda, etiqueta)
