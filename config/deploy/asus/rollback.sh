@@ -93,7 +93,8 @@ for v in $NUEVAS; do
   git cat-file -e "$REF:config/deploy/asus/vuelta/$v.sql" 2>/dev/null && VUELTAS="$VUELTAS $v"
 done
 if [ -n "$VUELTAS" ]; then
-  "${COMPOSE[@]}" stop web
+  "${COMPOSE[@]}" stop web ||
+    { avisar "COMUNIA: rollback a $OBJETIVO parado" "No se pudo parar web para las vueltas; sigue ${ACTUAL:-sin versión}."; exit 1; }
   for v in $VUELTAS; do
     f="config/deploy/asus/vuelta/$v.sql"
     echo "vuelta de $v: $f"
@@ -104,8 +105,10 @@ if [ -n "$VUELTAS" ]; then
     fi
   done
 fi
-docker tag "$IMAGEN:$OBJETIVO" "$IMAGEN:latest"
-"${COMPOSE[@]}" up -d --no-build web
+if ! { docker tag "$IMAGEN:$OBJETIVO" "$IMAGEN:latest" && "${COMPOSE[@]}" up -d --no-build web; }; then
+  avisar "COMUNIA: rollback a $OBJETIVO FALLIDO" "No arrancó web con $OBJETIVO (vueltas ya ejecutadas:${VUELTAS:- ninguna}). Hace falta mirarlo a mano."
+  exit 1
+fi
 MOTIVO=$([ "$AUTO" = 1 ] && echo "automático: la sonda falló tras desplegar ${ACTUAL:-?}" || echo "manual")
 if sonda_local; then
   echo "$OBJETIVO ${COMMIT:-?}" > "$ESTADO_VERSION"
