@@ -1,3 +1,4 @@
+# rollback: compatible — solo crea una tabla que la versión anterior no lee.
 class CreateDeviseInvitations < ActiveRecord::Migration[8.1]
   def change
     create_table :devise_invitations do |t|

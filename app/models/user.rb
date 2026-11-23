@@ -1,4 +1,9 @@
 class User < ApplicationRecord
+  # Columnas de devise_invitable 2.x: la 3.x usa devise_invitations. Se quedan un despliegue más para poder volver
+  # a la versión anterior sin restaurar la base; después se borran con una migración (22-nov-2026).
+  self.ignored_columns += %w[invitation_token invitation_created_at invitation_sent_at invitation_accepted_at
+                             invited_by_id invited_by_type]
+
   devise :invitable, :database_authenticatable, :recoverable, :rememberable, :validatable,
          :lockable, :timeoutable
 

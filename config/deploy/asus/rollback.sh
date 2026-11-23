@@ -6,7 +6,7 @@
 # comunia-web:<versión> existe → retaguearla como latest y arrancar web por el mismo compose del
 # despliegue → sonda → avisar a la flota. NO restaura la base: si la base tiene migraciones que esa
 # versión no conoce, lo dice y para (salida 3); restaurar la copia o seguir con --aceptar-base-nueva
-# lo decide Héctor.
+# lo decide Héctor. Las migraciones con una línea «# rollback: compatible» no paran.
 # Salidas: 0 hecho (o --seco sin pegas), 1 error, 3 para por la base.
 set -euo pipefail
 declare -F version_en_marcha >/dev/null || source "$(dirname "${BASH_SOURCE[0]}")/versiones.sh"
@@ -50,12 +50,17 @@ COMMIT=$(git rev-parse -q --verify "refs/tags/$OBJETIVO^{commit}" || true)
 
 # La base: migraciones aplicadas que conoce el código en marcha y no conoce la versión objetivo. (Se
 # cruza con el código en marcha porque schema_migrations guarda versiones huérfanas, como «1».)
-BASE_NUEVA=
+BASE_NUEVA= NUEVAS=
 if [ -n "$COMMIT" ]; then
-  # shellcheck disable=SC2015  # sin etiqueta de la versión en marcha, el checkout
+  # shellcheck disable=SC2015  # sin etiqueta de la versión en marcha, el checkout (que puede traer código aún sin
+  # desplegar: sus marcas de compatibles y sus vueltas contarían de más)
   REF=$( [ -n "$ACTUAL" ] && git rev-parse -q --verify "refs/tags/$ACTUAL^{commit}" || git rev-parse HEAD)
   EN_BASE=$(migraciones_en_base)   # si psql falla, set -e para aquí en vez de dar una lista vacía
-  BASE_NUEVA=$(comm -13 <(migraciones_de "$COMMIT") <(comm -12 <(echo "$EN_BASE") <(migraciones_de "$REF")) | xargs)
+  NUEVAS=$(comm -13 <(migraciones_de "$COMMIT") <(comm -12 <(echo "$EN_BASE") <(migraciones_de "$REF")))
+  # Las que se declaran compatibles («# rollback: compatible») no paran la vuelta atrás.
+  COMPATIBLES=$(comm -12 <(echo "$NUEVAS" | sed '/^$/d') <(migraciones_compatibles "$REF") | xargs)
+  BASE_NUEVA=$(comm -23 <(echo "$NUEVAS" | sed '/^$/d') <(migraciones_compatibles "$REF") | xargs)
+  [ -z "$COMPATIBLES" ] || echo "migraciones nuevas compatibles con $OBJETIVO, no paran: $COMPATIBLES"
 else
   BASE_NUEVA="(sin etiqueta de git: no se puede comprobar)"
 fi
@@ -79,6 +84,17 @@ if [ "$SECO" = 1 ]; then
 fi
 
 echo "rollback: ${ACTUAL:-sin versión} → $OBJETIVO"
+# Lo que pida cada migración nueva para volver atrás: config/deploy/asus/vuelta/<versión>.sql del código en marcha
+# (REF), en una transacción. Si falla, se para antes de cambiar de imagen y se avisa.
+for v in $NUEVAS; do
+  f="config/deploy/asus/vuelta/$v.sql"
+  git cat-file -e "$REF:$f" 2>/dev/null || continue
+  echo "vuelta de $v: $f"
+  if ! git show "$REF:$f" | docker exec -i comunia-db-1 psql -U comunia -d comunia_production -v ON_ERROR_STOP=1 -1 -q; then
+    avisar "COMUNIA: rollback a $OBJETIVO parado" "Falló $f antes de cambiar de imagen: sigue en marcha ${ACTUAL:-sin versión}. Hace falta mirarlo a mano."
+    exit 1
+  fi
+done
 docker tag "$IMAGEN:$OBJETIVO" "$IMAGEN:latest"
 "${COMPOSE[@]}" up -d --no-build web
 MOTIVO=$([ "$AUTO" = 1 ] && echo "automático: la sonda falló tras desplegar ${ACTUAL:-?}" || echo "manual")

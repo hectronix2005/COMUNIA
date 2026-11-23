@@ -24,7 +24,12 @@ base); la vigila también `.github/workflows/disponibilidad.yml`. Las migracione
   `bandeja.sh`; si falla, push con `wt_push.py`).
 - **Automático.** Si la sonda local falla tras un despliegue, `bin/deploy` llama una sola vez al rollback a
   la versión anterior y termina con error.
-- **Lo que NO hace: restaurar la base.** Si la base tiene migraciones que la versión objetivo no conoce, el
+- **Migraciones compatibles.** Una migración con la línea `# rollback: compatible` declara que la versión
+  anterior aguanta la base que deja (tablas nuevas, columnas que se dejan para borrarlas en otro despliegue):
+  no para el rollback. Solo se marca tras probar la versión anterior contra una copia migrada; nunca cuenta en
+  una que borre, renombre o cambie columnas o tablas. Si la versión anterior necesita los datos ajustados, la
+  migración trae `config/deploy/asus/vuelta/<versión>.sql`, que el rollback ejecuta antes de cambiar de imagen.
+- **Lo que NO hace: restaurar la base.** Si la base tiene otras migraciones que la versión objetivo no conoce, el
   rollback lo dice y para (salida 3). Restaurar la copia (`pg_restore`, ver `backup.sh`) o seguir con
   `bin/rollback --aceptar-base-nueva <versión>` lo decide Héctor.
 - La lógica está en `config/deploy/asus/{desplegar,rollback,versiones}.sh`.
