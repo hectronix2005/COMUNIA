@@ -2,6 +2,7 @@
 # 20261123015837, que las copió y dejó estas columnas para poder volver a la 2.x. Se borran cuando la 3.x lleva unos
 # días estable. Sin marca de rollback compatible: la 2.x no arranca sin ellas, así que bin/rollback para (salida 3).
 # Volver atrás con `down` recrea las columnas vacías, no sus datos (están en devise_invitations).
+# Deshacer esta y también la 20261123015837 borra todas las invitaciones: para eso, restaurar la copia de la base.
 # config/deploy/asus/vuelta/20261123015837.sql se queda: con --aceptar-base-nueva hacia la 2.x falla sin estas
 # columnas, en una transacción y antes de cambiar de imagen, así que esa vuelta para sin tocar nada.
 class RemoveOldInvitationColumnsFromUsers < ActiveRecord::Migration[8.1]
