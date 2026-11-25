@@ -29,6 +29,13 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
+# asus es compartida: la compilación de gems (make/gcc) y bootsnap usan como mucho BUILD_JOBS procesos,
+# con prioridad baja (nice). Sin límite llegó a carga 40 durante 30 min (25-nov-2026).
+# Para otro valor: docker compose build --build-arg BUILD_JOBS=8 web
+ARG BUILD_JOBS=4
+ENV MAKEFLAGS="-j${BUILD_JOBS}" \
+    BUNDLE_JOBS="${BUILD_JOBS}"
+
 # Install packages needed to build gems and node modules
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev node-gyp pkg-config python-is-python3 && \
@@ -45,9 +52,9 @@ RUN corepack enable && yarn set version $YARN_VERSION
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
+RUN nice -n 10 bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+    nice -n 10 bundle exec bootsnap precompile -j "${BUILD_JOBS}" --gemfile
 
 # Install node modules
 COPY package.json yarn.lock ./
@@ -57,10 +64,10 @@ RUN yarn install --immutable
 COPY . .
 
 # Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
+RUN nice -n 10 bundle exec bootsnap precompile -j "${BUILD_JOBS}" app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 nice -n 10 ./bin/rails assets:precompile
 
 
 RUN rm -rf node_modules

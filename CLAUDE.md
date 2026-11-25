@@ -7,6 +7,9 @@ base); la vigila también `.github/workflows/disponibilidad.yml`. Las migracione
 (`bin/docker-entrypoint` → `db:prepare`). Copia diaria cifrada de la base y los archivos:
 `config/deploy/asus/backup.sh` (cron de asus, 3:45, a R2 y Drive).
 
+asus es compartida: el `Dockerfile` compila con `BUILD_JOBS=4` procesos y `nice`. Si cambia `Gemfile.lock` o el
+`Dockerfile` (la imagen se rehace entera), se despliega mejor fuera de horas de trabajo (antes de las 8 o después de las 19).
+
 ## Versiones y rollback
 
 - **Etiquetas.** Cada `bin/deploy` con la sonda en verde crea la etiqueta anotada `vAAAA.MM.DD-N`
